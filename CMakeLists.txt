@@ -31,5 +31,6 @@ add_subdirectory(examples)
 add_latex_document(VTKmUsersGuide.tex
   INPUTS ${input_docs}
   IMAGES ${images}
+  DEPENDS example-listings
   USE_INDEX
   )

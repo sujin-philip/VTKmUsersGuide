@@ -22,3 +22,8 @@ if (BUILD_EXAMPLES)
       )
   endforeach()
 endif()
+
+include(ExtractExample.cmake)
+
+add_example_targets(ExportMacro.cxx created_files)
+add_custom_target(example-listings DEPENDS ${created_files})

@@ -1,0 +1,30 @@
+% -*- latex -*-
+
+\chapter{Introduction}
+\label{chap:Introduction}
+
+\fix{Write this. Combination of chapters 1 and 2 in the Dax report plus
+  added features like datasets and filters.}
+
+\fix{Also include the following.}
+
+VTK-m is written in C++ and makes extensive use of templates. The toolkit
+is implemented as a header library, meaning that all the code is
+implemented in header files (with extension \textfilename{.h}) and
+completely included in any code that uses it. \fix{Verify that does not
+  change by version 1.0} This is typically necessary of template libraries,
+which need to be compiled with template parameters that are not known until
+they are used. This also provides the convenience of allowing the compiler
+to inline user code for better performance.
+
+When documenting the VTK-m API, the following conventions are used.
+\begin{itemize}
+\item Filenames are printed in a \textfilename{sans serif font}.
+\item C++ code is printed in a \textcode{monospace font}.
+\item Macros and namespaces from the Dax toolkit are printed
+  in \textnamespace{red}.
+\item Identifiers from the Dax toolkit are printed in
+  \textidentifier{blue}.
+\item Signatures, described in Section~\ref{sec:GenericScheduling}, and the
+  tags used in them are printed in \textsignature{green}.
+\end{itemize}

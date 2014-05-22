@@ -1,0 +1,129 @@
+% -*- latex -*-
+
+\chapter{Basic Provisions}
+\label{chap:BasicProvisions}
+
+This section describes the core facilities provided by VTK-m. These include
+macros, types, and classes that define the environment in which code is
+run, the core types of data stored, and template introspection. We also
+start with a description of package structure used by VTK-m.
+
+\section{Package Structure}
+\label{sec:PackageStructure}
+
+\index{packages|seealso{namespace}}
+\index{packages|(}
+
+VTK-m is organized in a hierarchy of nested packages. VTK-m places
+definitions in \keyterm{namespaces} \index{namespace} that correspond to
+the package (with the exception that one package may specialize a template
+defined in a different namespace).
+
+The base package is named \vtkm{}. All classes within VTK-m are placed
+either directly in the \vtkm{} package or in a package beneath it. This
+helps prevent name collisions between VTK-m and any other library.
+
+As described in Section~\ref{sec:StructureOfVTKmFramework}, the VTK-m API
+is divided into two distinct environments: \index{environments} the control
+environment \index{control~environment} and the execution
+environment. \index{execution~environment} The API for these two
+environments are located in the \vtkmcont{} and \vtkmexec{} packages,
+respectively. Items located in the base \vtkm{} namespace are available in
+both environments.
+
+Although it is conventional to spell out names in identifiers (see the
+coding conventions in Chapter~\ref{chap:CodingConventions}), there is an
+exception to abbreviate control and execution to \textnamespace{cont}
+and \textnamespace{exec}, respectively. This is because it is also part of
+the coding convention to declare the entire namespace when using an
+identifier that is part of the corresponding package. The shorter names
+make the identifiers easier to read, faster to type, and more feasible to
+pack lines in 80 column displays. These abbreviations are also used instead
+of more common abbreviations (e.g. ctrl for control) because, as part of
+actual English words, they are easier to type.
+
+\fix{Probably put a paragraph on filters here and move this paragraph
+  lower.}
+
+Worklets provided by VTK-m, described in
+Chapter~\ref{chap:ProvidedWorklets}, are contained in the \vtkmworklet{}
+package. Although the operation of a worklet happens exclusively in the
+execution environment, worklets are typically initialized in the control
+environment. Thus, the \vtkmworklet{} package is not encapsulated in either
+\vtkmcont{} or \vtkmexec{}.
+
+VTK-m provides a base set of library functions that are ported to
+the various systems and compilers on which it is used. These functions are
+located in the \vtkmmath{} package. The features in \vtkmmath{} are available
+in both the control and execution environments, but they are typically used
+in the execution environment.
+
+VTK-m contains code that uses specialized compiler features, such as those
+with CUDA and OpenMP, or libraries, such as Intel Threading Building
+Blocks, that will not be available on all machines. Code for these features
+are encapsulated in their own packages: \vtkmcuda{}, \vtkmopenmp{}, and
+\vtkmtbb{}. Within each one of these packages, there will
+be \textnamespace{cont} and \textnamespace{exec} namespaces as necessary to
+denote features that are accessible in only one environment or the
+other. \fix{I'm thinking of reversing this to put the device-specific
+  namespaces under \vtkmcont{}. We have yet to need a device-specific thing
+  in \vtkmexec{}.}
+
+VTK-m contains OpenGL interoperability \index{OpenGL}
+\index{interoperability} that allows data generated with VTK-m to be
+efficiently transferred to OpenGL objects. This feature is encapsulated in
+the \vtkmopengl{} package.
+
+Figure~\ref{fig:Packages} provides a diagram of the VTK-m package hierarchy.
+
+\begin{figure}
+  \centering
+  %% \begin{itemizetight}
+  %% \item \textnamespace{vtkm}
+  %%   \begin{itemizetight}
+  %%   \item \textnamespace{cont}
+  %%   \item \textnamespace{exec}
+  %%   \item \textnamespace{worklet}
+  %%   \item \textnamespace{math}
+  %%   \item \textnamespace{cuda}
+  %%     \begin{itemizetight}
+  %%     \item \textnamespace{cont}
+  %%     \end{itemizetight}
+  %%   \item \textnamespace{openmp}
+  %%     \begin{itemizetight}
+  %%     \item \textnamespace{cont}
+  %%     \end{itemizetight}
+  %%   \item \textnamespace{tbb}
+  %%     \begin{itemizetight}
+  %%     \item \textnamespace{cont}
+  %%     \end{itemizetight}
+  %%   \item \textnamespace{opengl}
+  %%   \end{itemizetight}
+  %% \end{itemizetight}
+  %\includegraphics{images/PackageHierarchy}
+  \fix{Make a graphic of the package hierarchy.}
+  \caption{VTK-m package hierarchy.}
+  \label{fig:Packages}
+\end{figure}
+
+By convention all classes will be defined in a file with the same name as
+the class name (with a \textfilename{.h} extension) located in a directory
+corresponding to the package name. For example, the \vtkmcont{ArrayHandle}
+class is found in the \vtkmheader{vtkm/cont}{ArrayHandle.h} header. There
+are, however, exceptions to this rule. Some smaller classes and types are
+grouped together for convenience. These exceptions will be noted as
+necessary.
+
+Within each namespace there may also
+be \textnamespace{internal}\indexnamespaceone{internal}
+and \textnamespace{detail}\indexnamespaceone{detail}
+sub-namespaces. The \textnamespace{internal} namespaces contain features
+that are used internally and may change without
+notice. The \textnamespace{detail} namespaces contain features that are
+used by a particular class but must be declared outside of that
+class. Users should generally ignore classes in these namespaces.
+
+\index{packages|)}
+
+
+\section{\fix{Remaining Sections}}

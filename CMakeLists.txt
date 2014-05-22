@@ -12,6 +12,7 @@ set(images
 
 set(input_docs
   Introduction.tex
+  BasicProvisions.tex
   Distribution.tex
   )
 

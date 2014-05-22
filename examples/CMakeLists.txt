@@ -1,0 +1,24 @@
+
+set(example_src
+  ExportMacro.cxx
+  )
+
+# Set up compiling and testing of examples.
+if (BUILD_EXAMPLES)
+  find_package(VTKm REQUIRED)
+
+  # This should later be encapsulated in VTKmUseSerial
+  find_package(BoostHeaders REQUIRED)
+  include_directories(${Boost_INCLUDE_DIRS} ${VTKm_INCLUDE_DIRS})
+
+  set(test_prog ExampleTests)
+  create_test_sourcelist(test_src ${test_prog}.cxx ${example_src})
+  add_executable(${test_prog} ${test_src})
+
+  foreach (test ${example_src})
+    get_filename_component(tname ${test} NAME_WE)
+    add_test(NAME ${tname}
+      COMMAND ${test_prog} ${tname}
+      )
+  endforeach()
+endif()

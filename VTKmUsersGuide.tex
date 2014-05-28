@@ -317,10 +317,14 @@
   \index{#1}%
   \index{CMake configuration!#1}}
 
-\lstnewenvironment{vtkmexample}[2][-*-]{
-  \lstset{caption={#2}}
-  \ifthenelse{\equal{#1}{-*-}}{}{\lstset{label=#1}}
-}{
+%% \lstnewenvironment{vtkmexample}[2][-*-]{
+%%   \lstset{caption={#2}}
+%%   \ifthenelse{\equal{#1}{-*-}}{}{\lstset{label=#1}}
+%% }{
+%% }
+
+\newcommand*{\vtkmlisting}[3][]{
+  \lstinputlisting[language=VTKm, label=#1, caption={#2}]{examples/#3}
 }
 
 % Cite commands I use to abstract away the different ways to reference an

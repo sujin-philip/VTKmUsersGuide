@@ -1,5 +1,7 @@
 #include <vtkm/Types.h>
 
+#include <vtkm/testing/Testing.h>
+
 namespace {
 
 ////
@@ -15,9 +17,14 @@ ValueType Square(const ValueType &inValue)
 //// END-EXAMPLE ExportMacro.cxx
 ////
 
+void Test()
+{
+  VTKM_TEST_ASSERT(Square(2) == 4, "Square function doesn't square.");
+}
+
 } // anonymous namespace
 
 int ExportMacro(int, char *[])
 {
-  return !(Square(2) == 4);
+  return vtkm::testing::Testing::Run(Test);
 }

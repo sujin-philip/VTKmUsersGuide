@@ -3,7 +3,7 @@
 namespace {
 
 ////
-//// BEGIN-EXAMPLE ExportMacro
+//// BEGIN-EXAMPLE ExportMacro.cxx
 ////
 template<typename ValueType>
 VTKM_EXEC_CONT_EXPORT
@@ -12,7 +12,7 @@ ValueType Square(const ValueType &inValue)
   return inValue * inValue;
 }
 ////
-//// END-EXAMPLE ExportMacro
+//// END-EXAMPLE ExportMacro.cxx
 ////
 
 } // anonymous namespace

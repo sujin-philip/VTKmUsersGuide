@@ -25,5 +25,5 @@ endif()
 
 include(ExtractExample.cmake)
 
-add_example_targets(ExportMacro.cxx created_files)
+extract_examples(created_files ${example_src})
 add_custom_target(example-listings DEPENDS ${created_files})

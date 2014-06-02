@@ -56,7 +56,7 @@ function(extract_from_file extracted_files_var src_file)
     message(WARNING "Out file ${unended_file} from ${src_file} started but never ended.")
   endforeach()
 
-  if(example-paused)
+  if(example_paused)
     message(WARNING "Paused capture in ${src_file} never resumed.")
   endif()
 

@@ -1,5 +1,6 @@
 
 set(example_src
+  CoreDataTypes.cxx
   ExportMacro.cxx
   )
 

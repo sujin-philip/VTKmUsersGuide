@@ -168,4 +168,180 @@ worklet. Its primary reason for existing is to add a
 currently has no effect on any other compiler.
 
 
+\section{Core Data Types}
+\label{sec:CoreDataTypes}
+
+Except in rare circumstances where precision is not a concern, VTK-m does
+not directly use the core C types like \textcode{int}, \textcode{float},
+and \textcode{double}. Instead, VTK-m provides its own core types, which
+are declared in \vtkmheader{vtkm}{Types.h}.
+
+\subsection{Single Number Types}
+
+All floating point values should be declared as type \vtkm{Scalar}, and all
+integer values, generally used for indexing, should be declared as type
+\vtkm{Id}. The chief advantage of using these declared types rather than
+the core C types is that the precision can easily be changed. By default,
+both types are 32 bits wide. The CMake configuration options
+\cmakevar{VTKM\_USE\_DOUBLE\_PRECISION} and
+\cmakevar{VTKM\_USE\_64BIT\_IDS} can be used to change the \vtkm{Scalar}
+type and \vtkm{Id} type, respectively, to be 64 bits wide. The
+configuration can be overridden by defining the C macro
+\vtkmmacro{VTKM\_USE\_DOUBLE\_PRECISION} or
+\vtkmmacro{VTKM\_NO\_DOUBLE\_PRECISION} to force \vtkm{Scalar} to be either
+64 or 32 bits and defining the C macro \vtkmmacro{VTKM\_USE\_64BIT\_IDS} or
+\vtkmmacro{VTKM\_NO\_64BIT\_IDS} to force \vtkm{Id} to be either 64 or 32
+bits. These macros must be defined before any VTK-m header files are
+included to take effect. For convenience, you can include either
+\vtkmheader{vtkm/internal}{ConfigureFor32.h} or
+\vtkmheader{vtkm/internal}{ConfigureFor64.h} to force both \vtkm{Scalar}
+and \vtkm{Id} to be 32 or 64 bits. The reason VTK-m uses macros to
+determine these type widths rather than templates is to reduce the number
+of template parameters required in the already template-heavy VTK-m classes
+and functions.
+
+\subsection{Vector Types}
+
+Visualization algorithms also often require operations on short vectors.
+Arrays indexed in up to three dimensions are common. Data are often defined
+in 2-space and 3-space, and transformations are typically done in
+homogeneous coordinates of length 4. To simplify these types of operations,
+VTK-m provides several vector data types.
+
+The types \vtkm{Id2} and \vtkm{Id3} are couple and triple values of type
+\vtkm{Id}. The types \vtkm{Vector2}, \vtkm{Vector3}, and \vtkm{Vector4} are
+couple, triple, and quadruple values of type \vtkm{Scalar}. The elements of
+these vectors are accessed with the bracket operator, so they syntactically
+appear like short arrays. They additionally have a constant named
+\textidentifier{NUM\_COMPONENTS}\index{NUM\_COMPONENTS} to specify how many
+components are in the tuple.
+
+The default constructor of these vector types leaves the values
+uninitialized. All vectors have a constructor with one arguments that is
+used to initialize all components. All these vectors also have a
+constructor that allows you to set the individual components. Likewise,
+there are a set of \vtkm{make\_Id*} and \vtkm{make\_Vector*} functions that
+build initialized vector types. \fix{I'm starting to question why we have
+  make\_Vector* and make\_Id* when the constructors work just fine. The
+  real point of these make* functions is to return a templated type without
+  having to declare the template. But none of these methods are templated.}
+
+\vtkmlisting{Creating vector types.}{CreatingVectorTypes.cxx}
+
+The vector types all support component-wise arithmetic using the operators
+for plus (\textcode{+}), minus (\textcode{-}), multiply (\textcode{*}), and
+divide (\textcode{/}). They also support scalar to vector multiplication
+with the multiply operator. The comparison operators equal (\textcode{==})
+is true if every pair of corresponding components are true and not equal
+(\textcode{!=}) is true otherwise.  A special \vtkm{dot} function is
+overloaded to provide a dot product for every type of vector.
+
+\vtkmlisting{Vector operations.}{VectorOperations.cxx}
+
+\subsection{Tuple}
+
+VTK-m provides the templated class \vtkm{Tuple}\tparams{T,Size}, which is
+essentially a fixed length array of a given type. \vtkm{Tuple} objects
+behave just like the vector types previously described but with any type
+and length that you specify.
+
+\vtkmlisting{The tuple class.}{TupleClass.cxx}
+
+The same operators that work on the vector types work on \vtkm{Tuple} with
+the caveat that the operator must work on the component type of the
+tuple. For example, the multiply operator will work fine on objects of type
+\vtkm{Tuple}\tparams{char,3}, but the multiply operator will not work on objects
+of type \vtkm{Tuple}\tparams{std::string,3} because you cannot multiply
+objects of type \textcode{std::string}.
+
+A \vtkm{Tuple} of the appropriate type can be used interchangeably with a
+matching vector type. In fact, a vector type is really just a typedef over
+a \vtkm{Tuple}. This is convenient for a number of things including writing
+generic functions that work over all types.
+
+\vtkmlisting{Interchangeability of tuples and vector types.}{TuplesAndVectors.cxx}
+
+In addition to generalizing vector operations and making arbitrarily long
+vectors, \vtkm{Tuple} is useful for creating any sequence of homogeneous
+objects. Here is a simple example of using \vtkm{Tuple} to hold the state of
+a polygon.
+
+\vtkmlisting{Usage of a tuple.}{EquilateralTriangle.cxx}
+
+\subsection{Extents}
+
+\vtkm{Extent3} is a simple structure that holds the extent information for
+structured data (data defined on a regular grid). It contains two
+\vtkm{Id3} fields named \textcode{Min} and \textcode{Max} that define the
+minimum and maximum 3D index. \textcode{Min} and \textcode{Max} are
+\emph{inclusive} point indices.
+
+Although less used, there also exists \vtkm{Extent2}, which is the same as
+\vtkm{Extent3} except for structured grids with 2 topological
+dimensions. The two structures are exactly the same except that
+\vtkm{Extent2} uses \vtkm{Id2} objects for its \textcode{Min} and
+\textcode{Max} instead of \vtkm{Id3}. There is also a generic structure
+named \vtkm{Extent} that takes a single integer argument to make the
+structured extent for some arbitrary topological dimension.
+
+\vtkm{Extent3} and the other extent structures are defined in the
+\vtkmheader{vtkm}{Extent.h} header. This header also contains the following
+helper functions.
+
+\begin{description}
+\item[\vtkm{ExtentPointDimensions}] Takes an extent object as an argument
+  and returns a \vtkm{Id3} (or other appropriately sized tuple) giving the
+  number of points in each topological dimension.
+\item[\vtkm{ExtentCellDimensions}] Takes an extent object as an argument
+  and returns a \vtkm{Id3} (or other appropriately sized tuple) giving the
+  number of cells in each topological dimension. The number of cells is one
+  less than the number of points in each dimensions.
+\item[\vtkm{ExtentNumberOfPoints}] Takes an extent object as an argument
+  and returns the number of points in an associated structured mesh.
+\item[\vtkm{ExtentNumberOfCells}] Takes an extent object as an argument and
+  returns the number of cells in an associated structured mesh.
+\item[\vtkm{ExtentPointFlatIndexToTopologyIndex}] Elements in structured
+  grids have a single index with 0 being the entry at the minimum extent in
+  every direction and then increasing first in the $r$ direction, then the
+  $s$ direction, and then the $t$ direction. This function takes a flat
+  point index as its first argument and an extent as its second argument
+  and returns the ${r,s,t}$ topological coordinates in a \vtkm{Id3} (or
+  other appropriately sized tuple).
+\item[\vtkm{ExtentCellFlatIndexToTopologyIndex}] Takes a flat cell index as
+  its first argument and an extent as its second argument and returns the
+  ${r,s,t}$ topological coordinates in a \vtkm{Id3} (or other appropriately
+  sized tuple).
+\item[\vtkm{ExtentPointTopologyIndexToFlatIndex}] Takes topological point
+  coordinates as the first argument and an extent as the second argument
+  and returns the equivalent flat point index.
+\item[\vtkm{ExtentCellTopologyIndexToFlatIndex}] Takes topological cell
+  coordinates as the first argument and an extent as the second argument
+  and returns the equivalent flat cell index.
+\item[\vtkm{ExtentFirstPointOnCell}] Takes a flat cell index as its first
+  argument and returns the flat index to the first point incident on that
+  cell. This is a convenience function for some operations that relate
+  cells to points.
+\end{description}
+
+The following example demonstrates using a \vtkm{Extent3} and the
+supporting functions. Extents of different dimensions work
+corredspondingly.
+
+\vtkmlisting{Creating and using an \textidentifier{Extent3}.}{Extent3.cxx}
+
+\subsection{Pair}
+
+\fix{Pair not implemented yet. (Maybe it won't be.)}
+
+%% VTK-m defines a \vtkm{Pair}\tparams{T1,T2} templated object that
+%% behaves just like \textcode{std:\colonhyp{}pair} from the standard template
+%% library. The difference is that \vtkm{Pair} will work in both the execution
+%% and control environment, whereas the STL \textcode{std::pair} does not
+%% always work in the execution environment.
+
+%% The VTK-m version of \vtkm{Pair} supports the same types, fields, and
+%% operations as the STL version. VTK-m also provides a \vtkm{make\_Pair}
+%% function for convenience.
+
+
 \section{\fix{Remaining Sections}}

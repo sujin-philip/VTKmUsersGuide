@@ -2,6 +2,7 @@
 set(example_src
   CoreDataTypes.cxx
   ExportMacro.cxx
+  Traits.cxx
   )
 
 # Set up compiling and testing of examples.

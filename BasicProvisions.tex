@@ -343,5 +343,131 @@ corredspondingly.
 %% operations as the STL version. VTK-m also provides a \vtkm{make\_Pair}
 %% function for convenience.
 
+\section{Traits}
+\label{sec:Traits}
 
-\section{\fix{Remaining Sections}}
+\index{traits|(}
+
+When using templated types, it is often necessary to get information about
+the type or specialize code based on general properties of the type. VTK-m
+uses traits classes to publish and retrieve information about types. A
+traits class is simply a templated structure that provides typedefs for
+tag\index{tag} structures, empty types used for identification. The traits
+classes might also contain constant numbers and helpful static
+functions. See Scott Mayers' book {\it Effective C++ Third Edition} for a
+description of traits classes and their uses.
+
+\subsection{Type Traits}
+
+The \vtkm{TypeTraits}\tparams{T} templated class provides basic information
+about a core type. These type traits are available for all the basic C++
+types as well as the core VTK-m types described in
+Section~\ref{sec:CoreDataTypes}. \vtkm{TypeTraits} contains the following
+elements.
+
+\begin{description}
+\item[\textidentifier{NumericTag}] \index{NumericTag} This type is set to
+  either \vtkm{TypeTraitsRealTag} or \vtkm{TypeTraitsIntegerTag} to signal
+  that the type represents either floating point numbers or integers.
+\item[\textidentifier{DimensionalityTag}] \index{DimensionalityTag} This
+  type is set to either \vtkm{TypeTraitsScalarTag} or
+  \vtkm{TypeTraitsVectorTag} to signal that the type represents either a
+  single scalar value or a tuple of values.
+\end{description}
+
+The definition of \vtkm{TypeTraits} for \vtkm{Scalar} could like something
+like this.
+\begin{vtkmexample}{Definition of \protect \vtkm{TypeTraits}\tparams{\protect \vtkm{Scalar}}.}
+namespace vtkm {
+
+template<>
+struct TypeTraits<vtkm::Scalar>
+{
+  typedef vtkm::TypeTraitsRealTag NumericTag;
+  typedef vtkm::TypeTraitsScalarTag DimensionalityTag;
+};
+
+}
+\end{vtkmexample}
+
+Here is a simple example of using \vtkm{TypeTraits} to implement a generic
+function that behaves like the remainder operator (\textcode{\%}) for all
+types including floating points and vectors.
+
+\fix{The following example uses the POSIX math floor function. It should be
+  replaced with the VTK-m version of floor when available.}
+
+\vtkmlisting[ex:TypeTraits]{Using \textidentifier{TypeTraits} for a generic remainder.}{TypeTraits.cxx}
+
+
+\subsection{Vector Traits}
+
+The \vtkm{VectorTraits}\tparams{T} templated class provides information and
+accessors to vector and tuple types. It contains the following elements.
+
+\begin{description}
+\item[\textidentifier{ComponentType}] \index{ComponentType} This type is
+  set to the type for each component in the vector. For example, a
+  \vtkm{Vector3} has \textidentifier{ComponentType} defined as
+  \vtkm{Scalar}.
+\item[\textidentifier{NUM\_COMPONENTS}] \index{NUM\_COMPONENTS} An integer
+  specifying how many components are contained in the vector.
+\item[\textidentifier{HasMultipleComponents}] \index{HasMultipleComponents}
+  This type is set to either \vtkm{VectorTraitsTagSingleComponent} if the
+  vector length is size 1 or \vtkm{VectorTraitsTagMultipleComponents}
+  otherwise. This tag can be useful for creating specialized functions when
+  a vector is really just a scalar.
+\item[\textcode{GetComponent}] \index{GetComponent} A static method that
+  takes a vector and returns a particular component.
+\item[\textcode{SetComponent}] \index{SetComponent} A static method that
+  takes a vector and sets a particular component to a given value.
+\item[\textcode{ToTuple}] \index{ToTuple} A static method that converts a
+  vector of the given type to a \vtkm{Tuple}.
+\end{description}
+
+The definition of \vtkm{VectorTraits} for \vtkm{Id3} could like something
+like this.
+\begin{vtkmexample}{Definition of \protect \vtkm{VectorTraits}\tparams{\protect \vtkm{Id3}}.}
+namespace vtkm {
+
+template<>
+struct VectorTraits<vtkm::Id3>
+{
+  typedef vtkm::Id ComponentType;
+  static const int NUM_COMPONENTS = 3;
+  typedef VectorTraitsTagMultipleComponents HasMultipleComponents;
+
+  VTKM_EXEC_CONT_EXPORT
+  static vtkm::Id &GetComponent(vtkm::Id3 &vector, int component) {
+    return vector[component];
+  }
+
+  VTKM_EXEC_CONT_EXPORT
+  static void SetComponent(vtkm::Id3 &vector, int component, vtkm::Id value) {
+    vector[component] = value;
+  }
+
+  VTKM_EXEC_CONT_EXPORT
+  static vtkm::Tuple<vtkm::Id,3> ToTuple(const vtkm::Id3 &vector) {
+    return vector;
+  }
+};
+
+} // namespace vtkm
+\end{vtkmexample}
+
+The real power of vector traits is that they simplify creating generic
+operations on any type that can look like a vector. This includes
+operations on scalar values as if they were vectors of size one. The
+following code uses vector traits to simplify the implementation of less
+functors\index{less} that define an ordering that can be used for sorting
+and other operations.
+
+\vtkmlisting{Using \textidentifier{VectorTraits} for less functors.}{VectorTraits.cxx}
+
+\index{traits|)}
+
+
+\section{Template Lists}
+
+\fix{Write this.}

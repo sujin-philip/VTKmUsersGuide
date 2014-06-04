@@ -2,6 +2,7 @@
 set(example_src
   CoreDataTypes.cxx
   ExportMacro.cxx
+  ListTags.cxx
   Traits.cxx
   )
 

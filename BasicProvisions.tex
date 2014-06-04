@@ -354,7 +354,7 @@ uses traits classes to publish and retrieve information about types. A
 traits class is simply a templated structure that provides typedefs for
 tag\index{tag} structures, empty types used for identification. The traits
 classes might also contain constant numbers and helpful static
-functions. See Scott Mayers' book {\it Effective C++ Third Edition} for a
+functions. See {\it Effective C++ Third Edition} by Scott Mayers for a
 description of traits classes and their uses.
 
 \subsection{Type Traits}
@@ -468,6 +468,118 @@ and other operations.
 \index{traits|)}
 
 
-\section{Template Lists}
+\section{List Tags}
+\label{sec:ListTags}
+
+\index{tag|(}
+\index{list|(}
+
+\index{template metaprogramming}
+\index{metaprogramming}
+VTK-m internally uses template metaprogramming, which utilizes the C++
+template to run source-generating programs, to customize code to various
+data and compute platforms. One basic structure often uses with template
+metaprogramming is a list of class names (also sometimes called a tuple or
+vector, although both of those names have different meanings in VTK-m).
+
+Many VTK-m users only need predefined lists, such as the type lists
+specified in Section~\ref{sec:TypeLists} or the container lists specified
+in Section~\ref{sec:ContainerLists}. Those users can skip most of the
+details of this section. However, it is sometimes useful to modify lists,
+create new lists, or operate on lists, and these usages are documented
+here.
+
+VTK-m uses a tag-based mechanism for defining lists, which differs
+significantly from lists in many other template metaprogramming libraries
+such as with \textcode{boost:\colonhyp{}mpl:\colonhyp{}vector} or
+\textcode{boost:\colonhyp{}vector}. Rather than enumerating all list
+entries as template arguments, the list is referenced by a single tag class
+with a descriptive name. The intention is to make fully resolved types
+shorter and more readable. (Anyone experienced with template programming
+knows how insanely long and unreadable types can get in compiler errors and
+warnings.)
+
+\subsection{Building List Tags}
+\label{sec:BuildingListTags}
+
+List tags are constructed in VTK-m by defining a \textcode{struct} that
+publicly inherits from another list tags. The base list tags are defined in
+the \vtkmheader{vtkm}{ListTag.h} header.
+
+The most basic list is defined with \vtkm{ListTagEmpty}. This tag
+represents an empty list.
+
+\vtkm{ListTagBase}\tparams{T} represents a list of size one containing the
+class named in the template parameter. The tags
+\vtkm{ListTagBase2}\tparams{T1,T2}, \vtkm{ListTagBase3}\tparams{T1,T2,T3},
+and \vtkm{ListTagBase4}\tparams{T1,T2,T3,T4} provide convenient ways to
+define lists with up to 4 items.
+
+Finally, lists can be combined together with
+\vtkm{ListTagJoin}\tparams{ListTag1,ListTag2}, which concatinates two lists
+together.
+
+The following example demonstrates how to build list tags using these base
+lists classes. Note first that all the list tags are defined as
+\textcode{struct} rather than \textcode{class}. Although these are roughly
+synonymous in C++, \textcode{struct} inheritance is by default public, and
+public inheritance is important for the list tags to work. Note second that
+these tags are created by inheritance rather than using
+\textcode{typedef}. Although \textcode{typedef} will work, it will lead to
+much uglier type names defined by the compiler.
+
+\vtkmlisting{Creating list tags.}{BaseListTags.cxx}
+
+\subsection{Type Lists}
+\label{sec:TypeLists}
+
+One of the major use cases for template metaprogramming lists in VTK-m is
+to identify a set of potential data types for arrays. The
+\vtkmheader{vtkm}{TypeListTag.h} header contains predefined lists for known
+VTK-m types. Although technically all these lists are of C++ types, the
+types we refer to here are those data types stored in data arrays.
+
+There is a list tag for a list containing a single type for every data type
+defined by VTK-m. These tags are: \vtkm{TypeListTagId},
+\vtkm{TypeListTagId2}, \vtkm{TypeListTagId3}, \vtkm{TypeListTagScalar},
+\vtkm{TypeListTagVector2}, \vtkm{TypeListTagVector3}, and
+\vtkm{TypeListTagVector4}.
+
+\vtkm{TypeListTagAll} is a list tag containing all the basic types in
+VTK-m. It is a concatenation of all the types listed in the previous
+paragraph.
+
+\vtkm{TypeListTagIndex} is a list of all the types appropriate for
+indices. Specifically, it contains the types \vtkm{Id}, \vtkm{Id2},
+\vtkm{Id3}. \vtkm{TypeListTagReal} is a list of all the types for floating
+point numbers. Specifically, it contains the types \vtkm{Scalar},
+\vtkm{Vector2}, \vtkm{Vector3}, \vtkm{Vector4}.
+
+\vtkm{TypeListTagCommon} is a list of the most commonly used types across
+multiple domains. It contains the types \vtkm{Id}, \vtkm{Scalar},
+\vtkm{Vector3}.
+
+If these lists are not sufficient, it is possible to build new type lists
+using the existing type lists and the list bases from
+Section~\ref{sec:BuildingListTags} as demonstrated in the following
+example.
+
+\vtkmlisting[ex:CustomTypeLists]{Defining new type lists.}{CustomTypeLists.cxx}
+
+The \vtkmheader{vtkm}{TypeListTag.h} header also defines a macro named
+\vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} that defines a default list of
+types to use in classes like \vtkmcont{DynamicArrayHandle}. This list can
+be overridden by defining the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG}
+\emph{before} any VTK-m headers are included. If included after a VTK-m
+header, the list is not likely to take effect. Do not ignore compiler
+warnings about the macro being redefined, which you will not get if defined
+correctly. Example~\ref{ex:CustomTypeLists} also contains an example of
+overriding the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} macro.
+
+\subsection{Operating on Lists}
+\label{sec:OperatingOnLists}
 
 \fix{Write this.}
+
+\index{list|)}
+\index{tag|)}

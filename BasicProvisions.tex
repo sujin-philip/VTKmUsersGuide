@@ -568,18 +568,35 @@ example.
 
 The \vtkmheader{vtkm}{TypeListTag.h} header also defines a macro named
 \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} that defines a default list of
-types to use in classes like \vtkmcont{DynamicArrayHandle}. This list can
-be overridden by defining the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG}
-\emph{before} any VTK-m headers are included. If included after a VTK-m
-header, the list is not likely to take effect. Do not ignore compiler
-warnings about the macro being redefined, which you will not get if defined
+types to use in classes like \vtkmcont{DynamicArrayHandle}
+(Section~\ref{sec:DynamicArrayHandle}). This list can be overridden by
+defining the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} macro \emph{before}
+any VTK-m headers are included. If included after a VTK-m header, the list
+is not likely to take effect. Do not ignore compiler warnings about the
+macro being redefined, which you will not get if defined
 correctly. Example~\ref{ex:CustomTypeLists} also contains an example of
 overriding the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} macro.
 
 \subsection{Operating on Lists}
 \label{sec:OperatingOnLists}
 
-\fix{Write this.}
+VTK-m template metaprogramming lists are typically just passed to VTK-m
+methods that internally operate on the lists. Although not typically used
+outside of the VTK-m library, these operations are also available.
+
+The \vtkmheader{vtkm}{ListTag.h} header comes with a \vtkm{ListForEach}
+function that takes a functor object and a list tag. It then calls the
+functor object with the default object of each type in the list. This is
+most typically used with C++ run-time type information to convert a
+run-time polymorphic object to a statically typed (and possibly inlined)
+call.
+
+The following example shows a rudimentary version of coverting a
+dynamically-typed array to a statically-typed array similar to what is done
+in VTK-m classes like \vtkmcont{DynamicArrayHandle} (which is documented in
+Section~\ref{sec:DynamicArrayHandle}).
+
+\vtkmlisting{Converting dynamic types to static types with \textidentifier{ListForEach}.}{ListForEach.cxx}
 
 \index{list|)}
 \index{tag|)}

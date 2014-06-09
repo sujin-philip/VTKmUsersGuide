@@ -1,0 +1,2600 @@
+% -*- latex -*-
+
+\chapter{Control Environment}
+\label{chap:ControlEnvironment}
+
+\index{control~environment|(}
+
+The control environment is where code interfaces with applications and I/O
+devices. The associated API is designed for users that want to use VTK-m to
+analyze their data using provided or supplied worklets. Code for the
+control environment is designed to run on a single thread (or one single
+thread per process in an MPI job).
+
+Most users of VTK-m will have some interaction with the control
+environment, for you cannot define data structures or execute any
+algorithms without it.
+
+\section{Device Adapter Tag}
+\label{sec:DeviceAdapterTag}
+
+\index{device~adapter|(}
+
+VTK-m uses a feature called a device adapter to define what type of device
+will be used to run algorithms. The device adapter encapsulates the
+device-specific code required to port to various devices. More information
+on the function of the device adapter is given in
+Section~\ref{sec:DeviceIndependence}.
+% Link from original Dax document. Need to find a place for it.
+
+The device adapter is identified by a \keyterm{device adapter tag}.
+\index{device~adapter~tag} \index{tag!device~adapter} This tag, which is
+simply an empty struct type, is used as the template parameter for several
+classes in the VTK-m control environment and causes these classes to direct
+their work to a particular device.
+
+There are two ways to select a device adapter. The first is to make a
+global selection of a default device adapter. The second is to specify a
+specific device adapter as a template parameter.
+
+\subsection{Default Device Adapter}
+
+A default device adapter tag is specified in
+\vtkmheader{vtkm/cont}{DeviceAdapter.h} (although it can also by specified
+in many other VTK-m headers via header dependencies). If no other
+information is given, VTK-m attempts to choose a default device adapter
+that is a best fit for the system it is compiled on. VTK-m currently select
+the default device adapter with the following sequence of conditions.
+
+\fix{This is not currently the case in VTK-m, but should be once these
+  adapters are implemented.}
+\begin{itemize}
+\item \index{CUDA} If the source code is being compiled by CUDA, the CUDA
+  device is used.
+\item \index{OpenMP} If the CUDA compiler is not being used and the current
+  compiler supports OpenMP, then the OpenMP device is used.
+\item \index{Intel Threading Building Blocks} \index{TBB} If the compiler
+  supports neither CUDA nor OpenMP and VTK-m was configured to use Intel
+  Threading Building Blocks, then that device is used.
+\item \index{serial} If no parallel device adapters are found, then VTK-m
+  falls back to a serial device.
+\end{itemize}
+
+You can also set the default device adapter specifically by setting the
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} macro. This macro must be set
+\emph{before} including any VTK-m files. You can set
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} to any one of the following.
+
+\fix{Most of these are not currently implemented.}
+\begin{description}
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_SERIAL}] Performs all computation on
+  the same single thread as the control environment. This device is useful
+  for debugging. This device is always available.
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_CUDA}] Uses a CUDA capable GPU
+  device. For this device to work, VTK-m must be configured to use CUDA and
+  the code must be compiled by the CUDA \textfilename{nvcc} compiler.
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_OPENMP}] Uses OpenMP compiler
+  extensions to run algorithms on multiple threads. For this device to
+  work, VTK-m must be configured to use OpenMP and the code must be
+  compiled with a compiler that supports OpenMP pragmas.
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_TBB}] Uses the Intel Threading
+  Building Blocks library to run algorithms on multiple threads. For this
+  device to work, VTK-m must be configured to use TBB and the executable
+  must be linked to the TBB library.
+\end{description}
+
+These macros provide a useful mechanism for quickly reconfiguring code to
+run on different devices. The following example shows a typical block of
+code at the top of a source file that could be used for quick
+reconfigurations.
+
+\vtkmlisting{Macros to port VTK-m code among different devices}{DefaultDeviceAdapter.cxx}
+
+The default device adapter can always be overridden by specifying a device
+adapter tag, as described in the next section. There is actually one more
+internal default device adapter named
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_ERROR} that will cause a compile error if
+any component attempts to use the default device adapter. This feature is
+most often used in testing code to check when device adapters should be
+specified.
+
+\subsection{Specifying Device Adapter Tags}
+
+In addition to setting a global default device adapter, it is possible to
+explicitly set which device adapter to use in any feature provided by
+VTK-m. This is done by providing a device adapter tag as a template
+argument to VTK-m templated objects. The following device adapter tags are
+available in VTK-m.
+
+\index{device~adapter~tag|(}
+\index{tag!device~adapter|(}
+
+\fix{Most of these are not currently implemented. The directories may change.}
+\begin{description}
+\item[\vtkmcont{DeviceAdapterTagSerial}] \index{serial} Performs all
+  computation on the same single thread as the control environment. This
+  device is useful for debugging. This device is always available. This tag
+  is defined in \vtkmheader{vtkm/cont}{DeviceAdapterSerial.h}.
+\item[\vtkmcudacont{DeviceAdapterTagCuda}] \index{CUDA} Uses a CUDA capable
+  GPU device. For this device to work, VTK-m must be configured to use CUDA
+  and the code must be compiled by the CUDA \textfilename{nvcc}
+  compiler. This tag is defined in
+  \vtkmheader{vtkm/cuda/cont}{DeviceAdapterCuda.h}.
+\item[\vtkmopenmpcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
+  compiler extensions to run algorithms on multiple threads. For this
+  device to work, VTK-m must be configured to use OpenMP and the code must be
+  compiled with a compiler that supports OpenMP pragmas. This tag is
+  defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}.
+\item[\vtkmtbbcont{DeviceAdapterTagTBB}]
+  \index{Intel Threading Building Blocks} \index{TBB} Uses the Intel
+  Threading Building Blocks library to run algorithms on multiple
+  threads. For this device to work, VTK-m must be configured to use TBB and
+  the executable must be linked to the TBB library. This tag is defined in
+  \vtkmheader{vtkm/tbb/cont}{DeviceAdapterTBB.h}.
+\end{description}
+
+\fix{Add example. Not enough implemented to make a worthwhile example yet.}
+%% The following example invokes the elevation worklet much like shown in
+%% Example~\ref{ex:Elevation} on page~\pageref{ex:Elevation} but also
+%% specifies using the Intel Threading Building blocks device adapter.
+%% \index{Intel Threading Building Blocks} \index{TBB}
+%% In particular, consider the template parameter of the
+%% \daxcont{DispatcherMapField} class.
+%% \begin{daxexample}{Calling the Elevation worklet with a specific device adapter.}
+%% dax::worklet::Elevation elevation(dax::make_Vector3(-1.0, 0.0, 0.0),
+%%                                   dax::make_Vector3(1.0, 0.0, 0.0),
+%%                                   dax::make_Vector2(-1.0, 1.0));
+
+%% dax::cont::DispatcherMapField<dax::worklet::Elevation, dax::tbb::cont::DeviceAdapterTagTBB>
+%%     dispatcher(elevation);
+%% dispatcher.Invoke(grid.GetPointCoordinates(), outPointElevation);
+%% \end{daxexample}
+
+When structuring your code to always specify a particular device adapter,
+consider setting the default device adapter (with the
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} macro) to
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_ERROR}. This will cause the compiler to
+produce an error if any object is instantiated with the default device
+adapter, which checks to make sure the code properly specifies every device
+adapter parameter.
+
+VTK-m also defines a macro named
+\vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_TAG} that can be used in place
+of an explicit device adapter tag to use the default tag. This macro is
+used to create new templates that have template parameters for device
+adapters that can use the default. The following example has a (rather
+artificial) declaration of a helper class for executing the elevation
+worklet.
+
+\fix{Add example when worklets and dispatchers are implemented.}
+
+%% \begin{daxexample}{Declaring a template with a default device adapter.}
+%% template<typename DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+%% class MyElevationDispatcher
+%% {
+%% public:
+%%   void DoInvoke()
+%%   {
+%%     dax::cont::DispatcherMapField<dax::Worklet::Elevation,DeviceAdapter> dispatcher;
+%%     dispatcher.Invoke(this->Grid.GetPointCoordinates(), this->OutPointElevation);
+%% \end{daxexample}
+
+\index{tag!device~adapter|)}
+\index{device~adapter~tag|)}
+
+\index{device~adapter|)}
+
+%% \section{Array Handle}
+%% \label{sec:ArrayHandle}
+
+%% \index{array~handle|(}
+
+%% An \keyterm{array handle}, implemented with the \daxcont{ArrayHandle}
+%% class, manages an array of data that can be accessed or manipulated by Dax
+%% algorithms. It is typical to construct an array handle in the control
+%% environment to pass data to an algorithm running in the execution
+%% environment. It is also typical for an algorithm running in the execution
+%% environment to allocate and populate an array handle, which can then be
+%% read back in the control environment. It is also possible for an array
+%% handle to manage data created by one Dax algorithm and passed to another,
+%% remaining in the execution environment the whole time and never copied to
+%% the control environment.
+
+%% The array handle may have up to two copies of the array, one for the
+%% control environment and one for the execution environment. However,
+%% depending on the device and how the array is being used, the array handle
+%% will only have one copy when possible. Copies between the environments are
+%% implicit and lazy. They are copied only when an operation needs data in an
+%% environment where the data is not.
+
+%% \daxcont{ArrayHandle} behaves like a shared smart pointer in that when the
+%% C++ object is copied, each copy holds a reference to the same array. These
+%% copies are reference counted so that when all copies of the
+%% \daxcont{ArrayHandle} are destroyed, any allocated memory is released.
+
+%% \subsection{Creating Array Handles}
+
+%% \daxcont{ArrayHandle} is a templated class with three template
+%% parameters. The first template parameter is the only one required and
+%% specifies the base type of the entries in the array. The second template
+%% parameter specifies the container used when storing data in the control
+%% environment. Containers are discussed later in this section, and for now we
+%% will use the default value. The third template parameter is a device
+%% adapter tag that specifies what device is used in the execution
+%% environment. Device adapter tags are described in
+%% Section~\ref{sec:DeviceAdapterTag}. Most of the examples here will use the
+%% default device adapter.
+
+%% \begin{daxexample}{Declaration of the \protect\daxcont{ArrayHandle} templated class.}
+%% template<
+%%     typename T,
+%%     typename ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+%%     typename DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+%% class ArrayHandle;
+%% \end{daxexample}
+
+%% There are multiple ways to create and populate an array handle. The default
+%% \daxcont{ArrayHandle} constructor will create an empty array with nothing
+%% allocated in either the control or execution environment. This is
+%% convenient for creating arrays used as the output for algorithms.
+
+%% \begin{daxexample}{Creating an \textidentifier{ArrayHandle} for output data.}
+%% dax::cont::ArrayHandle<dax::Scalar> outputArray;
+%% \end{daxexample}
+
+%% Constructing an \daxcont{ArrayHandle} that points to a provided C array or
+%% \textcode{std::vector} is straightforward with the
+%% \daxcont{make\_ArrayHandle} functions. These functions will make an array
+%% handle that points to the array data that you provide.
+
+%% \begin{daxexample}{Creating an \textidentifier{ArrayHandle} that points to a provided C array.}
+%% dax::Scalar dataBuffer[50];
+%% // Populate dataBuffer with meaningful data. Perhaps read data from a file.
+
+%% dax::cont::ArrayHandle<dax::Scalar> inputArray = dax::cont::make_ArrayHandle(dataBuffer,50);
+%% \end{daxexample}
+
+%% \begin{daxexample}[ex:ArrayHandleFromVector]{Creating an \textidentifier{ArrayHandle} that points to a provided \textcode{std::vector}.}
+%% std::vector<dax::Scalar> dataBuffer;
+%% // Populate dataBuffer with meaningful data. Perhaps read data from a file.
+
+%% dax::cont::ArrayHandle<dax::Scalar> inputArray = dax::cont::make_ArrayHandle(dataBuffer);
+%% \end{daxexample}
+
+%% \emph{Be aware} that \daxcont{make\_ArrayHandle} makes a shallow pointer
+%% copy. This means that if you change or delete the data provided, the
+%% internal state of \daxcont{ArrayHandle} becomes invalid and undefined
+%% behavior can ensue. The most common manifestation of this error happens
+%% when a \textcode{std::vector} goes out of scope. This subtle interaction
+%% will cause the \daxcont{ArrayHandle} to point to an unallocated portion of
+%% the memory heap. For example, if the code in
+%% Example~\ref{ex:ArrayHandleFromVector} where to be placed within a callable
+%% function or method, it could cause the \daxcont{ArrayHandle} to become
+%% invalid.
+
+%% \begin{daxexample}{Invalidating an \textidentifier{ArrayHandle} by letting the source \textcode{std::vector} leave scope.}
+%% DAX_CONT_EXPORT
+%% dax::cont::ArrayHandle<dax::Scalar> BadDataLoad()
+%% {
+%%   std::vector<dax::Scalar> dataBuffer;
+%%   // Populate dataBuffer with meaningful data. Perhaps read data from a file.
+
+%%   dax::cont::ArrayHandle<dax::Scalar> inputArray = dax::cont::make_ArrayHandle(dataBuffer);
+
+%%   return inputArray;
+%%   // THIS IS WRONG! At this point dataBuffer goes out of scope and deletes its memory.
+%%   // However, inputArray has a pointer to that memory, which becomes an invalid pointer
+%%   // in the returned object. Bad things will happen when the ArrayHandle is used.
+%% }
+
+%% DAX_CONT_EXPORT
+%% dax::cont::ArrayHandle<dax::Scalar> SafeDataLoad()
+%% {
+%%   std::vector<dax::Scalar> dataBuffer;
+%%   // Populate dataBuffer with meaningful data. Perhaps read data from a file.
+
+%%   dax::cont::ArrayHandle<dax::Scalar> tmpArray = dax::cont::make_ArrayHandle(dataBuffer);
+
+%%   // This copies the data from one ArrayHandle to another (in the execution environment).
+%%   // Although it is an extraneous copy, it is usually pretty fast on a parallel device.
+%%   // Another option is to make sure that the buffer in the std::vector never goes out
+%%   // of scope before all the ArrayHandle references, but this extra step allows the
+%%   // ArrayHandle to manage its own memory and ensure everything is valid.
+%%   dax::cont::ArrayHandle<dax::Scalar> inputArray;
+%%   dax::cont::DeviceAdapterAlgorithm<DAX_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
+%%       tmpArray, inputArray);
+
+%%   return inputArray;
+%%   // This is safe.
+%% }
+%% \end{daxexample}
+
+%% \subsection{Retrieving Data from an Array Handle}
+
+%% An array handle does not provide direct access to its underlying data by
+%% design. The most straightforward way to get data from an array handle is to
+%% use the \textcode{CopyInto} method. \textcode{CopyInto} takes an
+%% STL-compatible forward iterator and copies all the data into that
+%% iterator. It is assumed that the iterator can be advanced enough to copy
+%% all data into the target array. The number of entries in the array handle
+%% can be retrieved with the \textcode{GetNumberOfValues} method, and the
+%% target array should be at least that big.
+
+%% \begin{daxexample}[ex:ArrayHandle::CopyInto]{Retrieving \textidentifier{ArrayHandle} data with \textcode{CopyInto}.}
+%% dax::cont::ArrayHandle<dax::Scalar> outArray;
+%% // Do something that fills outArray
+
+%% std::vector<dax::Scalar> resultBuffer(outArray.GetNumberOfValues());
+%% outArray.CopyInto(resultBuffer.begin());
+%% \end{daxexample}
+
+%% There are two other ways data can be retrieved from an array handle. The
+%% first is to request an array portal to the data and the second is to define
+%% a new container that points to a particular data structure. Both of these
+%% methods are discussed in more detail in later sections.
+
+%% \subsection{Array Portals}
+%% \label{sec:ArrayPortals}
+
+%% \index{array~portal|(}
+
+%% An array handle defines auxiliary structures called \keyterm{array portals}
+%% that provide direct access into its data. An array portal is a simple
+%% object that is somewhat functionally equivalent to an STL-type iterator, but
+%% with a much simpler interface. Array portals can be read-only (const) or
+%% read-write and they can be accessible from either the control environment
+%% or the execution environment. All these variants have similar interfaces
+%% although some features that are not applicable can be left out.
+
+%% An array portal object contains each of the following:
+%% \begin{description}
+%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+%%   in the array.
+%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
+%%   entries in the array.
+%% \item[\textcode{Get}] A method that returns the value at a given index.
+%% \item[\textcode{Set}] A method that changes the value at a given
+%%   index. This method does not need to exist for read-only (const) array
+%%   portals.
+%% \item[\textcode{IteratorType}] A \textcode{typedef} of an STL-compatible
+%%   random-access iterator that can be used for alternative access. This
+%%   method does not need to exist in the execution environment.
+%% \item[\textcode{GetIteratorBegin}] A method that returns an STL-compatible
+%%   iterator of type \textcode{IteratorType} that points to the beginning of
+%%   the array. This method does not need exist in the execution environment.
+%% \item[\textcode{GetIteratorEnd}] A method that returns an STL-compatible
+%%   iterator of type \textcode{IteratorType} that points to the beginning of
+%%   the array. This method does not need to exist in the execution
+%%   environment.
+%% \end{description}
+
+%% The following code example defines an array portal for a simple C array of
+%% scalar values. This definition has no practical value (it is covered by the
+%% more general \daxcontinternal{ArrayPortalFromIterators}), but demonstrates
+%% the function of each component.
+
+%% \begin{daxexample}{A simple array portal implementation.}
+%% #include <dax/Types.h>
+
+%% class SimpleScalarArrayPortal
+%% {
+%% public:
+%%   typedef dax::Scalar ValueType;
+
+%%   // There is no specification for creating array portals, but they generally
+%%   // need a constructor like this to be practical.
+%%   DAX_EXEC_CONT_EXPORT
+%%   SimpleScalarArrayPortal(ValueType *array, dax::Id numberOfValues)
+%%     : Array(array), NumberOfValues(numberOfValues) {  }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   SimpleScalarArrayPortal() : Array(NULL), NumberOfValues(0) {  }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const { return this->GetNumberOfValues; }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ValueType Get(dax::Id index) const { return this->Array[index]; }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   void Set(dax::Id index, ValueType value) const { this->Array[index] = value; }
+
+%%   typename ValueType *IteratorType;
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorBegin() const { return this->Array; }
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorEnd() const { return this->Array + this->GetNumberOfValues(); }
+
+%% private:
+%%   ValueType *Array;
+%%   dax::Id NumberOfValues;
+%% };
+%% \end{daxexample}
+
+%% \daxcont{ArrayHandle} contains four \textcode{typedef}s for array portal
+%% types that are capable of interfacing with the underlying data: two for use
+%% in the control environment and two for use in the execution
+%% environment. The two used in the control environment are
+%% \textcode{PortalControl} and \textcode{PortalConstControl}, which define
+%% read-write and read-only (const) array portals, respectively. Likewise, the
+%% two used in the execution environment are \textcode{PortalExecution} and
+%% \textcode{PortalConstExecution}.
+
+%% Because \daxcont{ArrayHandle} is an control environment object, it provides
+%% the methods \textcode{GetPortalControl} and
+%% \textcode{GetPortalConstControl} to get the associated array portal
+%% objects. These methods also have the side effect of refreshing the control
+%% environment copy of the data, so this can be a way of synchronizing the
+%% data. Be aware that when an \daxcont{ArrayHandle} is created with a pointer
+%% or \textcode{std::vector}, it is put in a read-only mode, and
+%% \textcode{GetPortalControl} can fail (although
+%% \textcode{GetPortalConstControl} will still work). Also be aware that
+%% calling \textcode{GetPortalControl} will invalidate any copy in the
+%% execution environment, meaning that any subsequent use will cause the data
+%% to be copied back again.
+
+%% In reality, \textcode{GetPortalControl} and
+%% \textcode{GetPortalConstControl} are only really used for testing purposes
+%% or quick access to a particular value. Modifications to an array are better
+%% performed in the execution environment. Data is best retrieved by providing
+%% a container (described later) that deposits the data directly into your own
+%% structures or using the \textcode{CopyInto} method (described
+%% earlier). Thus, the following example is a bit artificial.
+
+%% \begin{daxexample}{Using portals from an \textidentifier{ArrayHandle}.}
+%% #include <dax/cont/ArrayHandle.h>
+
+%% #include <algorithm>
+
+%% template<typename T>
+%% void SortCheckArrayHandle(dax::cont::ArrayHandle<T> arrayHandle)
+%% {
+%%   typedef typename dax::cont::ArrayHandle<T>::PortalControl PortalType;
+%%   typedef typename dax::cont::ArrayHandle<T>::PortalConstControl PortalConstType;
+
+%%   PortalType readwritePortal = arrayHandle.GetPortalControl();
+%%   // This is actually pretty dumb. Sorting would be generally faster in parallel in
+%%   // the execution environment using the device adapter algorithms.
+%%   dax::sort(readwritePortal.GetIteratorBegin(), readwritePortal.GetIteratorEnd());
+
+%%   PortalConstType readPortal = arrayHandle.GetPortalConstControl();
+%%   for (dax::Id index = 1; index < readPortal.GetNumberOfValues(); index++)
+%%     {
+%%     if (readPortal.Get(index-1) > readPortal.Get(index))
+%%       {
+%%       std::cout << "Sorting is wrong!" << std::endl;
+%%       break;
+%%       }
+%%     }
+%% }
+%% \end{daxexample}
+
+%% \index{array~portal|)}
+
+%% \subsection{Interface to Execution Environment}
+%% \label{sec:ArrayHandleInterfaceToExecutionEnvironment}
+
+%% One of the main functions of the array handle is to allow an array to be
+%% defined in the control environment and then be used in the execution
+%% environment. When using an \textidentifier{ArrayHandle} with worklets, this
+%% transition is handled automatically. However, it is also possible to invoke
+%% the transfer for use in your own scheduled algorithms.
+
+%% The \textidentifier{ArrayHandle} class manages the transition from control
+%% to execution with a set of three methods that allocate, transfer, and ready
+%% the data in one operation. These methods all start with the prefix
+%% \textcode{Prepare} and are meant to be called before some operation happens
+%% in the execution environment. The methods are as follows.
+
+%% \begin{description}
+%% \item[\textcode{PrepareForInput}] \index{PrepareForInput} Copies data from
+%%   the control to the execution environment, if necessary, and readies the
+%%   data for read-only access.
+%% \item[\textcode{PrepareForInPlace}] \index{PrepareForInPlace} Copies the
+%%   data from the control to the execution environment, if necessary, and
+%%   readies the data for both reading and writing.
+%% \item[\textcode{PrepareForOutput}] \index{PrepareForOutput} Allocates space
+%%   (the size of which is given as a parameter) in the execution environment,
+%%   if necessary, and readies the space for writing.
+%% \end{description}
+
+%% Each of these methods returns an array portal that can be used in the
+%% execution environment. \textcode{PrepareForInput} returns an object of type
+%% \textcode{PortalConstExecution} (defined in the
+%% \textidentifier{ArrayHandle}) whereas \textcode{PrepareForInPlace} and
+%% \textcode{PrepareForOutput} each return an object of type
+%% \textcode{PortalExecution}.
+
+%% Although these \textcode{Prepare} methods are called in the control
+%% environment, the returned array portal can only be used in the execution
+%% environment. Thus, the portal must be passed to an invocation of the
+%% execution environment. Typically this is done with a call to
+%% \textcode{Schedule} in \daxcont{DeviceAdapterAlgorithm}. This and other
+%% device adapter algorithms are described in detail in
+%% Section~\ref{sec:DeviceAdapterAlgorithms}, but here is a quick example of
+%% using these execution array portals in a simple functor.
+
+%% \begin{daxexample}{Using an execution array portal from an \textidentifier{ArrayHandle}.}
+%% #include <dax/cont/ArrayHandle.h>
+%% #include <dax/cont/DeviceAdapter.h>
+
+%% #include <dax/exec/internal/WorkletBase>
+
+%% template<typename InputPortalType, typename OutputPortalType>
+%% struct DoubleFunctor
+%% {
+%%   DAX_CONT_EXPORT
+%%   DoubleFunctor(InputPortalType inputPortal, OutputPortalType outputPortal)
+%%     : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
+
+%%   DAX_EXEC_EXPORT
+%%   void operator()(dax::Id index) const {
+%%     this->OutputPortal.Set(index, 2*this->InputPortal.Get(index));
+%%   }
+
+%%   InputPortalType InputPortal;
+%%   OutputPortalType OutputPortal;
+%% };
+
+%% template<typename InputArrayType, typename OutputArrayType>
+%% DAX_CONT_EXPORT
+%% void DoubleArray(InputArrayType inputArray, OutputArrayType outputArray)
+%% {
+%%   dax::Id numValues = inputArray.GetNumberOfValues();
+
+%%   DoubleFunctor<typename InputArrayType::PortalConstExecution,
+%%                 typename OutputArrayType::PortalExecution>
+%%     functor(inputArray.PrepareForInput(),
+%%             outputArray.PrepareForOutput());
+
+%%   typedef typename InputArrayType::DeviceAdapterTag DeviceAdapter;
+
+%%   dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::Schedule(functor, numValues);
+%% }
+%% \end{daxexample}
+
+%% It should be noted that the array handle will expect any use of the
+%% execution array portal to finish before the next call to any
+%% \textidentifier{ArrayHandle} method. Since these \textcode{Prepare} methods
+%% are typically used in the process of scheduling an algorithm in the
+%% execution environment, this is seldom an issue.
+
+%% \subsection{Basic Container}
+
+%% \index{array~handle!container|(}
+%% \index{container|(}
+
+%% As previously discussed, \daxcont{ArrayHandle} takes three template
+%% arguments.
+%% \begin{daxexample}{Declaration of the \protect\daxcont{ArrayHandle} templated class (again).}
+%% template<
+%%     typename T,
+%%     typename ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+%%     typename DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+%% class ArrayHandle;
+%% \end{daxexample}
+%% The first argument is the only one required and has been demonstrated
+%% multiple times before. The third (optional) argument specifies the device
+%% adapter, as described in detail in Section~\ref{sec:DeviceAdapterTag}. The
+%% second (optional) argument specifies something called a container, which
+%% provides the interface between the generic \daxcont{ArrayHandle} class and
+%% a specific storage mechanism in the control environment.
+
+%% In this and the following sections we describe these control environment
+%% containers. A default container is specified in much the same way as a
+%% default device adapter is defined. It is done by setting the
+%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL} macro. This macro must be set
+%% before including any Dax header files. Currently the only practical
+%% container provided by the Dax toolkit is the basic container, which simply
+%% allocates a continuous section of memory of the given base type. This
+%% container can be explicitly specified by setting
+%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL} to
+%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL\_BASIC} although the basic
+%% container will also be used as the default if no other container is
+%% specified (which is typical).
+
+%% The default array container can always be overridden by specifying an array
+%% container tag. The tag for the basic container is located in the
+%% \daxheader{dax/cont}{ArrayContainerControl.h} header file and is named
+%% \daxcont{ArrayContainerControlTagBasic}. Here is an example of specifying
+%% the container type when declaring an array handle.
+
+%% \begin{daxexample}{Specifying the container type for an \textidentifier{ArrayHandle.}}
+%% dax::cont::ArrayHandle<
+%%   dax::Scalar,
+%%   dax::cont::ArrayContainerControlTagBasic> arrayHandle1;
+%% dax::cont::ArrayHandle<
+%%   dax::Scalar,
+%%   dax::cont::ArrayContainerControlTagBasic,
+%%   dax::cont::DeviceAdapterTagSerial> arrayHandle2;
+%% \end{daxexample}
+
+%% The Dax toolkit also defines a macro named
+%% \daxmacro{DAX\_DEFAULT\_ARRAY\_CONTAINER\_CONTROL\_TAG} that can be used in
+%% place of an explicit array container tag to use the default tag. This macro
+%% is used to create new templates that have template parameters for array
+%% containers that can use the default or to create array handles with the
+%% default container but a specific device adapter.
+
+%% \begin{daxexample}{An \textidentifier{ArrayHandle} with default container and explicit device.}
+%% dax::cont::ArrayHandle<
+%%   dax::Scalar,
+%%   DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+%%   dax::cont::DeviceAdapterTagSerial> arrayHandle;
+%% \end{daxexample}
+
+
+%% \subsection{Adapting Data Structures}
+
+%% \index{array~handle!adapting|(}
+%% \index{container!adapting|(}
+
+%% The intention of the container parameter for \daxcont{ArrayHandle} is to
+%% implement the strategy design pattern\lcite{GoF} to enable the Dax toolkit
+%% to interface directly with the data of any third party code source. The Dax
+%% toolkit is designed to work with data originating in other libraries or
+%% applications. By creating a new type of array container, the entire Dax
+%% toolkit can be adapted to new kinds of data structures.
+
+%% In this section we demonstrate the steps required to adapt the array handle
+%% to a data structure provided by a third party. For the purposes of the
+%% example, let us say that some fictitious library named ``foo'' has a simple
+%% structure named \textcode{FooFields} that holds the field values for a
+%% particular part of a mesh, and then maintain the field values for all
+%% locations in a mesh in a \textcode{std::deque} object.
+
+%% \begin{daxexample}{Fictitious field storage used in custom array container examples.}
+%% #include <deque>
+
+%% struct FooFields {
+%%   float Pressure;
+%%   float Temperature;
+%%   float Velocity[3];
+%%   // And so on...
+%% };
+
+%% typedef std::deque<FooFields> FooFieldsDeque;
+%% \end{daxexample}
+
+%% The Dax toolkit expects separate arrays for each of the fields rather than
+%% a single array containing a structure holding all of the fields. However,
+%% rather than copy each field to its own array, we can create a container for
+%% each field that points directly to the data in a \textcode{FooFieldsDeque}
+%% object.
+
+%% The first step in creating an adapter container is to create a control
+%% environment array portal to the data. This is described in more detail
+%% starting on page~\pageref{sec:ArrayPortals} and is generally
+%% straightforward for simple containers like this. Here is an example
+%% implementation for our \textcode{FooFieldsDeque} container.
+
+%% \begin{daxexample}[ex:ArrayPortalAdapter]{Array portal to adapt a third-party container to Dax.}
+%% #include <dax/cont/Assert.h>
+%% #include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+%% // DequeType expected to be FooFieldsDeque or const FooFieldsDeque
+%% template<typename DequeType>
+%% class ArrayPortalFooPressure
+%% {
+%% public:
+%%   typedef dax::Scalar ValueType;
+
+%%   DAX_CONT_EXPORT
+%%   ArrayPortalFooPressure(DequeType *container) : Container(container) {  }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const {
+%%     return static_cast<dax::Id>(this->Container->size());
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Scalar Get(dax::Id index) const {
+%%     DAX_ASSERT_CONT(index >= 0);
+%%     DAX_ASSERT_CONT(index < this->GetNumberOfValues());
+%%     return static_cast<dax::Scalar>((*this->Container)[index].Pressure);
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Scalar Set(dax::Id index, dax::Scalar value) const {
+%%     DAX_ASSERT_CONT(index >= 0);
+%%     DAX_ASSERT_CONT(index < this->GetNumberOfValues());
+%%     (*this->Container)[index].Pressure = value;
+%%   }
+
+%%   typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalFooPressure> IteratorType;
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorBegin() const {
+%%     return IteratorType(*this, 0);
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorEnd() const {
+%%     return IteratorType(*this, this->GetNumberOfValues());
+%%   }
+
+%% private:
+%%   DequeType *Container;
+%% };
+%% \end{daxexample}
+
+%% The next step in creating an adapter container is to define a tag for the
+%% adapter. We shall call ours
+%% \textcode{ArrayContainerControlTagFooPressure}. Then, we need to create a
+%% specialization of the templated \daxcontinternal{ArrayContainerControl}
+%% class. The \textidentifier{ArrayHandle} will instantiate an object using
+%% the array container tag we give it, and we define our own specialization so
+%% that it runs our interface into the code.
+
+%% \daxcontinternal{ArrayContainerControl} has two template arguments: the
+%% base type of the array and the array container tag.
+
+%% \begin{daxexample}{Prototype for \protect\daxcontinternal{ArrayContainerControl}.}
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<typename T, typename ArrayContainerControlTag>
+%% class ArrayContainerControl;
+
+%% }
+%% }
+%% }
+%% \end{daxexample}
+
+%% The \daxcontinternal{ArrayContainerControl} must define the following items.
+%% \begin{description}
+%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+%%   in the array. This is the same type as the first template argument.
+%% \item[\textcode{PortalType}] The type of an array portal that can be used
+%%   to access the underlying data. This array portal needs to work only in
+%%   the control environment.
+%% \item[\textcode{PortalConstType}] A read-only (const) version of
+%%   \textcode{PortalType}.
+%% \item[\textcode{GetPortal}] A method that returns an array portal of type
+%%   \textcode{PortalType} that can be used to access the data manged in this
+%%   container.
+%% \item[\textcode{GetPortalConst}] Same as \textcode{GetPortal} except it
+%%   returns a read-only (const) array portal.
+%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
+%%   values the container is currently allocated for.
+%% \item[\textcode{Allocate}] A method that allocates the array to a given
+%%   size. An values stored in the previous allocation may be destroyed.
+%% \item[\textcode{Shrink}] A method like \textcode{Allocate} with two
+%%   differences. First, the size of the allocation must be smaller than the
+%%   existing allocation when the method is called. Second, any values
+%%   currently stored in the array will be valid after the array is
+%%   resized. This constrained form of allocation allows the array to be
+%%   resized and values valid without ever having to copy data.
+%% \item[\textcode{ReleaseResources}] A method that instructs the container to
+%%   free all of its memory.
+%% \end{description}
+
+%% The following provides an example implementation of our adapter to a
+%% \textcode{FooFieldsDeque}. It relies on the
+%% \textcode{ArrayPortalFooPressure} provided in
+%% Example~\ref{ex:ArrayPortalAdapter}.
+
+%% \begin{daxexample}{Array container to adapt a third-party container to Dax.}
+%% // Includes or definition for ArrayPortalFooPressure
+
+%% struct ArrayContainerControlTagFooPressure {  };
+
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<>
+%% class ArrayContainerControl<dax::Scalar, ArrayContainerControlTagFooPressure>
+%% {
+%% public:
+%%   typedef dax::Scalar ValueType;
+
+%%   typedef ArrayPortalFooPressure<FooFieldsDeque> PortalType;
+%%   typedef ArrayPortalFooPressure<const FooFieldsDeque> PortalConstType;
+
+%%   DAX_CONT_EXPORT
+%%   ArrayContainerControl(FooFieldsDeque *container) : Container(container) {  }
+
+%%   DAX_CONT_EXPORT
+%%   PortalType GetPortal() { return PortalType(this->Container); }
+
+%%   DAX_CONT_EXPORT
+%%   PortalConstType GetPortalConst() const { return PortalConstType(this->Container); }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const {
+%%     return static_cast<dax::Id>(this->Container->size());
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void Allocate(dax::Id numberOfValues) { this->Container->resize(numberOfValues); }
+
+%%   DAX_CONT_EXPORT
+%%   void Shrink(dax::Id numberOfValues) { this->Container->resize(numberOfValues); }
+
+%%   DAX_CONT_EXPORT
+%%   void ReleaseResources() { this->Container->clear(); }
+
+%% private:
+%%   FooFieldsDeque *Container;
+%% };
+
+%% }
+%% }
+%% } // namespace dax::cont::internal
+%% \end{daxexample}
+
+%% The final step to make a container adapter is to make a mechanism to
+%% construct an \textidentifier{ArrayHandle} that points to a particular
+%% container. This can be done by creating a trivial subclass of
+%% \daxcont{ArrayHandle} that simply constructs the array handle to the state
+%% of an existing container. \fix{There remain some things to fix with with
+%%   feature. First, the constructor might be a bit overcomplicated. Second,
+%%   there is an issue with the concept template matching mechanism that can
+%%   cause it to fail with these ArrayHandle subclasses.}
+
+%% \begin{daxexample}{Array handle to adapt a third-party container to Dax.}
+%% template<typename DeviceAdapter>
+%% class ArrayHandleFooPressure
+%%     : public dax::cont::ArrayHandle<
+%%                 dax::Scalar, ArrayContainerControlTagFooPressure, DeviceAdapter>
+%% {
+%% private:
+%%   typedef dax::cont::internal
+%%       ::ArrayContainerControl<dax::Scalar,ArrayContainerControlTagFooPressure>
+%%       ArrayContainerControlType;
+%%   typedef dax::cont::internal
+%%       ::ArrayTransfer<T,ArrayContainerControlTagFooPressure,DeviceAdapter>
+%%       ArrayTransferType;
+%% public:
+%%   typedef dax::cont::ArrayHandle<
+%%       dax::Scalar, ArrayContainerControlTagFooPressure, DeviceAdapter> Superclass;
+
+%%   ArrayHandleFooPressure(FooFieldsDeque *container)
+%%     : Superclass(ArrayContainerControlType(container), true, ArrayTransferType(), false)
+%%   {  }
+%% };
+%% \end{daxexample}
+
+%% With this new version of \textidentifier{ArrayHandle}, the Dax toolkit can
+%% now read to and write from the \textcode{FooFieldsDeque} structure
+%% directly. Note, however, that when writing to an array handle, it is
+%% necessary to call \textcode{GetPortalControl} or
+%% \textcode{GetPortalConstControl} to flush data from the execution
+%% environment to the control environment. \fix{Should probably make this
+%%   easier.}
+
+%% \begin{daxexample}{Using an \textidentifier{ArrayHandle} with custom container.}
+%% template<typename GridType>
+%% DAX_CONT_EXPORT
+%% void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
+%% {
+%%   dax::worklet::Elevation elevation(dax::make_Vector3(0.0, 0.0, 0.0),
+%%                                     dax::make_Vector3(0.0, 0.0, 10.0),
+%%                                     dax::make_Vector2(0.02, 0.0));
+
+%%   // Make an array handle that points to the pressure values in fields.
+%%   ArrayHandleFooPressure pressureHandle(fields);
+
+%%   // Run the elevation worklet.
+%%   dax::cont::DispatcherMapField<dax::worklet::Elevation> dispatcher(elevation);
+%%   dispatcher.Invoke(grid.GetPointCoordinates(), pressureHandle);
+
+%%   // Make sure values are flushed back to the control environment.
+%%   pressureHandle.GetPortalConstControl();
+
+%%   // Now the pressure fields are field in the fields container.
+%% };
+%% \end{daxexample}
+
+%% \index{container!adapting|)}
+%% \index{array~handle!adapting|)}
+
+%% \subsection{Implicit Containers}
+
+%% \index{array~handle!implicit|(}
+%% \index{container!implicit|(}
+%% \index{implicit~container|(}
+%% \index{functional~array|(}
+
+%% The generic array handle and array container templating in the Dax toolkit
+%% allows for any type of operations to retrieve a particular value. Typically
+%% this is used to convert an index to some location or locations in
+%% memory. However, it is also possible to compute a value directly from an
+%% index rather than look up some value in memory. Such an array is completely
+%% functionally and requires no storage in memory at all. Such a functional
+%% array is specified with an \keyterm{implicit container}
+
+%% Specifying a functional or implicit array in the Dax toolkit is
+%% straightforward. The Dax toolkit comes with a generic implicit container
+%% that can be templated to any function you like. In this section we
+%% demonstrate the steps required to create an implicit container. For the
+%% purposes of the example, let us say we want an array of even numbers. That
+%% is, the array has the values $[0,2,4,6,\ldots]$ up to some given
+%% size. Although we could easily create this array in memory, we can save
+%% space and possibly time by computing these values on demand.
+
+%% The first step to creating an implicit container is to build a read-only
+%% array portal that computes the desired value in the \textcode{Get}
+%% method. The portal must work in both the control and execution environments
+%% (although the iterators only need to work in the control environment), and
+%% no \textcode{Set} method is necessary because the array is assumed to be
+%% read-only (since it is functional). The array portal may have a small
+%% amount of state, but the class itself must be copyable as a raw data
+%% structure. That is, using \textcode{memcpy} on the structure should work.
+
+%% \begin{daxexample}[ex:ImplicitArrayPortal]{Implicit array portal for an implicit array of even numbers.}
+%% #include <dax/cont/ArrayContainerControlImplicit.h>
+%% #include <dax/cont/ArrayHandle.h>
+%% #include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+%% class ArrayPortalEvenNumbers
+%% {
+%% public:
+%%   typedef dax::Id ValueType;
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ArrayPortalEvenNumbers() : NumberOfValues(0) {  }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ArrayPortalEvenNumbers(dax::Id numValues) : NumberOfValues(numValues) {  }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const { return this->NumberOfValues; }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ValueType Get(dax::Id index) const { return 2*index; }
+
+%%   typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalEvenNumbers> IteratorType;
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorBegin() const
+%%   {
+%%     return IteratorType(*this);
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorEnd() const
+%%   {
+%%     return IteratorType(*this, this->NumberOfValues);
+%%   }
+
+%% private:
+%%   dax::Id NumberOfValues;
+%% };
+%% \end{daxexample}
+
+%% Note that this array portal uses the template
+%% \daxcontinternal{IteratorFromArrayPortal}, which can convert any array
+%% portal to STL-compatible iterators.
+
+%% Once the implicit array portal is built, an implicit array container is
+%% defined using the \daxcont{ArrayContainerControlTagImplicit} tag. This tag
+%% is templated, and the template parameter is the implicit array portal.
+
+%% \begin{daxexample}[ex:ImplicitArrayContainer]{Defining the container tag for an implicit array of even numbers.}
+%% typedef dax::cont::ArrayContainerControlTagImplicit<ArrayPortalEvenNumbers>
+%%     ArrayContainerControlTagEvenNumbers;
+%% \end{daxexample}
+
+%% An array handle can be created directly with this tag as the container
+%% template parameter to \daxcont{ArrayHandle}. However, it is common to
+%% create a trivial subclass of \daxcont{ArrayHandle} that simply constructs
+%% the array handle to an implicit array portal of a given state. \fix{There
+%%   remains an issue with the concept template matching mechanism that can
+%%   cause this subclass to fail with these ArrayHandle subclasses.} The
+%% following example, which builds on Examples \ref{ex:ImplicitArrayPortal}
+%% and \ref{ex:ImplicitArrayContainer} demonstrates the convenience
+%% \daxcont{ArrayHandle} subclass.
+
+%% \begin{daxexample}{Implicit array handle of even numbers.}
+%% template<typename DeviceAdapter>
+%% class ArrayHandleEvenNumbers
+%%     : public dax::cont::ArrayHandle<
+%%                 dax::Id, ArrayContainerControlTagEvenNumbers, DeviceAdapter>
+%% {
+%%   typedef dax::cont::ArrayHandle<
+%%                 dax::Id, ArrayContainerControlTagEvenNumbers, DeviceAdapter> Superclass;
+
+%% public:
+%%   ArrayHandleEvenNumbers(dax::Id length)
+%%     : Superclass(ArrayPortalEvenNumbers(length)) {  }
+%% };
+%% \end{daxexample}
+
+%% The Dax toolkit comes with two examples of implicit containers. The first
+%% is \daxcont{ArrayHandleConstant}, which returns the same value for every
+%% index in the array. The constant array is useful when an algorithm that can
+%% work on a variable field is used on a constant value. The second is
+%% \daxcont{ArrayHandleCounting}, which returns the index as the value with a
+%% possible offset. The counting array is useful for generating fields of
+%% identifiers or for indexing operations. The Dax toolkit also provides
+%% \daxcont{make\_ArrayHandleConstant} and \daxcont{make\_ArrayHandleCounting}
+%% convenience functions to simplify building these arrays.
+
+%% \index{functional~array|)}
+%% \index{implicit~container|)}
+%% \index{container!implicit|)}
+%% \index{array~handle!implicit|)}
+
+%% \subsection{Derived Containers}
+
+%% \index{array~handle!derived|(}
+%% \index{container!derived|(}
+
+%% So far, we have discussed using the array container mechanism to adapt to
+%% particular memory layout and to create implicit arrays. Yet another option
+%% is to create a \keyterm{derived container}. A derived container shares
+%% attributes with both adaptive containers and implicit containers. A derived
+%% container takes one or more other arrays and changes their behavior in some
+%% way. Their implementation is similar to adapting a memory layout, but some
+%% of the details are different.
+
+%% In this section we will demonstrate the steps required to create a derived
+%% container. For the purposes of the example, let us say we want to array
+%% handles to behave as one array with the contents concatenated together. We
+%% could of course actually copy the data, but we can also do it in place.
+
+%% As before, the first step to creating a derived container is to build an
+%% array portal that will take portals from arrays being derived. The portal
+%% must work in both the control and execution environment (or have a separate
+%% version for control and execution).
+
+%% \begin{daxexample}[ex:DerivedArrayPortal]{Derived array portal for concatenated arrays.}
+%% #include <dax/cont/ArrayContainerControlImplicit.h>
+%% #include <dax/cont/ArrayPortal.h>
+%% #include <dax/cont/Assert.h>
+%% #include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+%% template<template P1, template P2>
+%% class ArrayPortalConcatenate
+%% {
+%% public:
+%%   typedef P1 PortalType1;
+%%   typedef P2 PortalType2;
+%%   typedef typename PortalType1::ValueType ValueType;
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ArrayPortalConcatenate() : FirstPortal(), Portal2() {   }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ArrayPortalConcatenate(const PortalType1 &firstPortal,
+%%                          const PortalType2 &secondPortal)
+%%     : Portal1(firstPortal), Portal2(secondPortal) {  }
+
+%%   /// Copy constructor for any other ArrayPortalConcatenate with an iterator
+%%   /// type that can be copied to this iterator type. This allows us to do any
+%%   /// type casting that the iterators do (like the non-const to const cast).
+%%   template<class OtherP1, class OtherP2>
+%%   DAX_CONT_EXPORT
+%%   ArrayPortalConcatenate(const ArrayPortalConcatenate<OtherP1,OtherP2> &src)
+%%     : Portal1(src.GetPortal1()), Portal2(src.GetPortal2()) {  }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const {
+%%     return this->Portal1.GetNumberOfValues() + this->Portal2.GetNumberOfValues();
+%%   }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ValueType Get(dax::Id index) const {
+%%     if (index < this->Portal1.GetNumberOfValues())
+%%       {
+%%       return this->Portal1.Get(index);
+%%       }
+%%     else
+%%       {
+%%       return this->Portal2.Get(index);
+%%       }
+%%   }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   ValueType Set(dax::Id index, const ValueType &value) const {
+%%     if (index < this->Portal1.GetNumberOfValues())
+%%       {
+%%       return this->Portal1.Set(index, value);
+%%       }
+%%     else
+%%       {
+%%       return this->Portal2.Set(index, value);
+%%       }
+%%   }
+
+%%   typedef dax::cont::internal::IteratorFromArrayPortal<
+%%       ArrayPortalConcatenate<PortalType1,PortalType2> > IteratorType;
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorBegin() const {
+%%     return IteratorType(*this);
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   IteratorType GetIteratorEnd() const {
+%%     return IteratorType(*this, this->GetNumberOfValues());
+%%   }
+
+%%   DAX_EXEC_CONT_EXPORT
+%%   const PortalType1 &GetPortal1() const { return this->Portal1; }
+%%   DAX_EXEC_CONT_EXPORT
+%%   const PortalType2 &GetPortal2() const { return this->Portal2; }
+
+%% private:
+%%   PortalType1 Portal1;
+%%   PortalType2 Portal2;
+%% };
+%% \end{daxexample}
+
+%% Like in an adapter container, the next step in creating a derived container
+%% is to define a tag for the adapter. We shall call ours
+%% \textcode{ArrayContainerControlTagConcatenate} and it will be templated on
+%% the two array handle types that we are deriving. Then, we need to create a
+%% specialization of the templated \daxcontinternal{ArrayContainerControl}
+%% class. The implementation for an \textidentifier{ArrayContainerControl} for
+%% a derived container is usually trivial compared to an adapter container
+%% because the majority of the work is deferred to the derived arrays.
+
+%% \begin{daxexample}[ex:DerivedArrayContainer]{\textidentifier{ArrayContainerControl} for derived container of concatenated arrays.}
+%% template<typename ArrayHandleType1, typename ArrayHandleType2>
+%% struct ArrayContainerControlTagConcatenate {  };
+
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<typename T, typename Container1, typename Container2, typename DeviceAdapter>
+%% class ArrayContainerControl<
+%%     T,
+%%     ArrayContainerControlTagConcatenate<
+%%         dax::cont::ArrayHandle<T, Container1, DeviceAdapter>
+%%         dax::cont::ArrayHandle<T, Container2, DeviceAdapter> > >
+%% {
+%%   typedef dax::cont::ArrayHandle<T, Container1, DeviceAdapter> ArrayHandleType1;
+%%   typedef dax::cont::ArrayHandle<T, Container2, DeviceAdapter> ArrayHandleType2;
+
+%% public:
+%%   typedef T ValueType;
+
+%%   typedef ArrayPortalConcatinate<
+%%       typename ArrayHandleType1::PortalControl,
+%%       typename ArrayHandleType2::PortalControl> PortalType;
+%%   typedef ArrayPortalConcatinate<
+%%       typename ArrayHandleType1::PortalConstControl,
+%%       typename ArrayHandleType2::PortalConstControl> PortalConstType;
+
+%%   DAX_CONT_EXPORT
+%%   ArrayContainerControl() : Valid(false) {  }
+
+%%   DAX_CONT_EXPORT
+%%   ArrayContainerControl(const ArrayHandleType1 firstArrayHandle,
+%%                         const ArrayHandle2 secondArrayHandle)
+%%     : Array1(firstArrayHandle), Array2(secondArrayHandle) {  }
+
+%%   DAX_CONT_EXPORT
+%%   PortalType GetPortal() {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     return PortalType(this->Array1.GetPortalControl(), this->Array2.GetPortalControl());
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   PortalConstType GetPortalConst() const {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     return PortalType(this->Array1.GetPortalConstControl(),
+%%                       this->Array2.GetPortalConstControl());
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void Allocate(dax::Id numberOfValues) {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     // This implementation of allocate, which allocates the same amount in both arrays, is
+%%     // arbitrary. It could, for example, leave the size of Array1 alone and change the size
+%%     // of Array2. Or, probably most likely, it could simply throw an error and state that
+%%     // this operation is invalid.
+%%     dax::Id half = numberOfValues/2;
+%%     // PrepareForOutput is the only accessible way to resize an ArrayHandle.
+%%     this->Array1.PrepareForOutput(numberOfValues-half);
+%%     this->Array2.PrepareForOutput(half);
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void Shrink(dax::Id numberOfValues) {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     if (numberOfValues < this->Array1.GetNumberOfValues())
+%%       {
+%%       this->Array1.Shrink(numberOfValues);
+%%       this->Array2.Shrink(0);
+%%       }
+%%     else
+%%       {
+%%       this->Array2.Shrink(numberOfValues - this->Array1.GetNumberOfValues());
+%%       }
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void ReleaseResources() {
+%%     DAX_ASSERT_CONT(this->Valid);
+%%     this->Array1.ReleaseResources();
+%%     this->Array2.ReleaseResources();
+%%   }
+
+%% private:
+%%   ArrayHandleType1 Array1;
+%%   ArrayHandleType2 Array2;
+%%   bool Valid;
+%% };
+
+%% }
+%% }
+%% } // namespace dax::cont::internal
+%% \end{daxexample}
+
+%% One of the responsibilities of an array handle is to copy data between the
+%% control and execution environments. The default behavior is to request the
+%% device adapter to copy data items from one environment to another. This
+%% might involve transferring data between a host and device. For an array of
+%% data resting in memory, this is necessary. However, implicit containers
+%% (described in the previous section) override this behavior to pass nothing
+%% but the functional array portal. Likewise, it is undesirable to do a raw
+%% transfer of data with derived containers. The underlying arrays being
+%% derived may be used in other contexts, and it would be good to share the
+%% data wherever possible. It is also sometimes more efficient to copy data
+%% independently from the arrays being derived than from the derived container
+%% itself.
+
+%% \index{array~transfer|(}
+
+%% The mechanism that controls how a particular control array container gets
+%% transferred to and from the execution environment is encapsulated in the
+%% templated \daxcontinternal{ArrayTransfer} class. By creating a
+%% specialization of \daxcontinternal{ArrayTransfer}, we can modify the
+%% transfer behavior to instead transfer the arrays being derived and use the
+%% respective copies in the control and execution environments.
+
+%% \daxcontinternal{ArrayTransfer} has three template arguments: the base type
+%% of the array, the array container tag, and the device adapter tag.
+
+%% \begin{daxexample}{Prototype for \protect\daxcontinternal{ArrayTransfer}.}
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<typename T, class ArrayContainerControlTag, class DeviceAdapterTag>
+%% class ArrayTransfer;
+
+%% }
+%% }
+%% }
+%% \end{daxexample}
+
+%% The \daxcontinternal{ArrayTransfer} must define the following items.
+%% \begin{description}
+%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+%%   in the array. This is the same type as the first template argument.
+%% \item[\textcode{PortalControl}] The type of an array portal that is used to
+%%   access the underlying data in the control environment.
+%% \item[\textcode{PortalConstControl}] A read-only (const) version of
+%%   \textcode{PortalControl}.
+%% \item[\textcode{PortalExecution}] The type of an array portal that is used
+%%   to access the underlying data in the execution environment.
+%% \item[\textcode{PortalConstExecution}] A read-only (const) version of
+%%   \textcode{PortalExecution}.
+%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
+%%   values currently allocated in the execution environment. The results may
+%%   be undefined if none of the load or allocate methods have yet been
+%%   called.
+%% \item[\textcode{LoadDataForInput}] A method that takes an array portal of
+%%   type \textcode{PortalConstControl}, allocates enough space in the
+%%   execution environment, and copies the given data to that array. The
+%%   allocated array can later be accessed via the
+%%   \textcode{GetPortalConstExecution} method. The data is assumed to be
+%%   read-only.
+%% \item[\textcode{LoadDataForInPlace}] A method that takes an array portal of
+%%   type \textcode{PortalControl}, allocates enough space in the execution
+%%   environment, and copies the given data to that array. The allocated array
+%%   can later be accessed via the \textcode{GetPortalExecution} and
+%%   \textcode{GetPortalConstExecution} methods. The data can be read and
+%%   written.
+%% \item[\textcode{AllocateArrayForOutput}] A method that takes an array
+%%   container and a size and allocates an array in the execution environment
+%%   of the specified size. The initial memory is uninitialized and can be
+%%   accessed via the \textcode{GetPortalExecution} method. The container
+%%   argument can be used to allocate data when the control and execution
+%%   share arrays, but this argument is often ignored.
+%% \item[\textcode{RetrieveOutputData}] This method takes an array container,
+%%   allocates memory in the control environment, and copies data from the
+%%   execution environment into it.
+%% \item[\textcode{CopyInto}] This method takes an STL-compatible iterator and
+%%   copies data from the execution environment into it.
+%% \item[\textcode{Shrink}] A method that adjusts the size of the array in the
+%%   execution environment to something that is a smaller size. All the data
+%%   up to the new length must remain valid. Typically, no memory is actually
+%%   reallocated. Instead, a different end is marked.
+%% \item[\textcode{GetPortalExecution}] A method that returns an array portal
+%%   that can be used in the execution environment. The portal was defined in
+%%   either \textcode{LoadDataForInPlace} or
+%%   \textcode{AllocateArrayForOutput}.
+%% \item[\textcode{GetPortalConstExecution}] A method that returns a read-only
+%%   (const) array portal that can be used in the execution environment. The
+%%   portal was defined in one of the load or allocate methods.
+%% \item[\textcode{ReleaseResources}] A method that frees any resources
+%%   (typically memory) in the execution environment.
+%% \end{description}
+
+%% Continuing our example derived container that concatenates two arrays
+%% started in Examples \ref{ex:DerivedArrayPortal} and
+%% \ref{ex:DerivedArrayContainer}, the following provides an
+%% \textidentifier{ArrayTransfer} appropriate for the derived container.
+
+%% \begin{daxexample}[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived container of concatenated arrays.}
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<class ArrayHandleType1,
+%%          class ArrayHandleType2,
+%%          class DeviceAdapter>
+%% class ArrayTransfer<
+%%     typename ArrayHandleType1::ValueType,
+%%     ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
+%%     DeviceAdapter>
+%% {
+%% public:
+%%   typedef typename ArrayHandleType1::ValueType ValueType;
+
+%% private:
+%%   typedef
+%%   ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
+%%     ContainerTag;
+%%   typedef dax::cont::internal::ArrayContainerControl<ValueType, ContainerTag> ContainerType;
+
+%% public:
+%%   typedef typename ContainerType::PortalType PortalControl;
+%%   typedef typename ContainerType::PortalConstType PortalConstControl;
+
+%%   typedef ArrayPortalConcatinate<
+%%       typename ArrayHandleType1::PortalExecution,
+%%       typename ArrayHandleType2::PortalExecution> PortalExecution;
+%%   typedef ArrayPortalConcatinate<
+%%       typename ArrayHandleType1::PortalConstExecution,
+%%       typename ArrayHandleType2::PortalConstExecution> PortalConstExecution;
+
+%%   DAX_CONT_EXPORT
+%%   ArrayTransfer()
+%%     : ArraysValid(false),
+%%       ExecutionPortalConstValid(false),
+%%       ExecutionPortalValid(false)
+%%   {  }
+
+%%   DAX_CONT_EXPORT
+%%   ArrayTransfer(ArrayHandleType1 firstArray,
+%%                 ArrayHandleType2 secondArray)
+%%     : Array1(firstArray),
+%%       Array2(secondArray),
+%%       ArraysValid(true),
+%%       ExecutionPortalConstValid(false),
+%%       ExecutionPortalValid(false)
+%%   {  }
+
+%%   DAX_CONT_EXPORT
+%%   dax::Id GetNumberOfValues() const {
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void LoadDataForInput(PortalConstControl daxNotUsed(portal)) {
+%%     // Assuming portal was created from a container with the same two arrays.
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     this->ExecutionPortalConst = PortalConstExecution(this->Array1.PrepareForInput(),
+%%                                                       this->Array2.PrepareForInput());
+%%     this->ExecutionPortalConstValid = true;
+%%     this->ExecutionPortalValid = false;
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
+%%     // Assuming portal was created from a container with the same two arrays.
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     this->ExecutionPortal = PortalExecution(this->Array1.PrepareForInPlace(),
+%%                                             this->Array2.PrepareForInPlace());
+
+%%     this->ExecutionPortalConst = this->ExecutionPortal;
+%%     this->ExecutionPortalConstValid = true;
+%%     this->ExecutionPortalValid = true;
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void AllocateArrayForOutput(ContainerType &daxNotUsed(controlArray),
+%%                               dax::Id numberOfValues) {
+%%     // Assuming controlArray uses the same arrays as this.
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+
+%%     // This implementation of allocate, which allocates the same amount in both arrays, is
+%%     // arbitrary. It could, for example, leave the size of Array1 alone and change the size
+%%     // of Array2. Or, probably most likely, it could simply throw an error and state that
+%%     // this operation is invalid.
+%%     dax::Id half = numberOfValues/2;
+%%     this->ExecutionPortal
+%%         = PortalExecution(this->Array1.PrepareForOutput(numberOfValues-half),
+%%                           this->Array2.PrepareForOutput(half));
+%%     this->ExecutionPortalValid = true;
+%%     this->ExecutionPortalConstValid = false;
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void RetrieveOutputData(ContainerType &daxNotUsed(controlArray)) const {
+%%     // Implementation of this method should be unnecessary. The internal
+%%     // first and second array handles should automatically retrieve the
+%%     // output data as necessary.
+%%   }
+
+%%   template<typename IteratorTypeControl>
+%%   DAX_CONT_EXPORT
+%%   void CopyInto(IteratorTypeControl dest) const {
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     this->Array1->CopyInto(dest);
+%%     this->Array2->CopyInto(dest + this->Array1.GetNumberOfValues());
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void Shrink(dax::Id numberOfValues) {
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     if (numberOfValues < this->Array1.GetNumberOfValues())
+%%       {
+%%       this->Array1.Shrink(numberOfValues);
+%%       this->Array2.Shrink(0);
+%%       }
+%%     else
+%%       {
+%%       this->Array2.Shrink(numberOfValues - this->Array1.GetNumberOfValues());
+%%       }
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   PortalExecution GetPortalExecution() {
+%%     DAX_ASSERT_CONT(this->ExecutionPortalValid);
+%%     return this->ExecutionPortal;
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   PortalConstExecution GetPortalConstExecution() const {
+%%     DAX_ASSERT_CONT(this->ExecutionPortalConstValid);
+%%     return this->ExecutionPortalConst;
+%%   }
+
+%%   DAX_CONT_EXPORT
+%%   void ReleaseResources() {
+%%     DAX_ASSERT_CONT(this->ArraysValid);
+%%     this->Array1.ReleaseResourcesExecution();
+%%     this->Array2.ReleaseResourcesExecution();
+%%     this->ExecutionPortalValid = false;
+%%     this->ExecutionPortalConstValid = false;
+%%   }
+
+%% private:
+%%   ArrayHandleType1 Array1;
+%%   ArrayHandleType2 Array2;
+%%   bool ArraysValid;
+%%   PortalConstExecution ExecutionPortalConst;
+%%   bool ExecutionPortalConstValid;
+%%   PortalExecution ExecutionPortal;
+%%   bool ExecutionPortalValid;
+%% };
+
+%% }
+%% }
+%% } // namespace dax::cont::internal
+%% \end{daxexample}
+
+%% \index{array~transfer|)}
+
+%% The final step to make a derived container is to create a mechanism to
+%% construct an \textidentifier{ArrayHandle} with a container derived from the
+%% desired arrays. This can be done by creating a trivial subclass of
+%% \daxcont{ArrayHandle} that simply constructs the array handle to the state
+%% of an existing container. It uses a protected constructor of
+%% \daxcont{ArrayHandle} that accepts a constructed container, array transfer,
+%% and flags on the status of the control and execution arrays. \fix{There
+%%   remains an issue with the concept template matching mechanism that can
+%%   cause this subclass to fail with these ArrayHandle subclasses.}
+
+%% \begin{daxexample}{\textidentifier{ArrayHandle} for derived container of concatenated arrays.}
+%% template<typename ArrayHandleType1, typename ArrayHandleType2>
+%% class ArrayHandleConcatenate
+%%   : public dax::cont::ArrayHandle<
+%%       typename ArrayHandleType1::ValueType,
+%%       ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
+%%       typename ArrayHandleType1::DeviceAdapterTag>
+%% {
+%%   typedef ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
+%%       ContainerTag;
+%%   typedef dax::cont::ArrayHandle<
+%%       typename ArrayHandleType1::ValueType,
+%%       ContainerTag,
+%%       typename ArrayHandleType1::DeviceAdapterTag> Superclass;
+%%   typedef dax::cont::internal::ArrayContainerControl<T,ContainerTag> ContainerType;
+%%   typedef dax::cont::internal::ArrayTransfer<
+%%       typename ArrayHandleType1::ValueType,
+%%       ContainerTag,
+%%       typename ArrayHandleType1::DeviceAdapterTag> TransferType;
+
+%% public:
+%%   ArrayHandleConcatenate(const ArrayHandleType1 &array1, const ArrayHandleType2 &array2)
+%%     : Superclass(ContainerType(array1, array2),
+%%                  true,
+%%                  TransferType(array1, array2),
+%%                  false)
+%%   {  }
+%% };
+%% \end{daxexample}
+
+%% \index{container!derived|)}
+%% \index{array~handle!derived|)}
+
+%% \index{container|)}
+%% \index{array~handle!container|)}
+
+%% \index{array~handle|)}
+
+%% \section{Grid Structures}
+%% \label{sec:GridStructures}
+
+%% The Dax toolkit provides containers for topologies. The topologies are
+%% built on the previously described data structures (mostly array handles)
+%% and are intentionally simplistic to simplify the adaptation to other
+%% structures.
+
+%% The grid structures are independent classes. They have no common
+%% superclass. However, they do have some elements that are expected to be
+%% common across all grids classes, which can be used in a templated
+%% environment.
+
+%% All grid structures have methods named \index{GetNumberOfPoints}
+%% \textcode{GetNumberOfPoints} and \index{GetNumberOfCells}
+%% \textcode{GetNumberOfCells}. These methods, of course, return the number of
+%% points or cells in the grid structure.
+
+%% \index{GetPointCoordiantes} All grid structures have a method called
+%% \textcode{GetPointCoordinates}. This method returns an array handle that
+%% contains the spatial coordinates for all the points in the mesh. Topologies
+%% with implicit connections might return an array with an implicit or derived
+%% container (meaning that the data is functionally defined rather than stored
+%% in memory), but the arrays behave the same regardless. The type of the
+%% array returned by \textcode{GetPointCoordinates} is specified by the type
+%% \textcode{PointCoordinatesType} defined in the grid class. This will be
+%% either a \textcode{typedef} of an \textidentifier{ArrayHandle} with
+%% specific template parameters or a subclass of
+%% \textidentifier{ArrayHandle}.
+
+%% \index{ComputePointCoordinates} It is also possible to query the point
+%% coordinates for any given point with the \textcode{ComputePointCoordinates}
+%% method. This method is mainly provided for testing purposes. Most point
+%% coordinate operations should be performed in the execution environment.
+
+%% The \textcode{GetPointCoordinates} method is most useful for invoking an
+%% operation on the point coordinates as a field on points. We have seen this
+%% method used on the examples of the elevation worklet.
+
+%% \begin{daxexample}{Processing point coordinates from an unknown grid type.}
+%% template<typename GridType>
+%% DAX_CONT_EXPORT
+%% void Elevation(const GridType &grid,
+%%                dax::cont::ArrayHandle<dax::Scalar> &outPointElevation)
+%% {
+%%   dax::cont::DispatcherMapField<dax::worklet::Elevation> dispatcher;
+%%   dispatcher.Invoke(grid.GetPointCoordinates(), outPointElevation);
+%% }
+%% \end{daxexample}
+
+%% Each grid structure contains a particular type of cell. Each grid structure
+%% defines a type named \index{CellTag} \textcode{CellTag} that identifies the
+%% type of cell stored. Cell types and operations that can be performed in the
+%% execution environment are described in
+%% Section~\ref{sec:CellsAndOperations}.
+
+%% All grid structures also have the facilities to pack information to be sent
+%% to the execution environment. There is a type defined in the grid class
+%% called \textcode{TopologyStructConstExecution} for read-only input data and
+%% a \textcode{PrepareForInput} method to build the structure. Likewise, there
+%% is a \textcode{TopologyStructExecution} type and
+%% \textcode{PrepareForOutput} method for output data.
+
+%% The execution structures, however, differ significantly. Typically, these
+%% facilities are handled internally within Dax to pass data to worklets.
+
+%% \subsection{Uniform Grid}
+
+%% \index{uniform~grid|(}
+
+%% A uniform grid is stored in a \daxcont{UniformGrid} class. A uniform grid
+%% is a topology structure where its points form a regular 3D array. The 3D
+%% array of points are axis aligned, and the spacing is uniform along each
+%% dimension. Adjacent are connected together in \index{voxel} \keyterm{voxel}
+%% cells, which are simply axis aligned hexahedra.
+
+%% The topology of a uniform grid is completely implicit and specified with
+%% three pieces of information. First, the extent, stored in a \dax{Extent3}
+%% structure, specifies the minimum and maximum indices of the array. Second,
+%% the origin, stored in a \dax{Vector3}, gives the point coordinates of the
+%% point at index $[0,0,0]$ (which may not actually be in the extent of the
+%% grid). Third, the spacing, stored in a \dax{Vector3}, gives the amount of
+%% space between adjacent points in each dimension.
+
+%% The uniform grid class is templated on the device adapter for which it is
+%% being used. Its prototype looks as follows.
+
+%% \begin{daxexample}{Prototype for \protect\daxcont{UniformGrid}.}
+%% template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+%% class UniformGrid;
+%% \end{daxexample}
+
+%% The \daxcont{UniformGrid} class provides the following features.
+%% \begin{description}
+%% \item[\textcode{CellTag}] A type that identifies what kind of cell is
+%%   stored in this class. Always set to \dax{CellTagVoxel}.
+%% \item[\textcode{GetExtent}] A method that returns a \dax{Extent3}
+%%   specifying the extent of the 3 dimensional indices.
+%% \item[\textcode{SetExtent}] A method that sets the extent of the 3
+%%   dimensional indices. There are two versions of \textcode{SetExtent}: one
+%%   that accepts a \dax{Extent3} object and another that accepts two
+%%   \dax{Id3} objects specifying the minimum and maximum indices.
+%% \item[\textcode{GetOrigin}] A method that returns a \dax{Vector3}
+%%   specifying the coordinates for the origin of the grid.
+%% \item[\textcode{SetOrigin}] A method that accepts a \dax{Vector3} as a
+%%   parameter to set the coordinates for the origin of the grid.
+%% \item[\textcode{GetSpacing}] A method that returns a \dax{Vector3}
+%%   specifying the spacing between adjacent points along each dimension.
+%% \item[\textcode{SetSpacing}] A method that accepts a \dax{Vector3} as a
+%%   parameter to set the spacing between adjacent points along each
+%%   dimension.
+%% \item[\textcode{GetNumberOfPoints}] A method that returns the number of
+%%   points in the grid.
+%% \item[\textcode{GetNumberOfCells}] A method that returns the number of
+%%   cells in the grid.
+%% \item[\textcode{ComputePointIndex}] A convenience method that takes a
+%%   \dax{Id3} representing the 3 dimensional coordinates of a point and
+%%   returns the one dimensional index for the point. The 1 dimensional index
+%%   corresponds to the index for point field arrays contained in
+%%   \daxcont{ArrayHandle} objects.
+%% \item[\textcode{ComputeCellIndex}] A convenience method that takes a
+%%   \dax{Id3} representing the 3 dimensional coordinates of a cell and
+%%   returns the one dimensional index for the cell. The 1 dimensional index
+%%   corresponds to the index for cell field arrays contained in
+%%   \daxcont{ArrayHandle} objects.
+%% \item[\textcode{ComputePointLocation}] A convenience method that takes a 1
+%%   dimensional point index and returns the corresponding 3 dimensional index
+%%   as a \dax{Id3}. This method performs the inverse operation of
+%%   \textcode{ComputePointIndex}.
+%% \item[\textcode{ComputeCellLocation}] A convenience method that takes a 1
+%%   dimensional cell index and returns the corresponding 3 dimensional index
+%%   as a \dax{Id3}. This method performs the inverse operation of
+%%   \textcode{ComputeCellIndex}.
+%% \item[\textcode{ComputePointCoordinates}] A convenience method that
+%%   returns the spatial coordinates for a given point. This method is
+%%   overloaded to accept either a 1 dimensional index as a \dax{Id} or a 3
+%%   dimensional index as a \dax{Id3}.
+%% \item[\textcode{GetPointCoordinates}] Returns a \daxcont{ArrayHandle}
+%%   containing spatial coordinates for each point. This array can be used as
+%%   a field when invoking worklets. The array is implicit.
+%% \item[\textcode{PointCoordinatesType}] The type returned by
+%%   \textcode{GetPointCoordinates}. It is a specialization of
+%%   \textidentifier{ArrayHandle}.
+%% \item[\textcode{TopologyStructConstExecution}] A memory copyable structure
+%%   holding the state of the uniform grid that can be used in the execution
+%%   environment.
+%% \item[\textcode{PrepareForInput}] A method that returns a
+%%   \textcode{TopologyStructConstExecution} object to pass to the execution
+%%   environment. This method is typically only used internally within the Dax
+%%   toolkit.
+%% \end{description}
+
+%% \index{uniform~grid|)}
+
+%% \subsection{Unstructured Grid}
+
+%% \index{unstructured~grid|(}
+
+%% An unstructured grid is stored in a \daxcont{UnstructuredGrid} class. An
+%% unstructured grid is a topology with a collection of cells connected in
+%% arbitrary ways. It first defines a list of points. It then has a connection
+%% list that specifies for each cell the points that comprise the vertices for
+%% each cell. The \daxcont{UnstructuredGrid} class is limited to containing
+%% cells of only one type.
+
+%% The topology of an unstructured grid is defined with a point coordinates
+%% array and a cell connections array. The point coordinates array is an array
+%% of \dax{Vertex3} values containing one for each point. The cell connections
+%% array is an array of \dax{Id} values. The length of this array is the
+%% number of cells times the number of vertices per cell. The connections for
+%% a particular cell are grouped together in adjacent array values. The cell
+%% connections are given in CGNS order\lcite{CGNS}. An example cell connection
+%% array is given in Figure~\ref{fig:CellConnections}.
+
+%% \begin{figure}[htb]
+%%   \centering
+%%   \includegraphics{images/CellConnections}
+%%   \caption{The cell connection array for a simple triangle mesh.}
+%%   \label{fig:CellConnections}
+%% \end{figure}
+
+%% The unstructured grid class is templated on the cell type
+%% (\dax{CellTagHexahedron}, \dax{CellTagLine}, \dax{CellTagQuadrilateral},
+%% \dax{CellTagTetrahedron}, \dax{CellTagTriangle}, \dax{CellTagVertex}, or
+%% \dax{CellTagWedge}) the container for cell connections, the container for
+%% the point coordinate array, and the device adapter. Its prototype looks as
+%% follows.
+
+%% \begin{daxexample}{Prototype for \protect\daxcont{UnstructuredGrid}.}
+%% template <
+%%     typename CellT,
+%%     class CellConnectionsContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+%%     class PointsArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+%%     class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+%% class UnstructuredGrid;
+%% \end{daxexample}
+
+%% The \daxcont{UnstructuredGrid} class provides the following features.
+%% \begin{description}
+%% \item[\textcode{CellTag}] A type that identifies what kind of cell is
+%%   stored in this class. Always set to the first template parameter.
+%% \item[\textcode{CellConnectionsType}] The type of the \daxcont{ArrayHandle}
+%%   used to store cell connection indices.
+%% \item[\textcode{PointCoordinatesType}] The type of the
+%%   \daxcont{ArrayHandle} used to store point coordinates.
+%% \item[\textcode{GetCellConnections}] A method used to get the array handle
+%%   for the cell connections.
+%% \item[\textcode{SetCellConnetions}] A method used to set the array handle
+%%   for the cell connections.
+%% \item[\textcode{GetPointCoordinates}] A method used to get the array handle
+%%   for point coordinates.
+%% \item[\textcode{SetPointCoordinates}] A method used to set the array handle
+%%   for point coordinates.
+%% \item[\textcode{ComputePointCoordinates}] A convenience method that takes a
+%%   point index and returns the point coordinates at that index. The actual
+%%   value is pulled from the point coordinates array.
+%% \item[\textcode{GetNumberOfPoints}] A method that returns the number of
+%%   points in the grid.
+%% \item[\textcode{GetNumberOfCells}] A method that returns the number of
+%%   cells in the grid.
+%% \item[\textcode{TopologyStructExecution}] A memory copyable structure
+%%   holding the state of the uniform grid that can be used in the execution
+%%   environment.
+%% \item[\textcode{TopologyStructConstExecution}] A read-only (const) form of
+%%   \textcode{TopologyStructuExecution}.
+%% \item[\textcode{PrepareForInput}] A method that returns a
+%%   \textcode{TopologyStructConstExecution} object to pass to the execution
+%%   environment. This method is typically only used internally within the Dax
+%%   toolkit.
+%% \item[\textcode{PrepareForOutput}] A method that returns a
+%%   \textcode{TopologyStructExecution} object to pass to the execution
+%%   environment. This method is typically only used internally within the Dax
+%%   toolkit.
+%% \end{description}
+
+%% \index{unstructured~grid|)}
+
+%% \section{Dispatchers}
+%% \label{sec:Dispatchers}
+
+%% Worklets, both those provided by the Dax toolkit as listed in
+%% Section~\ref{sec:ProvidedWorklets} and ones created by a user as described
+%% in Section~\ref{sec:CreatingWorklets}, are instantiated in the control
+%% environment and run in the execution environment. This means that the
+%% control environment must have a means to \index{invoke}\keyterm{invoke}
+%% worklets that start running in the execution environment.
+
+%% This invocation is done through a set of
+%% \index{dispatcher}\keyterm{dispatcher} objects. A dispatcher object is an
+%% object in the control environment that has an instance of a worklet and can
+%% invoke that worklet with a set of arguments. There are multiple types of
+%% dispatcher objects, each corresponding to a type of worklet object. All
+%% dispatcher objects have at least two template parameters: the worklet class
+%% being invoked, which is always the first argument, and the device adapter
+%% tag, which is always the last argument and will be set to the default
+%% device adapter if not specified.
+
+%% All dispatcher classes have a method named \textcode{Invoke} that launches
+%% the worklet in the execution environment.  The arguments to
+%% \textcode{Invoke} must match those in the control signature of the worklet
+%% held by the dispatcher.
+
+%% The following is a list of the dispatchers defined in the Dax toolkit. The
+%% dispatcher classes corresponded to list of worklet types as specified in
+%% Section~\ref{sec:WorkletTypes} starting on
+%% page~\pageref{sec:WorkletTypes}. See that section for more details and
+%% examples of using these dispatcher classes.
+
+%% \begin{description}
+%% \item[\daxcont{DispatcherMapField}] The dispatcher used in conjunction with
+%%   a worklet that subclasses \daxexec{WorkletMapField}. The class has two
+%%   template arguments: the worklet type and the device adapter (optional).
+%% \item[\daxcont{DispatcherMapCell}] The dispatcher used in conjunction with
+%%   a worklet that subclasses \dax{WorkletMapCell}. The class has two
+%%   template arguments: the worklet type and the device adapter (optional).
+%% \item[\daxcont{DispatcherGenerateTopology}] The dispatcher used in
+%%   conjunction with a worklet that subclasses
+%%   \dax{WorkletGenerateTopology}. The class has three template arguments: the
+%%   worklet type, the type of array handle containing the count of the number
+%%   of cells being generated (optional), and the device adapter
+%%   (optional). The default type of the count array handle is
+%%   \daxcont{ArrayHandle}\textcode{<}\dax{Id}\textcode{>}. An instance of the
+%%   count array handle must be provided in the constructor of
+%%   \daxcont{DispatcherGenerateTopology}.
+%% \item[\daxcont{DispatcherInterpolatedCell}] The dispatcher used in
+%%   conjunction with a worklet that subclasses
+%%   \dax{WorkletInterpolatedCell}. The class has three template arguments: the
+%%   worklet type, the type of array handle containing the count of the number
+%%   of cells being generated (optional), and the device adapter
+%%   (optional). The default type of the count array handle is
+%%   \daxcont{ArrayHandle}\textcode{<}\dax{Id}\textcode{>}. An instance of the
+%%   count array handle must be provided in the constructor of
+%%   \daxcont{DispatcherInterpolatedCell}.
+%% \item[\daxcont{DispatcherGenerateKeysValues}] The dispatcher used in
+%%   conjunction with a worklet that subclasses
+%%   \dax{WorkletGenerateKeysValues}. The class has three template arguments:
+%%   the worklet type, the type of array handle containing the count of the
+%%   number of key-values being generated (optional), and the device adapter
+%%   (optional). The default type of the count array handle is
+%%   \daxcont{ArrayHandle}\textcode{<}\dax{Id}\textcode{>}. An instance of the
+%%   count array handle must be provided in the constructor of
+%%   \daxcont{DispatcherGenerateKeysValues}.
+%% \item[\daxcont{DispatcherReduceKeysValues}] The dispatcher used in
+%%   conjunction with a worklet that subclasses
+%%   \dax{WorkletReduceKeysValues}. The class has three template arguments:
+%%   the worklet type, the type of array handle containing the keys
+%%   (optional), and the device adapter (optional). The default type of the
+%%   key array handle is
+%%   \daxcont{ArrayHandle}\textcode{<}\dax{Id}\textcode{>}. An instance of the
+%%   key array handle must be provided in the constructor of
+%%   \daxcont{DispatcherReduceKeysValues}.
+%% \end{description}
+
+%% \section{Timers}
+%% \label{sec:Timers}
+
+%% \index{timer|(}
+
+%% It is often the case that you need to measure the time it takes for an
+%% operation to happen. This could be for performing measurements for
+%% algorithm study or it could be to dynamically adjust scheduling.
+
+%% Performing timing in a multi-threaded environment can be tricky because
+%% operations happen asynchronously. In the Dax control environment timing is
+%% simplified because the control environment operates on a single
+%% thread. However, operations invoked in the execution environment may run
+%% asynchronously to operations in the control environment.
+
+%% To ensure that accurate timings can be made, Dax provides a \daxcont{Timer}
+%% class that is templated on the device adapter to provide an accurate
+%% measurement of operations that happen on the device. The timing starts when
+%% the \textidentifier{Timer} is constructed. The time elapsed can be
+%% retrieved with a call to the \textcode{GetElapsedTime} method. This method
+%% will block until all operations in the execution environment complete so as
+%% to return an accurate time. The timer can be restarted with a call to the
+%% \textcode{Reset} method.
+
+%% \begin{daxexample}{Using \protect\daxcont{Timer}.}
+%% dax::cont::UniformGrid<> grid;
+%% grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(99, 99, 99));
+%% grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
+%% grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
+
+%% dax::cont::ArrayHandle<dax::Scalar> results;
+%% dax::cont::DispatchMapField<dax::worklet::Elevation> dispatcher;
+
+%% dax::cont::Timer<> timer;
+%% dispatcher.Invoke(grid.GetPointCoordinates(), results);
+%% // This call makes sure data is pulled back to the host in a host/device architecture.
+%% results.GetPortalConstControl();
+%% dax::Scalar elapsedTime = timer.GetElapsedTime();
+
+%% std::cout << "Time to run elevation: " << elapsedTime << std::endl;
+%% \end{daxexample}
+
+%% \index{timer|)}
+
+%% \section{Error Handling}
+%% \label{sec:ErrorHandlingControl}
+
+%% \index{errors|(}
+
+%% The Dax toolkit uses exceptions to report errors. All exceptions thrown by
+%% Dax will be a subclass of \daxcont{Error}. For simple error reporting, it
+%% is possible to simply catch a \daxcont{Error} and report the error message
+%% string reported by the \textcode{GetMessage} method.
+
+%% \begin{daxexample}{Simple error reporting.}
+%% #include <dax/cont/Error.h>
+
+%% int main(int argc, char **argv)
+%% {
+%%   try
+%%     {
+%%     // Do something cool with Dax
+%%     // ...
+%%     }
+%%   catch (dax::cont::Error error)
+%%     {
+%%     std::cout << error.GetMessage() << std::endl;
+%%     return 1;
+%%     }
+%%   return 0;
+%% }
+%% \end{daxexample}
+
+%% There are two subclasses to \daxcont{Error}. These are
+%% \daxcont{ErrorExecution} and \daxcont{ErrorControl}, and they represent
+%% errors that happen in the respective execution and control environments.
+
+%% Readers familiar with parallel programming will probably note the
+%% difficulty in raising errors in multi-threaded execution like what happens
+%% in the execution environment. In fact some devices, like CUDA devices, do
+%% not support exceptions at all. Dax handles the error reporting in the
+%% execution environment by flagging an error when it occurs and then throwing
+%% an error in the control environment after all threads have terminated. This
+%% means that the amount of execution that happens after an error is flagged
+%% is indeterminate and any output values should be considered incorrect.
+
+%% The \daxcont{ErrorControl} class is also broken down into several
+%% subclasses that can be independently caught to handle different types of
+%% errors. The following control errors exist and may be thrown.
+%% \begin{description}
+%% \item[\daxcont{ErrorControlAssert}] \index{assert} Thrown when an assertion
+%%   fails, meaning a Dax operation reached an unexpected state. The header
+%%   file \daxheader{dax/cont}{Assert.h} defines a macro named
+%%   \daxmacro{DAX\_ASSERT\_CONT} that behaves much like the POSIX C assert
+%%   macro except that a \textidentifier{ErrorControlAssert} is thrown rather
+%%   than killing the application outright.
+%% \item[\daxcont{ErrorControlBadValue}] Thrown when a Dax function or method
+%%   encounters an invalid value that inhibits progress.
+%% \item[\daxcont{ErrorControlInternal}] Thrown when Dax detects an internal
+%%   state that should never be reached. This error usually indicates a bug in
+%%   Dax or, at best, Dax failed to detect an invalid input it should have.
+%% \item[\daxcont{ErrorControlOutOfMemory}] Thrown when a Dax function or
+%%   method tries to allocate an array and fails.
+%% \end{description}
+
+%% \index{errors|)}
+
+%% \index{device~adapter|(}
+
+%% \section{Device Adapter Algorithms}
+%% \label{sec:DeviceAdapterAlgorithms}
+
+%% \index{device~adapter!algorithm|(}
+%% \index{algorithm|(}
+
+%% The Dax toolkit comes with the templated class
+%% \daxcont{DeviceAdapterAlgorithm} that provides a set of algorithms that can
+%% be invoked in the control environment and are run on the execution
+%% environment. The template has a single argument that specifies the device
+%% adapter tag.
+
+%% \begin{daxexample}{Prototype for \protect\daxcont{DeviceAdapterAlgorithm}.}
+%% namespace dax {
+%% namespace cont {
+
+%% template<class DeviceAdapterTag>
+%% struct DeviceAdapterAlgorithm;
+
+%% }
+%% } // namespace dax::cont
+%% \end{daxexample}
+
+%% \textidentifier{DeviceAdapterAlgorithm} contains no state. It only has a
+%% set of static methods that implement its algorithms. The following methods
+%% are available.
+
+%% \begin{description}
+%% \item[\textcode{Copy}] \index{copy} Copies data from an input array to an
+%%   output array. The copy takes place in the execution environment.
+%% \item[\textcode{LowerBounds}] \index{lower~bounds} The
+%%   \textcode{LowerBounds} method takes three arguments. The first argument
+%%   is an \textidentifier{ArrayHandle} of sorted values. The second argument
+%%   is another \textidentifier{ArrayHandle} of items to find in the first
+%%   array. \textcode{LowerBounds} find the index of the first item that is
+%%   greater than or equal to the target value, much like the
+%%   \textcode{std::lower\_bound} STL algorithm. The results are returned in
+%%   an \textidentifier{ArrayHandle} given in the third argument.
+
+%%   There are two specializations of \textcode{LowerBounds}. The first takes
+%%   an additional comparison function that defines the less-than
+%%   operation. The second takes only two parameters. The first is an
+%%   \textidentifier{ArrayHandle} of sorted \dax{Id}s and the second is an
+%%   \textidentifier{ArrayHandle} of \dax{Id}s to find in the first list. The
+%%   results are written back out to the second array. This second
+%%   specialization is useful for inverting index maps.
+%% \item[\textcode{ScanInclusive}] \index{scan!inclusive} The
+%%   \textcode{ScanInclusive} method takes an input and an output
+%%   \textidentifier{ArrayHandle} and performs a running sum on the input
+%%   array. The first value in the output is the same as the first value in
+%%   the input. The second value in the output is the sum of the first two
+%%   values in the input. The third value in the output is the sum of the
+%%   first three values of the input, and so on. \textcode{ScanInclusive}
+%%   returns the sum of all values in the input.
+%% \item[\textcode{ScanExclusive}] \index{scan!exclusive} The
+%%   \textcode{ScanExclusive} method takes an input and an output
+%%   \textidentifier{ArrayHandle} and performs a running sum on the input
+%%   array. The first value in the output is always 0. The second value in the
+%%   output is the same as the first value in the input. The third value in
+%%   the output is the sum of the first two values in the input. The fourth
+%%   value in the output is the sum of the first three values of the input,
+%%   and so on. \textcode{ScanExclusive} returns the sum of all values in the
+%%   input.
+%% \item[\textcode{Schedule}] \index{schedule} The \textcode{Schedule} method
+%%   takes a functor as its first argument and invokes it a number of times
+%%   specified by the second argument. It should be assumed that each
+%%   invocation of \textcode{Schedule} occurs on a separate thread although in
+%%   practice there could be some thread sharing.
+
+%%   There are two versions of the \textcode{Schedule} method. The first
+%%   version takes a \dax{Id} and invokes the functor that number of
+%%   times. The second version takes a \dax{Id3} and invokes the functor once
+%%   for every entry in a 3D array of the given dimensions.
+
+%%   The functor is expected to be an object with a const overloaded
+%%   parentheses operator. The operator takes as a parameter the index of the
+%%   invocation, which is either a \dax{Id} or a \dax{Id3} depending on what
+%%   version of \textcode{Schedule} is being used. The functor must also
+%%   provide a method named \textcode{SetErrorMessageBuffer} that accepts an
+%%   argument of type \daxexecinternal{ErrorMessageBuffer}. If any errors
+%%   occur during the invocations of the functor, it should call the
+%%   \textcode{RaiseError} method of the
+%%   \textidentifier{ErrorMessageBuffer}. That will cause the
+%%   \textcode{Schedule} method to (eventually) throw a
+%%   \daxcont{ErrorExecution} exception.
+%% \item[\textcode{Sort}] \index{sort} The \textcode{Sort} method provides an
+%%   unstable sort of an array. There are two forms of the \textcode{Sort}
+%%   method. The first takes an \textidentifier{ArrayHandle} and sorts the
+%%   values in place. The second takes an additional argument that is a
+%%   functor that provides the comparison operation for the sort.
+%% \item[\textcode{SortByKey}] \index{sort!by key} The \textcode{SortByKey}
+%%   method works similarly to the \textcode{Sort} method except that it takes
+%%   two \textidentifier{ArrayHandle}s: an array of keys and a corresponding
+%%   array of values. The sort orders the array of keys in ascending values
+%%   and also reorders the values so they remain paired with the same
+%%   key. Like \textcode{Sort}, \textcode{SortByKey} has a version that sorts
+%%   by the default less-than operator and a version that accepts a custom
+%%   comparison functor.
+%% \item[\textcode{StreamCompact}] \index{stream~compact} The
+%%   \textcode{StreamCompact} method selectively removes values from an
+%%   array. The first argument is an \textidentifier{ArrayHandle} to be
+%%   compacted and the second argument is an \textidentifier{ArrayHandle} of
+%%   equal size with flags indicating whether the corresponding input value is
+%%   to be copied to the output. The third argument is an output
+%%   \textidentifier{ArrayHandle} whose length is set to the number of true
+%%   flags in the stencil and the passed values are put in order to the output
+%%   array.
+
+%%   There is also a second form of \textidentifier{StreamCompact} that only
+%%   has the stencil and output as arguments. In this version, the output gets
+%%   the corresponding index of where the input should be taken from.
+%% \item[\textcode{Synchronize}] \index{synchronize} The
+%%   \textidentifier{Synchronize} method waits for any asynchronous operations
+%%   running on the device to complete and then returns.
+%% \item[\textcode{Unique}] \index{unique} The \textcode{Unique} method
+%%   removes all duplicate values in an \textidentifier{ArrayHandle}. The
+%%   method will only find duplicates if they are adjacent to each other in
+%%   the array. The easiest way to ensure that duplicate values are adjacent
+%%   is to sort the array first.
+
+%%   There are two versions of \textcode{Unique}. The first uses the equals
+%%   operator to compare entries. The second accepts a binary functor to
+%%   perform the comparisons.
+%% \item[\textcode{UpperBounds}] \index{upper~bounds} The
+%%   \textcode{UpperBounds} method takes three arguments. The first argument
+%%   is an \textidentifier{ArrayHandle} of sorted values. The second argument
+%%   is another \textidentifier{ArrayHandle} of items to find in the first
+%%   array. \textcode{UpperBounds} find the index of the first item that is
+%%   greater than to the target value, much like the
+%%   \textcode{std::upper\_bound} STL algorithm. The results are returned in
+%%   an \textidentifier{ArrayHandle} given in the third argument.
+
+%%   There are two specializations of \textcode{UpperBounds}. The first takes
+%%   an additional comparison function that defines the less-than
+%%   operation. The second takes only two parameters. The first is an
+%%   \textidentifier{ArrayHandle} of sorted \dax{Id}s and the second is an
+%%   \textidentifier{ArrayHandle} of \dax{Id}s to find in the first list. The
+%%   results are written back out to the second array. This second
+%%   specialization is useful for inverting index maps.
+%% \end{description}
+
+%% \index{algorithm|)}
+%% \index{device~adapter!algorithm|)}
+
+%% \section{Implementing Device Adapters}
+%% \label{sec:ImplementingDeviceAdapters}
+
+%% The Dax toolkit comes with several implementations of device adapters so
+%% that it may be ported to a variety of platforms. It is also possible to
+%% provide new device adapters to support yet more devices, compilers, and
+%% libraries. A new device adapter provides a tag, a class to manage arrays in
+%% the execution environment, a collection of algorithms that run in the
+%% execution environment, and (optionally) a timer.
+
+%% Although not strictly necessary, the implementation of device adapters
+%% within the Dax toolkit are divided into 3 header files with the names
+%% \textfilename{DeviceAdapterTag\textasteriskcentered.h},
+%% \textfilename{ArrayManagerExecution\textasteriskcentered.h} and
+%% \textfilename{DeviceAdapterAlgorithm\textasteriskcentered.h}. The
+%% \textfilename{DeviceAdapter\textasteriskcentered.h} that most code includes
+%% is a trivial header that simply includes these other three files. For
+%% example, the \daxheader{dax/tbb/cont}{DeviceAdapterTBB.h} for the Intel
+%% Threading Building Blocks (TBB) device adapter simply contains the
+%% following (with minutia like include guards removed).
+
+%% \begin{daxexample}{Contents of \protect\daxheader{dax/tbb/cont}{DeviceAdapterTBB.h} file.}
+%% #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+%% #include <dax/tbb/cont/internal/ArrayManagerExecutionTBB.h>
+%% #include <dax/tbb/cont/internal/DeviceAdapterAlgorithmTBB.h>
+%% \end{daxexample}
+
+%% The reason the Dax toolkit breaks up the code for its device adapters this
+%% way is that there is an interdependence between the implementation of each
+%% device adapter and the mechanism to pick a default device adapter. Breaking
+%% up the device adapter code in this way maintains an acyclic dependence among
+%% header files.
+
+%% \subsection{Tag}
+
+%% The device adapter tag, as described in Section~\ref{sec:DeviceAdapterTag}
+%% is a simple empty type that is used as a template parameter to identify the
+%% device adapter. Every device adapter implementation provides one. The
+%% device adapter tag is typically defined in an internal header file with a
+%% prefix of \textfilename{DeviceAdapterTag}. Here is the implementation for
+%% the TBB device adapter.
+
+%% \begin{daxexample}{Implementation of the TBB device adapter tag.}
+%% namespace dax {
+%% namespace tbb {
+%% namespace cont {
+
+%% struct DeviceAdapterTagTBB {  };
+
+%% }
+%% }
+%% } // namespace dax::tbb::cont
+%% \end{daxexample}
+
+%% \subsection{Array Manager Execution}
+
+%% \index{device~adapter!array manager|(}
+%% \index{array~manager~execution|(}
+%% \index{execution~array~manager|(}
+
+%% The Dax toolkit defines a template named
+%% \daxcontinternal{ArrayManagerExecution} that is responsible for allocating
+%% memory in the execution environment and copying data between the control
+%% and execution environment. The execution array manager is typically defined
+%% in an internal header file with a prefix of
+%% \textfilename{ArrayManagerExecution}.
+
+%% \begin{daxexample}{Prototype for \protect\daxcontinternal{ArrayManagerExecution}.}
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template<typename T, class ArrayContainerControlTag, class DeviceAdapterTag>
+%% class ArrayManagerExecution;
+
+%% }
+%% }
+%% } // namespace dax::cont::internal
+%% \end{daxexample}
+
+%% A device adapter must provide a partial specialization of
+%% \textidentifier{ArrayManagerExecution} for its device adapter tag. The
+%% implementation for \textidentifier{ArrayManagerExecution} is expected to
+%% manage the resources for a single array, and it must provide the following
+%% elements.
+
+%% \begin{description}
+%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+%%   in the array. This is the same type as the first template argument.
+%% \item[\textcode{PortalType}] The type of an array portal that can be used
+%%   in the execution environment to access the array.
+%% \item[\textcode{PortalConstType}] A read-only (const) version of
+%%   \textcode{PortalType}.
+%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
+%%   values stored in the array. The results are undefined if the data has not
+%%   been loaded or allocated.
+%% \item[\textcode{LoadDataForInput}] A method that takes an array portal in
+%%   the control environment, allocates a large enough array in the execution
+%%   environment, and copies the data into that array. The data in the
+%%   execution array is not expected to be changed. The allocated array can
+%%   later be accessed via the \textcode{GetPortalConst} method.
+%% \item[\textcode{LoadDataForInPlace}] A method that takes an array portal in
+%%   the control environment, allocates a large enough array in the execution
+%%   environment, and copies the data into that array. The data in the
+%%   execution array is expected to be read and changed. The allocated array
+%%   can later be accessed via the \textcode{GetPortal} and
+%%   \textcode{GetPortalConst} methods.
+%% \item[\textcode{AllocateArrayForOutput}] A method that takes an array
+%%   container and a size and allocates an array in the execution environment
+%%   of the specified size. The initial memory is uninitialized and can be
+%%   accessed via the \textcode{GetPortal} method. The container argument can
+%%   be used to allocate data when the control and execution share arrays, but
+%%   this argument is often ignored.
+%% \item[\textcode{RetrieveOutputData}] This method takes an array container,
+%%   allocates memory in the control environment, and copies data from the
+%%   execution environment into it.
+%% \item[\textcode{CopyInto}] This method takes an STL-compatible iterator and
+%%   copies data from the execution environment into it.
+%% \item[\textcode{Shrink}] A method that adjusts the size of the array in the
+%%   execution environment to something that is a smaller size. All the data
+%%   up to the new length must remain valid. Typically, no memory is actually
+%%   reallocated. Instead, a different end is marked.
+%% \item[\textcode{GetPortal}] A method that returns an array portal
+%%   that can be used in the execution environment. The portal was defined in
+%%   either \textcode{LoadDataForInPlace} or
+%%   \textcode{AllocateArrayForOutput}.
+%% \item[\textcode{GetPortalConst}] A method that returns a read-only
+%%   (const) array portal that can be used in the execution environment. The
+%%   portal was defined in one of the load or allocate methods.
+%% \item[\textcode{ReleaseResources}] A method that frees any resources
+%%   (typically memory) in the execution environment.
+%% \end{description}
+
+%% Specializations of this template typically take on one of two forms. If the
+%% control and execution environments have separate memory spaces, then this
+%% class behaves by copying memory in methods such as
+%% \textcode{PrepareForInput} and \textcode{RetrieveOutputData}. This might
+%% require creating buffers in the control environment to efficiently move
+%% data from control array portals.
+
+%% However, if the control and execution environments share the same memory
+%% space, the execution array manager can, and should, delegate all of its
+%% operations to the \textidentifier{ArrayContainerControl} it is used
+%% with. The Dax toolkit comes with a class called
+%% \daxcontinternal{ArrayManagerExecutionShareWithControl} that provides the
+%% implementation for an execution array manager that shares a memory space
+%% with the control environment. In this case, making the
+%% \textidentifier{ArrayManagerExecution} specialization be a trivial subclass
+%% is sufficient. For example, here is the implementation of
+%% \textidentifier{ArrayManagerExecution} for TBB.
+
+%% \begin{daxexample}{Specialization of \textidentifier{ArrayManagerExecution} for TBB.}
+%% #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+
+%% #include <dax/cont/internal/ArrayManagerExecution.h>
+%% #include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
+
+%% namespace dax {
+%% namespace cont {
+%% namespace internal {
+
+%% template <typename T, class ArrayContainerTag>
+%% class ArrayManagerExecution
+%%     <T, ArrayContainerTag, dax::tbb::cont::DeviceAdapterTagTBB>
+%%     : public dax::cont::internal::ArrayManagerExecutionShareWithControl
+%%         <T, ArrayContainerTag>
+%% {
+%% };
+
+%% }
+%% }
+%% } // namespace dax::cont::internal
+%% \end{daxexample}
+
+%% \index{execution~array~manager|)}
+%% \index{array~manager~execution|)}
+%% \index{device~adapter!array manager|)}
+
+%% \subsection{Algorithms}
+
+%% \index{device~adapter!algorithm|(}
+%% \index{algorithm|(}
+
+%% A device adapter implementation must also provide a specialization of
+%% \daxcont{DeviceAdapterAlgorithm}, which is documented in
+%% Section~\ref{sec:DeviceAdapterAlgorithms}. The implementation for the
+%% device adapter algorithms is typically placed in a header file with a
+%% prefix of \textfilename{DeviceAdapterAlgorithm}.
+
+%% Although there are many methods in
+%% \textidentifier{DeviceAdapterAlgorithms}, it is seldom necessary to
+%% implement them all. Instead, the Dax toolkit comes with
+%% \daxcontinternal{DeviceAdapterAlgorithmGeneral} that provides generic
+%% implementation for most of the required algorithms. By deriving the
+%% specialization of \textidentifier{DeviceAdapterAlgorithm} from
+%% \textidentifier{DeviceAdapterAlgorithmGeneral}, only the implementations
+%% for \textcode{Schedule} and \textcode{Synchronize} need to be
+%% implemented. All other algorithms can be derived from those.
+
+%% That said, not all of the algorithms implemented in
+%% \textidentifier{DeviceAdapterAlgorithmGeneral} are optimized for all types
+%% of devices. Thus, it is worthwhile to provide algorithms optimized for the
+%% specific device when possible. In particular, it is best to provide
+%% specializations for the sort and scan algorithms.
+
+%% The following example is a minimal implementation of the TBB device adapter
+%% algorithms. The actual version that comes with the Dax toolkit contains
+%% more enhancements.
+
+%% \begin{daxexample}{Abbreviated implementation of \textidentifier{DeviceAdapterAlgorithm} for TBB.}
+%% #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+%% #include <dax/tbb/cont/internal/ArrayManagerExecutionTBB.h>
+
+%% #include <dax/cont/internal/DeviceAdapterAlgorithmGeneral.h>
+%% #include <dax/exec/internal/IJKIndex.h>
+
+%% #include <tbb/blocked_range.h>
+%% #include <tbb/blocked_range3d.h>
+%% #include <tbb/parallel_for.h>
+
+%% namespace dax {
+%% namespace cont {
+
+%% template<>
+%% struct DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB> :
+%%     dax::cont::internal::DeviceAdapterAlgorithmGeneral<
+%%         DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>,
+%%         dax::tbb::cont::DeviceAdapterTagTBB>
+%% {
+%% private:
+%%   static const dax::Id TBB_GRAIN_SIZE = 128;
+
+%%   template<class FunctorType>
+%%   class ScheduleKernel
+%%   {
+%%   public:
+%%     DAX_CONT_EXPORT ScheduleKernel(const FunctorType &functor)
+%%       : Functor(functor)
+%%     {  }
+
+%%     DAX_CONT_EXPORT void SetErrorMessageBuffer(
+%%         const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+%%     {
+%%       this->ErrorMessage = errorMessage;
+%%       this->Functor.SetErrorMessageBuffer(errorMessage);
+%%     }
+
+%%     DAX_EXEC_EXPORT
+%%     void operator()(const ::tbb::blocked_range<dax::Id> &range) const {
+%%       // The TBB device adapter causes array classes to be shared between
+%%       // control and execution environment. This means that it is possible for
+%%       // an exception to be thrown even though this is typically not allowed.
+%%       // Throwing an exception from here is bad because there are several
+%%       // simultaneous threads running. Get around the problem by catching the
+%%       // error and setting the message buffer as expected.
+%%       try
+%%         {
+%%         for (dax::Id index = range.begin(); index < range.end(); index++)
+%%           {
+%%           this->Functor(index);
+%%           }
+%%         }
+%%       catch (dax::cont::Error error)
+%%         {
+%%         this->ErrorMessage.RaiseError(error.GetMessage().c_str());
+%%         }
+%%       catch (...)
+%%         {
+%%         this->ErrorMessage.RaiseError(
+%%             "Unexpected error in execution environment.");
+%%         }
+%%     }
+%%   private:
+%%     FunctorType Functor;
+%%     dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+%%   };
+
+%% public:
+%%   template<class FunctorType>
+%%   DAX_CONT_EXPORT
+%%   static void Schedule(FunctorType functor, dax::Id numInstances)
+%%   {
+%%     const dax::Id MESSAGE_SIZE = 1024;
+%%     char errorString[MESSAGE_SIZE];
+%%     errorString[0] = '\0';
+%%     dax::exec::internal::ErrorMessageBuffer
+%%         errorMessage(errorString, MESSAGE_SIZE);
+
+%%     ScheduleKernel<FunctorType> kernel(functor);
+%%     kernel.SetErrorMessageBuffer(errorMessage);
+
+%%     ::tbb::blocked_range<dax::Id> range(0, numInstances, TBB_GRAIN_SIZE);
+
+%%     ::tbb::parallel_for(range, kernel);
+
+%%     if (errorMessage.IsErrorRaised())
+%%       {
+%%       throw dax::cont::ErrorExecution(errorString);
+%%       }
+%%   }
+
+%% private:
+%%   template<class FunctorType>
+%%   class ScheduleKernelId3
+%%   {
+%%   public:
+%%     DAX_CONT_EXPORT ScheduleKernelId3(const FunctorType &functor,
+%%                                       const dax::Id3& dims)
+%%       : Functor(functor),
+%%         Dims(dims)
+%%       {  }
+
+%%     DAX_CONT_EXPORT void SetErrorMessageBuffer(
+%%         const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+%%     {
+%%       this->ErrorMessage = errorMessage;
+%%       this->Functor.SetErrorMessageBuffer(errorMessage);
+%%     }
+
+%%     DAX_EXEC_EXPORT
+%%     void operator()(const ::tbb::blocked_range3d<dax::Id> &range) const {
+%%       try
+%%         {
+%%         dax::exec::internal::IJKIndex index(this->Dims);
+%%         for( dax::Id k=range.pages().begin(); k!=range.pages().end(); ++k)
+%%           {
+%%           index.SetK(k);
+%%           for( dax::Id j=range.rows().begin(); j!=range.rows().end(); ++j)
+%%             {
+%%             index.SetJ(j);
+%%             for( dax::Id i=range.cols().begin(); i!=range.cols().end(); ++i)
+%%               {
+%%               index.SetI(i);
+%%               this->Functor(index);
+%%               }
+%%             }
+%%           }
+%%         }
+%%       catch (dax::cont::Error error)
+%%         {
+%%         this->ErrorMessage.RaiseError(error.GetMessage().c_str());
+%%         }
+%%       catch (...)
+%%         {
+%%         this->ErrorMessage.RaiseError(
+%%             "Unexpected error in execution environment.");
+%%         }
+%%     }
+%%   private:
+%%     FunctorType Functor;
+%%     dax::Id3 Dims;
+%%     dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+%%   };
+
+%% public:
+%%   template<class FunctorType>
+%%   DAX_CONT_EXPORT
+%%   static void Schedule(FunctorType functor,
+%%                        dax::Id3 rangeMax)
+%%   {
+%%     //we need to extract from the functor that uniform grid information
+%%     const dax::Id MESSAGE_SIZE = 1024;
+%%     char errorString[MESSAGE_SIZE];
+%%     errorString[0] = '\0';
+%%     dax::exec::internal::ErrorMessageBuffer
+%%         errorMessage(errorString, MESSAGE_SIZE);
+
+%%     //memory is generally setup in a way that iterating the first range
+%%     //in the tightest loop has the best cache coherence.
+%%     ::tbb::blocked_range3d<dax::Id> range(0, rangeMax[2],
+%%                                           0, rangeMax[1],
+%%                                           0, rangeMax[0]);
+
+%%     ScheduleKernelId3<FunctorType> kernel(functor,rangeMax);
+%%     kernel.SetErrorMessageBuffer(errorMessage);
+
+%%     ::tbb::parallel_for(range, kernel);
+
+%%     if (errorMessage.IsErrorRaised())
+%%       {
+%%       throw dax::cont::ErrorExecution(errorString);
+%%       }
+%%   }
+
+%%   DAX_CONT_EXPORT static void Synchronize()
+%%   {
+%%     // Nothing to do. This device schedules all of its operations using a
+%%     // split/join paradigm. This means that the if the control thread is
+%%     // calling this method, then nothing should be running in the execution
+%%     // environment.
+%%   }
+
+%% };
+
+%% }
+%% } // namespace dax::cont
+%% \end{daxexample}
+
+%% \index{algorithm|)}
+%% \index{device~adapter!algorithm|)}
+
+%% \subsection{Timer Implementation}
+
+%% The Dax timer, described in Section~\ref{sec:Timers}, delegates to an
+%% internal class named \daxcont{DeviceAdapterTimerImplementation}. The
+%% interface for this class is the same as that for \daxcont{Timer}. A default
+%% implementation of this templated class uses the system timer and the
+%% \textcode{Synchronize} method in the device adapter algorithms.
+
+%% However, some devices might provide alternate or better methods for
+%% implementing timers. For example, the TBB library comes with a high
+%% resolution timer that has better accuracy than the standard system
+%% timers. Thus, the device adapter can optionally provide a specialization of
+%% \textidentifier{DeviceAdapterTimerImplementation}, which is typically
+%% placed in the same header file as the device adapter algorithms.
+
+%% The following example is the implementation of the TBB timer
+%% implementation.
+
+%% \begin{daxexample}{Implementation of \textidentifier{DeviceAdapterTimerImplementation} for TBB.}
+%% #include <dax/cont/DeviceAdapter.h>
+%% #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+
+%% #include <tbb/tick_count.h>
+
+%% namespace dax {
+%% namespace cont {
+
+%% template<>
+%% class DeviceAdapterTimerImplementation<dax::tbb::cont::DeviceAdapterTagTBB>
+%% {
+%% public:
+%%   DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
+%%   {
+%%     this->Reset();
+%%   }
+%%   DAX_CONT_EXPORT void Reset()
+%%   {
+%%     dax::cont::DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
+%%     this->StartTime = ::tbb::tick_count::now();
+%%   }
+%%   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
+%%   {
+%%     dax::cont::DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
+%%     ::tbb::tick_count currentTime = ::tbb::tick_count::now();
+%%     ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
+%%     return static_cast<dax::Scalar>(elapsedTime.seconds());
+%%   }
+
+%% private:
+%%   ::tbb::tick_count StartTime;
+%% };
+
+%% }
+%% } // namespace dax::cont
+%% \end{daxexample}
+
+%% A word of warning about implementing timers. Although
+%% \textcode{GetElapsedTime} returns a \dax{Scalar}, it is advisable to store
+%% the internal timing in its native data format until the elapsed time is
+%% recorded. This is because the times may be biased by a large value, and the
+%% floating point number might not hold enough precision to get a precise
+%% measurement between the start and end of the timer.
+
+%% \subsection{Testing}
+
+%% The implementation of a device adapter contains many components. To ensure
+%% that all of its device adapters are working properly, the Dax toolkit
+%% contains a complete test of all the components in
+%% \daxheader{dax/cont/testing}{TestingDeviceAdapter.h}. Here is the
+%% implementation for the TBB device adapter test, which plugs into the CMake
+%% testing framework.
+
+%% \begin{daxexample}{Test code for the TBB device adapter.}
+%% #include <dax/tbb/cont/DeviceAdapterTBB.h>
+
+%% #include <dax/cont/testing/TestingDeviceAdapter.h>
+
+%% int UnitTestDeviceAdapterTBB(int, char *[])
+%% {
+%%   return dax::cont::testing::TestingDeviceAdapter
+%%       <dax::tbb::cont::DeviceAdapterTagTBB>::Run();
+%% }
+%% \end{daxexample}
+
+%% \index{device~adapter|)}
+
+\index{control~environment|)}
+

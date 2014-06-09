@@ -1,6 +1,7 @@
 
 set(example_src
   CoreDataTypes.cxx
+  DeviceAdapterTag.cxx
   ExportMacro.cxx
   ListTags.cxx
   Traits.cxx

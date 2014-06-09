@@ -365,14 +365,17 @@ types as well as the core VTK-m types described in
 Section~\ref{sec:CoreDataTypes}. \vtkm{TypeTraits} contains the following
 elements.
 
+\index{tag!type traits|(}
+
 \begin{description}
-\item[\textidentifier{NumericTag}] \index{NumericTag} This type is set to
-  either \vtkm{TypeTraitsRealTag} or \vtkm{TypeTraitsIntegerTag} to signal
-  that the type represents either floating point numbers or integers.
-\item[\textidentifier{DimensionalityTag}] \index{DimensionalityTag} This
-  type is set to either \vtkm{TypeTraitsScalarTag} or
-  \vtkm{TypeTraitsVectorTag} to signal that the type represents either a
-  single scalar value or a tuple of values.
+\item[\textidentifier{NumericTag}] \index{NumericTag} \index{tag!numeric}
+  This type is set to either \vtkm{TypeTraitsRealTag} or
+  \vtkm{TypeTraitsIntegerTag} to signal that the type represents either
+  floating point numbers or integers.
+\item[\textidentifier{DimensionalityTag}] \index{DimensionalityTag}
+  \index{tag!dimensionality} This type is set to either
+  \vtkm{TypeTraitsScalarTag} or \vtkm{TypeTraitsVectorTag} to signal that
+  the type represents either a single scalar value or a tuple of values.
 \end{description}
 
 The definition of \vtkm{TypeTraits} for \vtkm{Scalar} could like something
@@ -399,11 +402,15 @@ types including floating points and vectors.
 
 \vtkmlisting[ex:TypeTraits]{Using \textidentifier{TypeTraits} for a generic remainder.}{TypeTraits.cxx}
 
+\index{tag!type traits|)}
+
 
 \subsection{Vector Traits}
 
 The \vtkm{VectorTraits}\tparams{T} templated class provides information and
 accessors to vector and tuple types. It contains the following elements.
+
+\index{tag!vector traits|(}
 
 \begin{description}
 \item[\textidentifier{ComponentType}] \index{ComponentType} This type is
@@ -413,6 +420,7 @@ accessors to vector and tuple types. It contains the following elements.
 \item[\textidentifier{NUM\_COMPONENTS}] \index{NUM\_COMPONENTS} An integer
   specifying how many components are contained in the vector.
 \item[\textidentifier{HasMultipleComponents}] \index{HasMultipleComponents}
+  \index{tag!single component} \index{tag!multiple components}
   This type is set to either \vtkm{VectorTraitsTagSingleComponent} if the
   vector length is size 1 or \vtkm{VectorTraitsTagMultipleComponents}
   otherwise. This tag can be useful for creating specialized functions when
@@ -456,6 +464,8 @@ struct VectorTraits<vtkm::Id3>
 } // namespace vtkm
 \end{vtkmexample}
 
+\index{tag!vector traits|)}
+
 The real power of vector traits is that they simplify creating generic
 operations on any type that can look like a vector. This includes
 operations on scalar values as if they were vectors of size one. The
@@ -471,7 +481,7 @@ and other operations.
 \section{List Tags}
 \label{sec:ListTags}
 
-\index{tag|(}
+\index{tag!lists|(}
 \index{list|(}
 
 \index{template metaprogramming}
@@ -533,6 +543,10 @@ much uglier type names defined by the compiler.
 \subsection{Type Lists}
 \label{sec:TypeLists}
 
+\index{type lists|(}
+\index{lists!types|(}
+\index{tag!type lists|(}
+
 One of the major use cases for template metaprogramming lists in VTK-m is
 to identify a set of potential data types for arrays. The
 \vtkmheader{vtkm}{TypeListTag.h} header contains predefined lists for known
@@ -577,6 +591,10 @@ macro being redefined, which you will not get if defined
 correctly. Example~\ref{ex:CustomTypeLists} also contains an example of
 overriding the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} macro.
 
+\index{tag!type lists|)}
+\index{lists!types|)}
+\index{type lists|)}
+
 \subsection{Operating on Lists}
 \label{sec:OperatingOnLists}
 
@@ -599,4 +617,4 @@ Section~\ref{sec:DynamicArrayHandle}).
 \vtkmlisting{Converting dynamic types to static types with \textidentifier{ListForEach}.}{ListForEach.cxx}
 
 \index{list|)}
-\index{tag|)}
+\index{tag!lists|)}

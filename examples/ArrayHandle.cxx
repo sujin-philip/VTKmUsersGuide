@@ -1,3 +1,4 @@
+#include <vtkm/cont/ArrayContainerControlBasic.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DeviceAdapter.h>
 
@@ -37,6 +38,15 @@ void BasicConstruction()
   vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray;
   ////
   //// END-EXAMPLE CreateArrayHandle.cxx
+  ////
+
+  ////
+  //// BEGIN-EXAMPLE ArrayHandleContainerParameter.cxx
+  ////
+  vtkm::cont::ArrayHandle<
+      vtkm::Scalar, vtkm::cont::ArrayContainerControlTagBasic> arrayHandle;
+  ////
+  //// END-EXAMPLE ArrayHandleContainerParameter.cxx
   ////
 }
 

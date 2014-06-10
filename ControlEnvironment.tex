@@ -388,303 +388,142 @@ execution array portal to finish before the next call to any
 are typically used in the process of scheduling an algorithm in the
 execution environment, this is seldom an issue.
 
-%% \subsection{Basic Container}
+\subsection{Basic Container}
 
-%% \index{array~handle!container|(}
-%% \index{container|(}
+\index{array~handle!container|(}
+\index{container|(}
 
-%% As previously discussed, \daxcont{ArrayHandle} takes three template
-%% arguments.
-%% \begin{daxexample}{Declaration of the \protect\daxcont{ArrayHandle} templated class (again).}
-%% template<
-%%     typename T,
-%%     typename ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
-%%     typename DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-%% class ArrayHandle;
-%% \end{daxexample}
-%% The first argument is the only one required and has been demonstrated
-%% multiple times before. The third (optional) argument specifies the device
-%% adapter, as described in detail in Section~\ref{sec:DeviceAdapterTag}. The
-%% second (optional) argument specifies something called a container, which
-%% provides the interface between the generic \daxcont{ArrayHandle} class and
-%% a specific storage mechanism in the control environment.
+As previously discussed, \vtkmcont{ArrayHandle} takes two template arguments.
+\begin{vtkmexample}{Declaration of the \protect\vtkmcont{ArrayHandle} templated class (again).}
+template<
+    typename T,
+    typename ArrayContainerControlTag = VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG>
+class ArrayHandle;
+\end{vtkmexample}
+The first argument is the only one required and has been demonstrated
+multiple times before. The second (optional) argument specifies something
+called a container, which provides the interface between the generic
+\vtkmcont{ArrayHandle} class and a specific storage mechanism in the
+control environment.
 
-%% In this and the following sections we describe these control environment
-%% containers. A default container is specified in much the same way as a
-%% default device adapter is defined. It is done by setting the
-%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL} macro. This macro must be set
-%% before including any Dax header files. Currently the only practical
-%% container provided by the Dax toolkit is the basic container, which simply
-%% allocates a continuous section of memory of the given base type. This
-%% container can be explicitly specified by setting
-%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL} to
-%% \daxmacro{DAX\_ARRAY\_CONTAINER\_CONTROL\_BASIC} although the basic
-%% container will also be used as the default if no other container is
-%% specified (which is typical).
+In this and the following sections we describe these control environment
+containers. A default container is specified in much the same way as a
+default device adapter is defined. It is done by setting the
+\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL} macro. This macro must be set
+before including any VTK-m header files. Currently the only practical
+container provided by the VTK-m toolkit is the basic container, which simply
+allocates a continuous section of memory of the given base type. This
+container can be explicitly specified by setting
+\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL} to
+\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL\_BASIC} although the basic
+container will also be used as the default if no other container is
+specified (which is typical).
 
-%% The default array container can always be overridden by specifying an array
-%% container tag. The tag for the basic container is located in the
-%% \daxheader{dax/cont}{ArrayContainerControl.h} header file and is named
-%% \daxcont{ArrayContainerControlTagBasic}. Here is an example of specifying
-%% the container type when declaring an array handle.
+The default array container can always be overridden by specifying an array
+container tag. The tag for the basic container is located in the
+\vtkmheader{vtkm/cont}{ArrayContainerControl.h} header file and is named
+\vtkmcont{ArrayContainerControlTagBasic}. Here is an example of specifying
+the container type when declaring an array handle.
 
-%% \begin{daxexample}{Specifying the container type for an \textidentifier{ArrayHandle.}}
-%% dax::cont::ArrayHandle<
-%%   dax::Scalar,
-%%   dax::cont::ArrayContainerControlTagBasic> arrayHandle1;
-%% dax::cont::ArrayHandle<
-%%   dax::Scalar,
-%%   dax::cont::ArrayContainerControlTagBasic,
-%%   dax::cont::DeviceAdapterTagSerial> arrayHandle2;
-%% \end{daxexample}
+\vtkmlisting{Specifying the container type for an \textidentifier{ArrayHandle.}}{ArrayHandleContainerParameter.cxx}
 
-%% The Dax toolkit also defines a macro named
-%% \daxmacro{DAX\_DEFAULT\_ARRAY\_CONTAINER\_CONTROL\_TAG} that can be used in
-%% place of an explicit array container tag to use the default tag. This macro
-%% is used to create new templates that have template parameters for array
-%% containers that can use the default or to create array handles with the
-%% default container but a specific device adapter.
+VTK-m also defines a macro named
+\vtkmmacro{VTKM\_DEFAULT\_ARRAY\_CONTAINER\_CONTROL\_TAG} that can be used
+in place of an explicit array container tag to use the default tag. This
+macro is used to create new templates that have template parameters for
+array containers that can use the default or to create array handles with
+the default container but a specific device adapter.
 
-%% \begin{daxexample}{An \textidentifier{ArrayHandle} with default container and explicit device.}
-%% dax::cont::ArrayHandle<
-%%   dax::Scalar,
-%%   DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
-%%   dax::cont::DeviceAdapterTagSerial> arrayHandle;
-%% \end{daxexample}
+\subsection{Adapting Data Structures}
 
+\index{array~handle!adapting|(}
+\index{container!adapting|(}
 
-%% \subsection{Adapting Data Structures}
+The intention of the container parameter for \vtkmcont{ArrayHandle} is to
+implement the strategy design pattern to enable VTK-m to interface directly
+with the data of any third party code source. VTK-m is designed to work
+with data originating in other libraries or applications. By creating a new
+type of array container, VTK-m can be entirely adapted to new kinds of data
+structures.
 
-%% \index{array~handle!adapting|(}
-%% \index{container!adapting|(}
+In this section we demonstrate the steps required to adapt the array handle
+to a data structure provided by a third party. For the purposes of the
+example, let us say that some fictitious library named ``foo'' has a simple
+structure named \textcode{FooFields} that holds the field values for a
+particular part of a mesh, and then maintain the field values for all
+locations in a mesh in a \textcode{std::deque} object.
 
-%% The intention of the container parameter for \daxcont{ArrayHandle} is to
-%% implement the strategy design pattern\lcite{GoF} to enable the Dax toolkit
-%% to interface directly with the data of any third party code source. The Dax
-%% toolkit is designed to work with data originating in other libraries or
-%% applications. By creating a new type of array container, the entire Dax
-%% toolkit can be adapted to new kinds of data structures.
+\vtkmlisting{Fictitious field storage used in custom array container examples.}{FictitiousFieldStorage.cxx}
 
-%% In this section we demonstrate the steps required to adapt the array handle
-%% to a data structure provided by a third party. For the purposes of the
-%% example, let us say that some fictitious library named ``foo'' has a simple
-%% structure named \textcode{FooFields} that holds the field values for a
-%% particular part of a mesh, and then maintain the field values for all
-%% locations in a mesh in a \textcode{std::deque} object.
+VTK-m expects separate arrays for each of the fields rather than a single
+array containing a structure holding all of the fields. However, rather
+than copy each field to its own array, we can create a container for each
+field that points directly to the data in a \textcode{FooFieldsDeque}
+object.
 
-%% \begin{daxexample}{Fictitious field storage used in custom array container examples.}
-%% #include <deque>
+The first step in creating an adapter container is to create a control
+environment array portal to the data. This is described in more detail in
+Section~\ref{sec:ArrayPortals} and is generally straightforward for simple
+containers like this. Here is an example implementation for our
+\textcode{FooFieldsDeque} container.
 
-%% struct FooFields {
-%%   float Pressure;
-%%   float Temperature;
-%%   float Velocity[3];
-%%   // And so on...
-%% };
+\vtkmlisting[ex:ArrayPortalAdapter]{Array portal to adapt a third-party container to VTK-m.}{ArrayPortalAdapter.cxx}
 
-%% typedef std::deque<FooFields> FooFieldsDeque;
-%% \end{daxexample}
+The next step in creating an adapter container is to define a tag for the
+adapter. We shall call ours
+\textcode{ArrayContainerControlTagFooPressure}. Then, we need to create a
+specialization of the templated \vtkmcontinternal{ArrayContainerControl}
+class. The \textidentifier{ArrayHandle} will instantiate an object using
+the array container tag we give it, and we define our own specialization so
+that it runs our interface into the code.
 
-%% The Dax toolkit expects separate arrays for each of the fields rather than
-%% a single array containing a structure holding all of the fields. However,
-%% rather than copy each field to its own array, we can create a container for
-%% each field that points directly to the data in a \textcode{FooFieldsDeque}
-%% object.
+\vtkmcontinternal{ArrayContainerControl} has two template arguments: the
+base type of the array and the array container tag.
 
-%% The first step in creating an adapter container is to create a control
-%% environment array portal to the data. This is described in more detail
-%% starting on page~\pageref{sec:ArrayPortals} and is generally
-%% straightforward for simple containers like this. Here is an example
-%% implementation for our \textcode{FooFieldsDeque} container.
+\vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayContainerControl}.}{ArrayContainerControlPrototype.cxx}
 
-%% \begin{daxexample}[ex:ArrayPortalAdapter]{Array portal to adapt a third-party container to Dax.}
-%% #include <dax/cont/Assert.h>
-%% #include <dax/cont/internal/IteratorFromArrayPortal.h>
+The \vtkmcontinternal{ArrayContainerControl} must define the following items.
+\begin{description}
+\item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+  in the array. This is the same type as the first template argument.
+\item[\textcode{PortalType}] The type of an array portal that can be used
+  to access the underlying data. This array portal needs to work only in
+  the control environment.
+\item[\textcode{PortalConstType}] A read-only (const) version of
+  \textcode{PortalType}.
+\item[\textcode{GetPortal}] A method that returns an array portal of type
+  \textcode{PortalType} that can be used to access the data manged in this
+  container.
+\item[\textcode{GetPortalConst}] Same as \textcode{GetPortal} except it
+  returns a read-only (const) array portal.
+\item[\textcode{GetNumberOfValues}] A method that returns the number of
+  values the container is currently allocated for.
+\item[\textcode{Allocate}] A method that allocates the array to a given
+  size. An values stored in the previous allocation may be destroyed.
+\item[\textcode{Shrink}] A method like \textcode{Allocate} with two
+  differences. First, the size of the allocation must be smaller than the
+  existing allocation when the method is called. Second, any values
+  currently stored in the array will be valid after the array is
+  resized. This constrained form of allocation allows the array to be
+  resized and values valid without ever having to copy data.
+\item[\textcode{ReleaseResources}] A method that instructs the container to
+  free all of its memory.
+\end{description}
 
-%% // DequeType expected to be FooFieldsDeque or const FooFieldsDeque
-%% template<typename DequeType>
-%% class ArrayPortalFooPressure
-%% {
-%% public:
-%%   typedef dax::Scalar ValueType;
+The following provides an example implementation of our adapter to a
+\textcode{FooFieldsDeque}. It relies on the
+\textcode{ArrayPortalFooPressure} provided in
+Example~\ref{ex:ArrayPortalAdapter}.
 
-%%   DAX_CONT_EXPORT
-%%   ArrayPortalFooPressure(DequeType *container) : Container(container) {  }
+\vtkmlisting{Array container to adapt a third-party container to VTK-m.}{ArrayContainerControlAdapter.cxx}
 
-%%   DAX_CONT_EXPORT
-%%   dax::Id GetNumberOfValues() const {
-%%     return static_cast<dax::Id>(this->Container->size());
-%%   }
+The final step to make a container adapter is to make a mechanism to
+construct an \textidentifier{ArrayHandle} that points to a particular
+container. This can be done by creating a trivial subclass of
+\vtkmcont{ArrayHandle} that simply constructs the array handle to the state
+of an existing container.
 
-%%   DAX_CONT_EXPORT
-%%   dax::Scalar Get(dax::Id index) const {
-%%     DAX_ASSERT_CONT(index >= 0);
-%%     DAX_ASSERT_CONT(index < this->GetNumberOfValues());
-%%     return static_cast<dax::Scalar>((*this->Container)[index].Pressure);
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   dax::Scalar Set(dax::Id index, dax::Scalar value) const {
-%%     DAX_ASSERT_CONT(index >= 0);
-%%     DAX_ASSERT_CONT(index < this->GetNumberOfValues());
-%%     (*this->Container)[index].Pressure = value;
-%%   }
-
-%%   typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalFooPressure> IteratorType;
-
-%%   DAX_CONT_EXPORT
-%%   IteratorType GetIteratorBegin() const {
-%%     return IteratorType(*this, 0);
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   IteratorType GetIteratorEnd() const {
-%%     return IteratorType(*this, this->GetNumberOfValues());
-%%   }
-
-%% private:
-%%   DequeType *Container;
-%% };
-%% \end{daxexample}
-
-%% The next step in creating an adapter container is to define a tag for the
-%% adapter. We shall call ours
-%% \textcode{ArrayContainerControlTagFooPressure}. Then, we need to create a
-%% specialization of the templated \daxcontinternal{ArrayContainerControl}
-%% class. The \textidentifier{ArrayHandle} will instantiate an object using
-%% the array container tag we give it, and we define our own specialization so
-%% that it runs our interface into the code.
-
-%% \daxcontinternal{ArrayContainerControl} has two template arguments: the
-%% base type of the array and the array container tag.
-
-%% \begin{daxexample}{Prototype for \protect\daxcontinternal{ArrayContainerControl}.}
-%% namespace dax {
-%% namespace cont {
-%% namespace internal {
-
-%% template<typename T, typename ArrayContainerControlTag>
-%% class ArrayContainerControl;
-
-%% }
-%% }
-%% }
-%% \end{daxexample}
-
-%% The \daxcontinternal{ArrayContainerControl} must define the following items.
-%% \begin{description}
-%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
-%%   in the array. This is the same type as the first template argument.
-%% \item[\textcode{PortalType}] The type of an array portal that can be used
-%%   to access the underlying data. This array portal needs to work only in
-%%   the control environment.
-%% \item[\textcode{PortalConstType}] A read-only (const) version of
-%%   \textcode{PortalType}.
-%% \item[\textcode{GetPortal}] A method that returns an array portal of type
-%%   \textcode{PortalType} that can be used to access the data manged in this
-%%   container.
-%% \item[\textcode{GetPortalConst}] Same as \textcode{GetPortal} except it
-%%   returns a read-only (const) array portal.
-%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
-%%   values the container is currently allocated for.
-%% \item[\textcode{Allocate}] A method that allocates the array to a given
-%%   size. An values stored in the previous allocation may be destroyed.
-%% \item[\textcode{Shrink}] A method like \textcode{Allocate} with two
-%%   differences. First, the size of the allocation must be smaller than the
-%%   existing allocation when the method is called. Second, any values
-%%   currently stored in the array will be valid after the array is
-%%   resized. This constrained form of allocation allows the array to be
-%%   resized and values valid without ever having to copy data.
-%% \item[\textcode{ReleaseResources}] A method that instructs the container to
-%%   free all of its memory.
-%% \end{description}
-
-%% The following provides an example implementation of our adapter to a
-%% \textcode{FooFieldsDeque}. It relies on the
-%% \textcode{ArrayPortalFooPressure} provided in
-%% Example~\ref{ex:ArrayPortalAdapter}.
-
-%% \begin{daxexample}{Array container to adapt a third-party container to Dax.}
-%% // Includes or definition for ArrayPortalFooPressure
-
-%% struct ArrayContainerControlTagFooPressure {  };
-
-%% namespace dax {
-%% namespace cont {
-%% namespace internal {
-
-%% template<>
-%% class ArrayContainerControl<dax::Scalar, ArrayContainerControlTagFooPressure>
-%% {
-%% public:
-%%   typedef dax::Scalar ValueType;
-
-%%   typedef ArrayPortalFooPressure<FooFieldsDeque> PortalType;
-%%   typedef ArrayPortalFooPressure<const FooFieldsDeque> PortalConstType;
-
-%%   DAX_CONT_EXPORT
-%%   ArrayContainerControl(FooFieldsDeque *container) : Container(container) {  }
-
-%%   DAX_CONT_EXPORT
-%%   PortalType GetPortal() { return PortalType(this->Container); }
-
-%%   DAX_CONT_EXPORT
-%%   PortalConstType GetPortalConst() const { return PortalConstType(this->Container); }
-
-%%   DAX_CONT_EXPORT
-%%   dax::Id GetNumberOfValues() const {
-%%     return static_cast<dax::Id>(this->Container->size());
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void Allocate(dax::Id numberOfValues) { this->Container->resize(numberOfValues); }
-
-%%   DAX_CONT_EXPORT
-%%   void Shrink(dax::Id numberOfValues) { this->Container->resize(numberOfValues); }
-
-%%   DAX_CONT_EXPORT
-%%   void ReleaseResources() { this->Container->clear(); }
-
-%% private:
-%%   FooFieldsDeque *Container;
-%% };
-
-%% }
-%% }
-%% } // namespace dax::cont::internal
-%% \end{daxexample}
-
-%% The final step to make a container adapter is to make a mechanism to
-%% construct an \textidentifier{ArrayHandle} that points to a particular
-%% container. This can be done by creating a trivial subclass of
-%% \daxcont{ArrayHandle} that simply constructs the array handle to the state
-%% of an existing container. \fix{There remain some things to fix with with
-%%   feature. First, the constructor might be a bit overcomplicated. Second,
-%%   there is an issue with the concept template matching mechanism that can
-%%   cause it to fail with these ArrayHandle subclasses.}
-
-%% \begin{daxexample}{Array handle to adapt a third-party container to Dax.}
-%% template<typename DeviceAdapter>
-%% class ArrayHandleFooPressure
-%%     : public dax::cont::ArrayHandle<
-%%                 dax::Scalar, ArrayContainerControlTagFooPressure, DeviceAdapter>
-%% {
-%% private:
-%%   typedef dax::cont::internal
-%%       ::ArrayContainerControl<dax::Scalar,ArrayContainerControlTagFooPressure>
-%%       ArrayContainerControlType;
-%%   typedef dax::cont::internal
-%%       ::ArrayTransfer<T,ArrayContainerControlTagFooPressure,DeviceAdapter>
-%%       ArrayTransferType;
-%% public:
-%%   typedef dax::cont::ArrayHandle<
-%%       dax::Scalar, ArrayContainerControlTagFooPressure, DeviceAdapter> Superclass;
-
-%%   ArrayHandleFooPressure(FooFieldsDeque *container)
-%%     : Superclass(ArrayContainerControlType(container), true, ArrayTransferType(), false)
-%%   {  }
-%% };
-%% \end{daxexample}
+\vtkmlisting{Array handle to adapt a third-party container to VTK-m.}{ArrayHandleAdapter.cxx}
 
 %% With this new version of \textidentifier{ArrayHandle}, the Dax toolkit can
 %% now read to and write from the \textcode{FooFieldsDeque} structure
@@ -717,8 +556,8 @@ execution environment, this is seldom an issue.
 %% };
 %% \end{daxexample}
 
-%% \index{container!adapting|)}
-%% \index{array~handle!adapting|)}
+\index{container!adapting|)}
+\index{array~handle!adapting|)}
 
 %% \subsection{Implicit Containers}
 
@@ -1365,8 +1204,8 @@ execution environment, this is seldom an issue.
 %% \index{container!derived|)}
 %% \index{array~handle!derived|)}
 
-%% \index{container|)}
-%% \index{array~handle!container|)}
+\index{container|)}
+\index{array~handle!container|)}
 
 \index{array~handle|)}
 

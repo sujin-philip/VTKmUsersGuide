@@ -1,5 +1,6 @@
 
 set(example_src
+  ArrayHandle.cxx
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx
   ExportMacro.cxx

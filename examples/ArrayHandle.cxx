@@ -1,6 +1,8 @@
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DeviceAdapter.h>
 
+#include <vtkm/exec/FunctorBase.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 #include <algorithm>
@@ -11,6 +13,20 @@ namespace {
 vtkm::Scalar TestValue(vtkm::Id index)
 {
   return 1 + 0.001 * index;
+}
+
+void CheckArrayValues(const vtkm::cont::ArrayHandle<vtkm::Scalar> &array,
+                      vtkm::Scalar factor = 1)
+{
+  // So far all the examples are using 50 entries. Could change.
+  VTKM_TEST_ASSERT(array.GetNumberOfValues() == 50, "Wrong number of values");
+
+  for (vtkm::Id index = 0; index < array.GetNumberOfValues(); index++)
+  {
+    VTKM_TEST_ASSERT(
+          array.GetPortalConstControl().Get(index) == TestValue(index)*factor,
+          "Bad data value.");
+  }
 }
 
 void BasicConstruction()
@@ -44,12 +60,7 @@ void ArrayHandleFromCArray()
   //// END-EXAMPLE ArrayHandleFromCArray.cxx
   ////
 
-  for (vtkm::Id index = 0; index < 50; index++)
-  {
-    VTKM_TEST_ASSERT(
-          inputArray.GetPortalConstControl().Get(index) == TestValue(index),
-          "Bad data value.");
-  }
+  CheckArrayValues(inputArray);
 }
 
 ////
@@ -77,12 +88,7 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> BadDataLoad()
   //// END-EXAMPLE ArrayHandleFromVector.cxx
   ////
   //// PAUSE-EXAMPLE
-  for (vtkm::Id index = 0; index < 50; index++)
-  {
-    VTKM_TEST_ASSERT(
-          inputArray.GetPortalConstControl().Get(index) == TestValue(index),
-          "Bad data value.");
-  }
+  CheckArrayValues(inputArray);
   //// RESUME-EXAMPLE
 
   return inputArray;
@@ -124,6 +130,17 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> SafeDataLoad()
 ////
 //// END-EXAMPLE ArrayOutOfScope.cxx
 ////
+
+void ArrayHandleFromVector()
+{
+  BadDataLoad();
+}
+
+void CheckSafeDataLoad()
+{
+  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
+  CheckArrayValues(inputArray);
+}
 
 ////
 //// BEGIN-EXAMPLE SimpleArrayPortal.cxx
@@ -173,22 +190,6 @@ private:
 //// END-EXAMPLE SimpleArrayPortal.cxx
 ////
 
-void ArrayHandleFromVector()
-{
-  BadDataLoad();
-}
-
-void CheckSafeDataLoad()
-{
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
-  for (vtkm::Id index = 0; index < 50; index++)
-  {
-    VTKM_TEST_ASSERT(
-          inputArray.GetPortalConstControl().Get(index) == TestValue(index),
-          "Bad data value.");
-  }
-}
-
 ////
 //// BEGIN-EXAMPLE ControlPortals.cxx
 ////
@@ -228,6 +229,56 @@ void TestControlPortalsExample()
   SortCheckArrayHandle(SafeDataLoad());
 }
 
+////
+//// BEGIN-EXAMPLE ExecutionPortals.cxx
+////
+template<typename Device>
+struct DoubleFunctor : public vtkm::exec::FunctorBase
+{
+  typedef typename vtkm::cont::ArrayHandle<vtkm::Scalar>::
+      ExecutionTypes<Device>::PortalConst InputPortalType;
+  typedef typename vtkm::cont::ArrayHandle<vtkm::Scalar>::
+      ExecutionTypes<Device>::Portal OutputPortalType;
+
+  VTKM_CONT_EXPORT
+  DoubleFunctor(InputPortalType inputPortal, OutputPortalType outputPortal)
+    : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
+
+  VTKM_EXEC_EXPORT
+  void operator()(vtkm::Id index) const {
+    this->OutputPortal.Set(index, 2*this->InputPortal.Get(index));
+  }
+
+  InputPortalType InputPortal;
+  OutputPortalType OutputPortal;
+};
+
+template<typename Device>
+void DoubleArray(vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray,
+                 vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray,
+                 Device)
+{
+  vtkm::Id numValues = inputArray.GetNumberOfValues();
+
+  DoubleFunctor<Device> functor(
+        inputArray.PrepareForInput(Device()),
+        outputArray.PrepareForOutput(numValues, Device()));
+
+  vtkm::cont::DeviceAdapterAlgorithm<Device>::Schedule(functor, numValues);
+}
+////
+//// END-EXAMPLE ExecutionPortals.cxx
+////
+
+void TestExecutionPortalsExample()
+{
+  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
+  CheckArrayValues(inputArray);
+  vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray;
+  DoubleArray(inputArray, outputArray, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  CheckArrayValues(outputArray, 2);
+}
+
 void Test()
 {
   BasicConstruction();
@@ -235,6 +286,7 @@ void Test()
   ArrayHandleFromVector();
   CheckSafeDataLoad();
   TestControlPortalsExample();
+  TestExecutionPortalsExample();
 }
 
 } // anonymous namespace

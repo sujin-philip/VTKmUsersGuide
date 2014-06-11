@@ -617,523 +617,175 @@ identifiers or for indexing operations.
 \index{container!implicit|)}
 \index{array~handle!implicit|)}
 
-%% \subsection{Derived Containers}
-
-%% \index{array~handle!derived|(}
-%% \index{container!derived|(}
-
-%% So far, we have discussed using the array container mechanism to adapt to
-%% particular memory layout and to create implicit arrays. Yet another option
-%% is to create a \keyterm{derived container}. A derived container shares
-%% attributes with both adaptive containers and implicit containers. A derived
-%% container takes one or more other arrays and changes their behavior in some
-%% way. Their implementation is similar to adapting a memory layout, but some
-%% of the details are different.
-
-%% In this section we will demonstrate the steps required to create a derived
-%% container. For the purposes of the example, let us say we want to array
-%% handles to behave as one array with the contents concatenated together. We
-%% could of course actually copy the data, but we can also do it in place.
-
-%% As before, the first step to creating a derived container is to build an
-%% array portal that will take portals from arrays being derived. The portal
-%% must work in both the control and execution environment (or have a separate
-%% version for control and execution).
-
-%% \begin{daxexample}[ex:DerivedArrayPortal]{Derived array portal for concatenated arrays.}
-%% #include <dax/cont/ArrayContainerControlImplicit.h>
-%% #include <dax/cont/ArrayPortal.h>
-%% #include <dax/cont/Assert.h>
-%% #include <dax/cont/internal/IteratorFromArrayPortal.h>
-
-%% template<template P1, template P2>
-%% class ArrayPortalConcatenate
-%% {
-%% public:
-%%   typedef P1 PortalType1;
-%%   typedef P2 PortalType2;
-%%   typedef typename PortalType1::ValueType ValueType;
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   ArrayPortalConcatenate() : FirstPortal(), Portal2() {   }
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   ArrayPortalConcatenate(const PortalType1 &firstPortal,
-%%                          const PortalType2 &secondPortal)
-%%     : Portal1(firstPortal), Portal2(secondPortal) {  }
-
-%%   /// Copy constructor for any other ArrayPortalConcatenate with an iterator
-%%   /// type that can be copied to this iterator type. This allows us to do any
-%%   /// type casting that the iterators do (like the non-const to const cast).
-%%   template<class OtherP1, class OtherP2>
-%%   DAX_CONT_EXPORT
-%%   ArrayPortalConcatenate(const ArrayPortalConcatenate<OtherP1,OtherP2> &src)
-%%     : Portal1(src.GetPortal1()), Portal2(src.GetPortal2()) {  }
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   dax::Id GetNumberOfValues() const {
-%%     return this->Portal1.GetNumberOfValues() + this->Portal2.GetNumberOfValues();
-%%   }
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   ValueType Get(dax::Id index) const {
-%%     if (index < this->Portal1.GetNumberOfValues())
-%%       {
-%%       return this->Portal1.Get(index);
-%%       }
-%%     else
-%%       {
-%%       return this->Portal2.Get(index);
-%%       }
-%%   }
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   ValueType Set(dax::Id index, const ValueType &value) const {
-%%     if (index < this->Portal1.GetNumberOfValues())
-%%       {
-%%       return this->Portal1.Set(index, value);
-%%       }
-%%     else
-%%       {
-%%       return this->Portal2.Set(index, value);
-%%       }
-%%   }
-
-%%   typedef dax::cont::internal::IteratorFromArrayPortal<
-%%       ArrayPortalConcatenate<PortalType1,PortalType2> > IteratorType;
-
-%%   DAX_CONT_EXPORT
-%%   IteratorType GetIteratorBegin() const {
-%%     return IteratorType(*this);
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   IteratorType GetIteratorEnd() const {
-%%     return IteratorType(*this, this->GetNumberOfValues());
-%%   }
-
-%%   DAX_EXEC_CONT_EXPORT
-%%   const PortalType1 &GetPortal1() const { return this->Portal1; }
-%%   DAX_EXEC_CONT_EXPORT
-%%   const PortalType2 &GetPortal2() const { return this->Portal2; }
-
-%% private:
-%%   PortalType1 Portal1;
-%%   PortalType2 Portal2;
-%% };
-%% \end{daxexample}
-
-%% Like in an adapter container, the next step in creating a derived container
-%% is to define a tag for the adapter. We shall call ours
-%% \textcode{ArrayContainerControlTagConcatenate} and it will be templated on
-%% the two array handle types that we are deriving. Then, we need to create a
-%% specialization of the templated \daxcontinternal{ArrayContainerControl}
-%% class. The implementation for an \textidentifier{ArrayContainerControl} for
-%% a derived container is usually trivial compared to an adapter container
-%% because the majority of the work is deferred to the derived arrays.
-
-%% \begin{daxexample}[ex:DerivedArrayContainer]{\textidentifier{ArrayContainerControl} for derived container of concatenated arrays.}
-%% template<typename ArrayHandleType1, typename ArrayHandleType2>
-%% struct ArrayContainerControlTagConcatenate {  };
-
-%% namespace dax {
-%% namespace cont {
-%% namespace internal {
-
-%% template<typename T, typename Container1, typename Container2, typename DeviceAdapter>
-%% class ArrayContainerControl<
-%%     T,
-%%     ArrayContainerControlTagConcatenate<
-%%         dax::cont::ArrayHandle<T, Container1, DeviceAdapter>
-%%         dax::cont::ArrayHandle<T, Container2, DeviceAdapter> > >
-%% {
-%%   typedef dax::cont::ArrayHandle<T, Container1, DeviceAdapter> ArrayHandleType1;
-%%   typedef dax::cont::ArrayHandle<T, Container2, DeviceAdapter> ArrayHandleType2;
-
-%% public:
-%%   typedef T ValueType;
-
-%%   typedef ArrayPortalConcatinate<
-%%       typename ArrayHandleType1::PortalControl,
-%%       typename ArrayHandleType2::PortalControl> PortalType;
-%%   typedef ArrayPortalConcatinate<
-%%       typename ArrayHandleType1::PortalConstControl,
-%%       typename ArrayHandleType2::PortalConstControl> PortalConstType;
-
-%%   DAX_CONT_EXPORT
-%%   ArrayContainerControl() : Valid(false) {  }
-
-%%   DAX_CONT_EXPORT
-%%   ArrayContainerControl(const ArrayHandleType1 firstArrayHandle,
-%%                         const ArrayHandle2 secondArrayHandle)
-%%     : Array1(firstArrayHandle), Array2(secondArrayHandle) {  }
-
-%%   DAX_CONT_EXPORT
-%%   PortalType GetPortal() {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     return PortalType(this->Array1.GetPortalControl(), this->Array2.GetPortalControl());
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   PortalConstType GetPortalConst() const {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     return PortalType(this->Array1.GetPortalConstControl(),
-%%                       this->Array2.GetPortalConstControl());
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   dax::Id GetNumberOfValues() const {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void Allocate(dax::Id numberOfValues) {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     // This implementation of allocate, which allocates the same amount in both arrays, is
-%%     // arbitrary. It could, for example, leave the size of Array1 alone and change the size
-%%     // of Array2. Or, probably most likely, it could simply throw an error and state that
-%%     // this operation is invalid.
-%%     dax::Id half = numberOfValues/2;
-%%     // PrepareForOutput is the only accessible way to resize an ArrayHandle.
-%%     this->Array1.PrepareForOutput(numberOfValues-half);
-%%     this->Array2.PrepareForOutput(half);
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void Shrink(dax::Id numberOfValues) {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     if (numberOfValues < this->Array1.GetNumberOfValues())
-%%       {
-%%       this->Array1.Shrink(numberOfValues);
-%%       this->Array2.Shrink(0);
-%%       }
-%%     else
-%%       {
-%%       this->Array2.Shrink(numberOfValues - this->Array1.GetNumberOfValues());
-%%       }
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void ReleaseResources() {
-%%     DAX_ASSERT_CONT(this->Valid);
-%%     this->Array1.ReleaseResources();
-%%     this->Array2.ReleaseResources();
-%%   }
-
-%% private:
-%%   ArrayHandleType1 Array1;
-%%   ArrayHandleType2 Array2;
-%%   bool Valid;
-%% };
-
-%% }
-%% }
-%% } // namespace dax::cont::internal
-%% \end{daxexample}
-
-%% One of the responsibilities of an array handle is to copy data between the
-%% control and execution environments. The default behavior is to request the
-%% device adapter to copy data items from one environment to another. This
-%% might involve transferring data between a host and device. For an array of
-%% data resting in memory, this is necessary. However, implicit containers
-%% (described in the previous section) override this behavior to pass nothing
-%% but the functional array portal. Likewise, it is undesirable to do a raw
-%% transfer of data with derived containers. The underlying arrays being
-%% derived may be used in other contexts, and it would be good to share the
-%% data wherever possible. It is also sometimes more efficient to copy data
-%% independently from the arrays being derived than from the derived container
-%% itself.
-
-%% \index{array~transfer|(}
-
-%% The mechanism that controls how a particular control array container gets
-%% transferred to and from the execution environment is encapsulated in the
-%% templated \daxcontinternal{ArrayTransfer} class. By creating a
-%% specialization of \daxcontinternal{ArrayTransfer}, we can modify the
-%% transfer behavior to instead transfer the arrays being derived and use the
-%% respective copies in the control and execution environments.
-
-%% \daxcontinternal{ArrayTransfer} has three template arguments: the base type
-%% of the array, the array container tag, and the device adapter tag.
-
-%% \begin{daxexample}{Prototype for \protect\daxcontinternal{ArrayTransfer}.}
-%% namespace dax {
-%% namespace cont {
-%% namespace internal {
-
-%% template<typename T, class ArrayContainerControlTag, class DeviceAdapterTag>
-%% class ArrayTransfer;
-
-%% }
-%% }
-%% }
-%% \end{daxexample}
-
-%% The \daxcontinternal{ArrayTransfer} must define the following items.
-%% \begin{description}
-%% \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
-%%   in the array. This is the same type as the first template argument.
-%% \item[\textcode{PortalControl}] The type of an array portal that is used to
-%%   access the underlying data in the control environment.
-%% \item[\textcode{PortalConstControl}] A read-only (const) version of
-%%   \textcode{PortalControl}.
-%% \item[\textcode{PortalExecution}] The type of an array portal that is used
-%%   to access the underlying data in the execution environment.
-%% \item[\textcode{PortalConstExecution}] A read-only (const) version of
-%%   \textcode{PortalExecution}.
-%% \item[\textcode{GetNumberOfValues}] A method that returns the number of
-%%   values currently allocated in the execution environment. The results may
-%%   be undefined if none of the load or allocate methods have yet been
-%%   called.
-%% \item[\textcode{LoadDataForInput}] A method that takes an array portal of
-%%   type \textcode{PortalConstControl}, allocates enough space in the
-%%   execution environment, and copies the given data to that array. The
-%%   allocated array can later be accessed via the
-%%   \textcode{GetPortalConstExecution} method. The data is assumed to be
-%%   read-only.
-%% \item[\textcode{LoadDataForInPlace}] A method that takes an array portal of
-%%   type \textcode{PortalControl}, allocates enough space in the execution
-%%   environment, and copies the given data to that array. The allocated array
-%%   can later be accessed via the \textcode{GetPortalExecution} and
-%%   \textcode{GetPortalConstExecution} methods. The data can be read and
-%%   written.
-%% \item[\textcode{AllocateArrayForOutput}] A method that takes an array
-%%   container and a size and allocates an array in the execution environment
-%%   of the specified size. The initial memory is uninitialized and can be
-%%   accessed via the \textcode{GetPortalExecution} method. The container
-%%   argument can be used to allocate data when the control and execution
-%%   share arrays, but this argument is often ignored.
-%% \item[\textcode{RetrieveOutputData}] This method takes an array container,
-%%   allocates memory in the control environment, and copies data from the
-%%   execution environment into it.
-%% \item[\textcode{CopyInto}] This method takes an STL-compatible iterator and
-%%   copies data from the execution environment into it.
-%% \item[\textcode{Shrink}] A method that adjusts the size of the array in the
-%%   execution environment to something that is a smaller size. All the data
-%%   up to the new length must remain valid. Typically, no memory is actually
-%%   reallocated. Instead, a different end is marked.
-%% \item[\textcode{GetPortalExecution}] A method that returns an array portal
-%%   that can be used in the execution environment. The portal was defined in
-%%   either \textcode{LoadDataForInPlace} or
-%%   \textcode{AllocateArrayForOutput}.
-%% \item[\textcode{GetPortalConstExecution}] A method that returns a read-only
-%%   (const) array portal that can be used in the execution environment. The
-%%   portal was defined in one of the load or allocate methods.
-%% \item[\textcode{ReleaseResources}] A method that frees any resources
-%%   (typically memory) in the execution environment.
-%% \end{description}
-
-%% Continuing our example derived container that concatenates two arrays
-%% started in Examples \ref{ex:DerivedArrayPortal} and
-%% \ref{ex:DerivedArrayContainer}, the following provides an
-%% \textidentifier{ArrayTransfer} appropriate for the derived container.
-
-%% \begin{daxexample}[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived container of concatenated arrays.}
-%% namespace dax {
-%% namespace cont {
-%% namespace internal {
-
-%% template<class ArrayHandleType1,
-%%          class ArrayHandleType2,
-%%          class DeviceAdapter>
-%% class ArrayTransfer<
-%%     typename ArrayHandleType1::ValueType,
-%%     ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
-%%     DeviceAdapter>
-%% {
-%% public:
-%%   typedef typename ArrayHandleType1::ValueType ValueType;
-
-%% private:
-%%   typedef
-%%   ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
-%%     ContainerTag;
-%%   typedef dax::cont::internal::ArrayContainerControl<ValueType, ContainerTag> ContainerType;
-
-%% public:
-%%   typedef typename ContainerType::PortalType PortalControl;
-%%   typedef typename ContainerType::PortalConstType PortalConstControl;
-
-%%   typedef ArrayPortalConcatinate<
-%%       typename ArrayHandleType1::PortalExecution,
-%%       typename ArrayHandleType2::PortalExecution> PortalExecution;
-%%   typedef ArrayPortalConcatinate<
-%%       typename ArrayHandleType1::PortalConstExecution,
-%%       typename ArrayHandleType2::PortalConstExecution> PortalConstExecution;
-
-%%   DAX_CONT_EXPORT
-%%   ArrayTransfer()
-%%     : ArraysValid(false),
-%%       ExecutionPortalConstValid(false),
-%%       ExecutionPortalValid(false)
-%%   {  }
-
-%%   DAX_CONT_EXPORT
-%%   ArrayTransfer(ArrayHandleType1 firstArray,
-%%                 ArrayHandleType2 secondArray)
-%%     : Array1(firstArray),
-%%       Array2(secondArray),
-%%       ArraysValid(true),
-%%       ExecutionPortalConstValid(false),
-%%       ExecutionPortalValid(false)
-%%   {  }
-
-%%   DAX_CONT_EXPORT
-%%   dax::Id GetNumberOfValues() const {
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void LoadDataForInput(PortalConstControl daxNotUsed(portal)) {
-%%     // Assuming portal was created from a container with the same two arrays.
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     this->ExecutionPortalConst = PortalConstExecution(this->Array1.PrepareForInput(),
-%%                                                       this->Array2.PrepareForInput());
-%%     this->ExecutionPortalConstValid = true;
-%%     this->ExecutionPortalValid = false;
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
-%%     // Assuming portal was created from a container with the same two arrays.
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     this->ExecutionPortal = PortalExecution(this->Array1.PrepareForInPlace(),
-%%                                             this->Array2.PrepareForInPlace());
-
-%%     this->ExecutionPortalConst = this->ExecutionPortal;
-%%     this->ExecutionPortalConstValid = true;
-%%     this->ExecutionPortalValid = true;
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void AllocateArrayForOutput(ContainerType &daxNotUsed(controlArray),
-%%                               dax::Id numberOfValues) {
-%%     // Assuming controlArray uses the same arrays as this.
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-
-%%     // This implementation of allocate, which allocates the same amount in both arrays, is
-%%     // arbitrary. It could, for example, leave the size of Array1 alone and change the size
-%%     // of Array2. Or, probably most likely, it could simply throw an error and state that
-%%     // this operation is invalid.
-%%     dax::Id half = numberOfValues/2;
-%%     this->ExecutionPortal
-%%         = PortalExecution(this->Array1.PrepareForOutput(numberOfValues-half),
-%%                           this->Array2.PrepareForOutput(half));
-%%     this->ExecutionPortalValid = true;
-%%     this->ExecutionPortalConstValid = false;
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void RetrieveOutputData(ContainerType &daxNotUsed(controlArray)) const {
-%%     // Implementation of this method should be unnecessary. The internal
-%%     // first and second array handles should automatically retrieve the
-%%     // output data as necessary.
-%%   }
-
-%%   template<typename IteratorTypeControl>
-%%   DAX_CONT_EXPORT
-%%   void CopyInto(IteratorTypeControl dest) const {
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     this->Array1->CopyInto(dest);
-%%     this->Array2->CopyInto(dest + this->Array1.GetNumberOfValues());
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void Shrink(dax::Id numberOfValues) {
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     if (numberOfValues < this->Array1.GetNumberOfValues())
-%%       {
-%%       this->Array1.Shrink(numberOfValues);
-%%       this->Array2.Shrink(0);
-%%       }
-%%     else
-%%       {
-%%       this->Array2.Shrink(numberOfValues - this->Array1.GetNumberOfValues());
-%%       }
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   PortalExecution GetPortalExecution() {
-%%     DAX_ASSERT_CONT(this->ExecutionPortalValid);
-%%     return this->ExecutionPortal;
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   PortalConstExecution GetPortalConstExecution() const {
-%%     DAX_ASSERT_CONT(this->ExecutionPortalConstValid);
-%%     return this->ExecutionPortalConst;
-%%   }
-
-%%   DAX_CONT_EXPORT
-%%   void ReleaseResources() {
-%%     DAX_ASSERT_CONT(this->ArraysValid);
-%%     this->Array1.ReleaseResourcesExecution();
-%%     this->Array2.ReleaseResourcesExecution();
-%%     this->ExecutionPortalValid = false;
-%%     this->ExecutionPortalConstValid = false;
-%%   }
-
-%% private:
-%%   ArrayHandleType1 Array1;
-%%   ArrayHandleType2 Array2;
-%%   bool ArraysValid;
-%%   PortalConstExecution ExecutionPortalConst;
-%%   bool ExecutionPortalConstValid;
-%%   PortalExecution ExecutionPortal;
-%%   bool ExecutionPortalValid;
-%% };
-
-%% }
-%% }
-%% } // namespace dax::cont::internal
-%% \end{daxexample}
-
-%% \index{array~transfer|)}
-
-%% The final step to make a derived container is to create a mechanism to
-%% construct an \textidentifier{ArrayHandle} with a container derived from the
-%% desired arrays. This can be done by creating a trivial subclass of
-%% \daxcont{ArrayHandle} that simply constructs the array handle to the state
-%% of an existing container. It uses a protected constructor of
-%% \daxcont{ArrayHandle} that accepts a constructed container, array transfer,
-%% and flags on the status of the control and execution arrays. \fix{There
-%%   remains an issue with the concept template matching mechanism that can
-%%   cause this subclass to fail with these ArrayHandle subclasses.}
-
-%% \begin{daxexample}{\textidentifier{ArrayHandle} for derived container of concatenated arrays.}
-%% template<typename ArrayHandleType1, typename ArrayHandleType2>
-%% class ArrayHandleConcatenate
-%%   : public dax::cont::ArrayHandle<
-%%       typename ArrayHandleType1::ValueType,
-%%       ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
-%%       typename ArrayHandleType1::DeviceAdapterTag>
-%% {
-%%   typedef ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
-%%       ContainerTag;
-%%   typedef dax::cont::ArrayHandle<
-%%       typename ArrayHandleType1::ValueType,
-%%       ContainerTag,
-%%       typename ArrayHandleType1::DeviceAdapterTag> Superclass;
-%%   typedef dax::cont::internal::ArrayContainerControl<T,ContainerTag> ContainerType;
-%%   typedef dax::cont::internal::ArrayTransfer<
-%%       typename ArrayHandleType1::ValueType,
-%%       ContainerTag,
-%%       typename ArrayHandleType1::DeviceAdapterTag> TransferType;
-
-%% public:
-%%   ArrayHandleConcatenate(const ArrayHandleType1 &array1, const ArrayHandleType2 &array2)
-%%     : Superclass(ContainerType(array1, array2),
-%%                  true,
-%%                  TransferType(array1, array2),
-%%                  false)
-%%   {  }
-%% };
-%% \end{daxexample}
-
-%% \index{container!derived|)}
-%% \index{array~handle!derived|)}
+\subsection{Transformed Arrays}
+\label{sec:TransformedArrays}
+
+\index{array~handle!transform|(}
+\index{transformed~array|(}
+
+\fix{\vtkmcont{ArrayHandleTransform} is not implemented in VTK-m yet.}
+
+\index{transformed~array|)}
+\index{array~handle!transform|)}
+
+\subsection{Derived Containers}
+
+\index{array~handle!derived|(}
+\index{container!derived|(}
+\index{derived~container|(}
+
+So far, we have discussed using the array container mechanism to adapt to
+particular memory layout and to create implicit arrays. Yet another option
+is to create a \keyterm{derived container}. A derived container shares
+attributes with both adaptive containers and implicit containers. A derived
+container takes one or more other arrays and changes their behavior in some
+way. Their implementation is similar to adapting a memory layout, but some
+of the details are different.
+
+In this section we will demonstrate the steps required to create a derived
+container. A transformed array, documented in
+Section~\ref{sec:TransformedArrays}, provides a specific form of a derived
+container. When applicable, it is much easier to implement an array
+transform than a general derived container. However, if a simple transform
+does not work, for example if your derivation uses multiple arrays or
+requires general lookups, you can do so by creating your own derived
+container.  For the purposes of the example in this section, let us say we
+want 2 array handles to behave as one array with the contents concatenated
+together. We could of course actually copy the data, but we can also do it
+in place.
+
+The first step to creating a derived container is to build an array portal
+that will take portals from arrays being derived. The portal must work in
+both the control and execution environment (or have a separate version for
+control and execution).
+
+\fix{Technically there is a problem with this portal in that it calls the
+  derived portals' Get and Set within methods exported in both control and
+  execution. Portals that are not explicit tend to be exported in either
+  one or the other, so these exports will fail under CUDA. In reality you
+  need separate versions for control and execution environments.}
+
+\vtkmlisting[ex:DerivedArrayPortal]{Derived array portal for concatenated arrays.}{DerivedArrayPortal.cxx}
+
+Like in an adapter container, the next step in creating a derived container
+is to define a tag for the adapter. We shall call ours
+\textcode{ArrayContainerControlTagConcatenate} and it will be templated on
+the two array handle types that we are deriving. Then, we need to create a
+specialization of the templated \vtkmcontinternal{ArrayContainerControl}
+class. The implementation for an \textidentifier{ArrayContainerControl} for
+a derived container is usually trivial compared to an adapter container
+because the majority of the work is deferred to the derived arrays.
+
+\vtkmlisting[ex:DerivedArrayContainer]{\textidentifier{ArrayContainerControl} for derived container of concatenated arrays.}{DerivedArrayContainer.cxx}
+
+One of the responsibilities of an array handle is to copy data between the
+control and execution environments. The default behavior is to request the
+device adapter to copy data items from one environment to another. This
+might involve transferring data between a host and device. For an array of
+data resting in memory, this is necessary. However, implicit containers
+(described in the previous section) override this behavior to pass nothing
+but the functional array portal. Likewise, it is undesirable to do a raw
+transfer of data with derived containers. The underlying arrays being
+derived may be used in other contexts, and it would be good to share the
+data wherever possible. It is also sometimes more efficient to copy data
+independently from the arrays being derived than from the derived container
+itself.
+
+\index{array~transfer|(}
+
+The mechanism that controls how a particular control array container gets
+transferred to and from the execution environment is encapsulated in the
+templated \vtkmcontinternal{ArrayTransfer} class. By creating a
+specialization of \vtkmcontinternal{ArrayTransfer}, we can modify the
+transfer behavior to instead transfer the arrays being derived and use the
+respective copies in the control and execution environments.
+
+\vtkmcontinternal{ArrayTransfer} has three template arguments: the base type
+of the array, the array container tag, and the device adapter tag.
+
+\vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayTransfer}.}{ArrayTransferPrototype.cxx}
+
+The \vtkmcontinternal{ArrayTransfer} specialization must define the
+following items.
+\begin{description}
+\item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+  in the array. This is the same type as the first template argument.
+\item[\textcode{PortalControl}] The type of an array portal that is used to
+  access the underlying data in the control environment.
+\item[\textcode{PortalConstControl}] A read-only (const) version of
+  \textcode{PortalControl}.
+\item[\textcode{PortalExecution}] The type of an array portal that is used
+  to access the underlying data in the execution environment.
+\item[\textcode{PortalConstExecution}] A read-only (const) version of
+  \textcode{PortalExecution}.
+\item[\textcode{GetNumberOfValues}] A method that returns the number of
+  values currently allocated in the execution environment. The results may
+  be undefined if none of the load or allocate methods have yet been
+  called.
+\item[\textcode{LoadDataForInput}] There are actually two versions of this
+  overloaded method. The first form takes a portal of type
+  \textcode{PortalControl} and the second takes an instance of
+  \textidentifier{ArrayContainerControl}. Both methods are expected to
+  allocate enough space in the execution environment and copy the given
+  data to that array. In both cases allocated array can later be accessed
+  via the and \textcode{GetPortalConstExecution} method. The data is
+  assumed to be read-only. In derived arrays, it is common to implement
+  only one version and throw an error in the other and enforce that only
+  the implemented form is called in practice. This is done my forcing the
+  \textidentifier{ArrayHandle} to be constructed either with an array portal
+  (which will lead to the first form being called) or constructed with an
+  array container (which will lead to the second form being called).
+\item[\textcode{LoadDataForInPlace}] A method that takes an instance of
+  \textidentifier{ArrayContainerControl}, allocates enough space in the
+  execution environment, and copies the given data to that array. The
+  allocated array can later be accessed via the
+  \textcode{GetPortalExecution} and \textcode{GetPortalConstExecution}
+  methods. The data can be read and written.
+\item[\textcode{AllocateArrayForOutput}] A method that takes an array
+  container and a size and allocates an array in the execution environment
+  of the specified size. The initial memory is uninitialized and can be
+  accessed via the \textcode{GetPortalExecution} method. The container
+  argument can be used to allocate data when the control and execution
+  share arrays, but this argument is often ignored.
+\item[\textcode{RetrieveOutputData}] This method takes an array container,
+  allocates memory in the control environment, and copies data from the
+  execution environment into it.
+\item[\textcode{Shrink}] A method that adjusts the size of the array in the
+  execution environment to something that is a smaller size. All the data
+  up to the new length must remain valid. Typically, no memory is actually
+  reallocated. Instead, a different end is marked.
+\item[\textcode{GetPortalExecution}] A method that returns an array portal
+  that can be used in the execution environment. The portal was defined in
+  either \textcode{LoadDataForInPlace} or
+  \textcode{AllocateArrayForOutput}.
+\item[\textcode{GetPortalConstExecution}] A method that returns a read-only
+  (const) array portal that can be used in the execution environment. The
+  portal was defined in one of the load or allocate methods.
+\item[\textcode{ReleaseResources}] A method that frees any resources
+  (typically memory) in the execution environment.
+\end{description}
+
+Continuing our example derived container that concatenates two arrays
+started in Examples \ref{ex:DerivedArrayPortal} and
+\ref{ex:DerivedArrayContainer}, the following provides an
+\textidentifier{ArrayTransfer} appropriate for the derived container.
+
+\vtkmlisting[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived container of concatenated arrays.}{DerivedArrayTransfer.cxx}
+
+\index{array~transfer|)}
+
+The final step to make a derived container is to create a mechanism to
+construct an \textidentifier{ArrayHandle} with a container derived from the
+desired arrays. This can be done by creating a trivial subclass of
+\vtkmcont{ArrayHandle} that simply constructs the array handle to the state
+of an existing container. It uses a protected constructor of
+\vtkmcont{ArrayHandle} that accepts a constructed container.
+
+\vtkmlisting{\textidentifier{ArrayHandle} for derived container of concatenated arrays.}{DerivedArrayHandle.cxx}
+
+\index{derived~container|)}
+\index{container!derived|)}
+\index{array~handle!derived|)}
 
 \index{container|)}
 \index{array~handle!container|)}

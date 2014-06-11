@@ -2,6 +2,7 @@
 set(example_src
   ArrayHandle.cxx
   ArrayHandleAdapt.cxx
+  ArrayHandleImplicit.cxx
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx
   ExportMacro.cxx

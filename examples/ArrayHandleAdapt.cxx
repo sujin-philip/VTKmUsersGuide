@@ -1,4 +1,6 @@
 #include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ArrayHandleCounting.h>
+#include <vtkm/cont/DeviceAdapter.h>
 
 #include <vtkm/cont/testing/Testing.h>
 
@@ -48,6 +50,13 @@ public:
   VTKM_CONT_EXPORT
   ArrayPortalFooPressure(DequeType *container) : Container(container) {  }
 
+  // Required to copy compatible types of ArrayPortalFooPressure. Really needed
+  // to copy from non-const to const versions of array portals.
+  template<typename OtherDequeType>
+  VTKM_CONT_EXPORT
+  ArrayPortalFooPressure(const ArrayPortalFooPressure<OtherDequeType> &other)
+    : Container(other.GetContainer()) {  }
+
   VTKM_CONT_EXPORT
   vtkm::Id GetNumberOfValues() const {
     return static_cast<vtkm::Id>(this->Container->size());
@@ -79,6 +88,10 @@ public:
   IteratorType GetIteratorEnd() const {
     return IteratorType(*this, this->GetNumberOfValues());
   }
+
+  // Here for the copy constructor.
+  VTKM_CONT_EXPORT
+  DequeType *GetContainer() const { return this->Container; }
 
 private:
   DequeType *Container;
@@ -195,9 +208,52 @@ public:
 //// END-EXAMPLE ArrayHandleAdapter.cxx
 ////
 
+////
+//// BEGIN-EXAMPLE UsingArrayHandleAdapter.cxx
+////
+template<typename GridType>
+VTKM_CONT_EXPORT
+void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
+{
+  // Make an array handle that points to the pressure values in the fields.
+  ArrayHandleFooPressure pressureHandle(fields);
+
+  // This is currently commented out because worklets are not yet implemented.
+//  // Run an elevation worklet.
+//  vtkm::worklet::Elevation elevation(vtkm::make_Vector3(0.0, 0.0, 0.0),
+//                                     vtkm::make_Vector3(0.0, 0.0, 10.0),
+//                                     vtkm::make_Vector2(0.02, 0.0));
+//  vtkm::cont::DispatcherMapField<vtkm::worklet::Elevation>
+//      dispatcher(elevation);
+//  dispatcher.Invoke(grid.GetPointCoordinates(), pressureHandle);
+  //// PAUSE-EXAMPLE
+
+  // In lieu of running something interesting, for now just copy from one array
+  // to another in the execution environment.
+  vtkm::cont::ArrayHandleCounting<vtkm::Scalar> countingArray(1, 50);
+  vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
+        countingArray, pressureHandle);
+
+  //// RESUME-EXAMPLE
+
+  // Make sure the values are flushed back to the control environment.
+  pressureHandle.GetPortalConstControl();
+
+  // Now the pressure field is in the fields container.
+}
+////
+//// END-EXAMPLE UsingArrayHandleAdapter.cxx
+////
+
 void Test()
 {
+  FooFieldsDeque fields(50);
+  GetElevationAirPressure(NULL, &fields);
 
+  for (vtkm::Id index = 0; index < 50; index++)
+  {
+    VTKM_TEST_ASSERT(fields[index].Pressure == index+1, "Bad value.");
+  }
 }
 
 } // anonymous namespace

@@ -525,36 +525,17 @@ of an existing container.
 
 \vtkmlisting{Array handle to adapt a third-party container to VTK-m.}{ArrayHandleAdapter.cxx}
 
-%% With this new version of \textidentifier{ArrayHandle}, the Dax toolkit can
-%% now read to and write from the \textcode{FooFieldsDeque} structure
-%% directly. Note, however, that when writing to an array handle, it is
-%% necessary to call \textcode{GetPortalControl} or
-%% \textcode{GetPortalConstControl} to flush data from the execution
-%% environment to the control environment. \fix{Should probably make this
-%%   easier.}
+With this new version of \textidentifier{ArrayHandle}, VTK-m can now read
+to and write from the \textcode{FooFieldsDeque} structure directly. Note,
+however, that when writing to an array handle, it is necessary to call
+\textcode{GetPortalControl} or \textcode{GetPortalConstControl} to flush
+data from the execution environment to the control environment. \fix{Should
+  probably make this easier.}
 
-%% \begin{daxexample}{Using an \textidentifier{ArrayHandle} with custom container.}
-%% template<typename GridType>
-%% DAX_CONT_EXPORT
-%% void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
-%% {
-%%   dax::worklet::Elevation elevation(dax::make_Vector3(0.0, 0.0, 0.0),
-%%                                     dax::make_Vector3(0.0, 0.0, 10.0),
-%%                                     dax::make_Vector2(0.02, 0.0));
+\fix{Right now we don't have things that run in the execution environment
+  that do anything useful, so update this example once that exists.}
 
-%%   // Make an array handle that points to the pressure values in fields.
-%%   ArrayHandleFooPressure pressureHandle(fields);
-
-%%   // Run the elevation worklet.
-%%   dax::cont::DispatcherMapField<dax::worklet::Elevation> dispatcher(elevation);
-%%   dispatcher.Invoke(grid.GetPointCoordinates(), pressureHandle);
-
-%%   // Make sure values are flushed back to the control environment.
-%%   pressureHandle.GetPortalConstControl();
-
-%%   // Now the pressure fields are field in the fields container.
-%% };
-%% \end{daxexample}
+\vtkmlisting{Using an \textidentifier{ArrayHandle} with custom container.}{UsingArrayHandleAdapter.cxx}
 
 \index{container!adapting|)}
 \index{array~handle!adapting|)}

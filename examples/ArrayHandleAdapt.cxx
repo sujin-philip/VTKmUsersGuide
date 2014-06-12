@@ -70,7 +70,7 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  vtkm::Scalar Set(vtkm::Id index, vtkm::Scalar value) const {
+  void Set(vtkm::Id index, vtkm::Scalar value) const {
     VTKM_ASSERT_CONT(index >= 0);
     VTKM_ASSERT_CONT(index < this->GetNumberOfValues());
     (*this->Container)[index].Pressure = value;

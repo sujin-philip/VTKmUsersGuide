@@ -601,13 +601,16 @@ and \ref{ex:ImplicitArrayContainer} demonstrates the convenience
 
 \vtkmlisting{Implicit array handle of even numbers.}{ImplicitArrayHandle.cxx}
 
-VTK-m comes with two examples of implicit containers. The first is
-\vtkmcont{ArrayHandleConstant}, which returns the same value for every
+VTK-m comes with some examples of implicit
+containers. \vtkmcont{ArrayHandleConstant} returns the same value for every
 index in the array. The constant array is useful when an algorithm that can
-work on a variable field is used on a constant value. The second is
-\vtkmcont{ArrayHandleCounting}, which returns the index as the value with a
+work on a variable field is used on a constant value.
+\vtkmcont{ArrayHandleCounting} returns the index as the value with a
 possible offset. The counting array is useful for generating fields of
 identifiers or for indexing operations.
+\vtkmcont{ArrayHandleUniformPointCoordinates} generates the position of
+points in axis-aligned uniform rectilinear grids. It is used internally by
+VTK-m to create point coordinates for these types of data structures.
 %% VTK-m also provides \vtkmcont{make\_ArrayHandleConstant} and
 %% \vtkmcont{make\_ArrayHandleCounting} convenience functions to simplify
 %% building these arrays.
@@ -792,8 +795,33 @@ of an existing container. It uses a protected constructor of
 
 \index{array~handle|)}
 
-%% \section{Grid Structures}
-%% \label{sec:GridStructures}
+\section{Dynamic Array Handle}
+\label{sec:DynamicArrayHandle}
+
+\index{dynamic~array~handle|(}
+\index{array~handle!dynamic|(}
+
+\fix{Write this.}
+
+\index{array~handle!dynamic|)}
+\index{dynamic~array~handle|)}
+
+\section{Dynamic Point Coordinates}
+\label{sec:DynamicPointCoordinates}
+
+\index{dynamic~point~coordinates|(}
+\index{point~coordinates!dynamic|(}
+
+\fix{Write this.}
+
+\index{point~coordinates!dynamic|)}
+\index{dynamic~point~coordinates|)}
+
+\section{Grid Structures}
+\label{sec:GridStructures}
+
+\fix{Not implemented yet. These will be based on EAVL data structures. The
+  name of this section might change.}
 
 %% The Dax toolkit provides containers for topologies. The topologies are
 %% built on the previously described data structures (mostly array handles)
@@ -1029,8 +1057,12 @@ of an existing container. It uses a protected constructor of
 
 %% \index{unstructured~grid|)}
 
-%% \section{Dispatchers}
-%% \label{sec:Dispatchers}
+\section{Dispatchers}
+\label{sec:Dispatchers}
+
+\index{dispatcher|(}
+
+\fix{Not implemented yet.}
 
 %% Worklets, both those provided by the Dax toolkit as listed in
 %% Section~\ref{sec:ProvidedWorklets} and ones created by a user as described
@@ -1105,112 +1137,87 @@ of an existing container. It uses a protected constructor of
 %%   \daxcont{DispatcherReduceKeysValues}.
 %% \end{description}
 
-%% \section{Timers}
-%% \label{sec:Timers}
+\index{dispatcher|)}
 
-%% \index{timer|(}
+\section{Timers}
+\label{sec:Timers}
 
-%% It is often the case that you need to measure the time it takes for an
-%% operation to happen. This could be for performing measurements for
-%% algorithm study or it could be to dynamically adjust scheduling.
+\index{timer|(}
 
-%% Performing timing in a multi-threaded environment can be tricky because
-%% operations happen asynchronously. In the Dax control environment timing is
-%% simplified because the control environment operates on a single
-%% thread. However, operations invoked in the execution environment may run
-%% asynchronously to operations in the control environment.
+It is often the case that you need to measure the time it takes for an
+operation to happen. This could be for performing measurements for
+algorithm study or it could be to dynamically adjust scheduling.
 
-%% To ensure that accurate timings can be made, Dax provides a \daxcont{Timer}
-%% class that is templated on the device adapter to provide an accurate
-%% measurement of operations that happen on the device. The timing starts when
-%% the \textidentifier{Timer} is constructed. The time elapsed can be
-%% retrieved with a call to the \textcode{GetElapsedTime} method. This method
-%% will block until all operations in the execution environment complete so as
-%% to return an accurate time. The timer can be restarted with a call to the
-%% \textcode{Reset} method.
+Performing timing in a multi-threaded environment can be tricky because
+operations happen asynchronously. In the VTK-m control environment timing
+is simplified because the control environment operates on a single
+thread. However, operations invoked in the execution environment may run
+asynchronously to operations in the control environment.
 
-%% \begin{daxexample}{Using \protect\daxcont{Timer}.}
-%% dax::cont::UniformGrid<> grid;
-%% grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(99, 99, 99));
-%% grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
-%% grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
+To ensure that accurate timings can be made, VTK-m provides a
+\vtkmcont{Timer} class that is templated on the device adapter to provide
+an accurate measurement of operations that happen on the device. If not
+template parameter is provided, the default device adapter is used.
 
-%% dax::cont::ArrayHandle<dax::Scalar> results;
-%% dax::cont::DispatchMapField<dax::worklet::Elevation> dispatcher;
+The timing starts when the \textidentifier{Timer} is constructed. The time
+elapsed can be retrieved with a call to the \textcode{GetElapsedTime}
+method. This method will block until all operations in the execution
+environment complete so as to return an accurate time. The timer can be
+restarted with a call to the \textcode{Reset} method.
 
-%% dax::cont::Timer<> timer;
-%% dispatcher.Invoke(grid.GetPointCoordinates(), results);
-%% // This call makes sure data is pulled back to the host in a host/device architecture.
-%% results.GetPortalConstControl();
-%% dax::Scalar elapsedTime = timer.GetElapsedTime();
+\fix{This example needs to be updated when something interesting can be
+  invoked.}
 
-%% std::cout << "Time to run elevation: " << elapsedTime << std::endl;
-%% \end{daxexample}
+\vtkmlisting{Using \protect\vtkmcont{Timer}.}{Timer.cxx}
 
-%% \index{timer|)}
+\index{timer|)}
 
-%% \section{Error Handling}
-%% \label{sec:ErrorHandlingControl}
+\section{Error Handling}
+\label{sec:ErrorHandlingControl}
 
-%% \index{errors|(}
+\index{errors|(}
 
-%% The Dax toolkit uses exceptions to report errors. All exceptions thrown by
-%% Dax will be a subclass of \daxcont{Error}. For simple error reporting, it
-%% is possible to simply catch a \daxcont{Error} and report the error message
-%% string reported by the \textcode{GetMessage} method.
+VTK-m uses exceptions to report errors. All exceptions thrown by VTK-m will
+be a subclass of \vtkmcont{Error}. For simple error reporting, it is
+possible to simply catch a \vtkmcont{Error} and report the error message
+string reported by the \textcode{GetMessage} method.
 
-%% \begin{daxexample}{Simple error reporting.}
-%% #include <dax/cont/Error.h>
+\vtkmlisting{Simple error reporting.}{CatchingErrors.cxx}
 
-%% int main(int argc, char **argv)
-%% {
-%%   try
-%%     {
-%%     // Do something cool with Dax
-%%     // ...
-%%     }
-%%   catch (dax::cont::Error error)
-%%     {
-%%     std::cout << error.GetMessage() << std::endl;
-%%     return 1;
-%%     }
-%%   return 0;
-%% }
-%% \end{daxexample}
+There are two subclasses to \vtkmcont{Error}. These are
+\vtkmcont{ErrorExecution} and \vtkmcont{ErrorControl}, and they represent
+errors that happen in the respective execution and control environments.
 
-%% There are two subclasses to \daxcont{Error}. These are
-%% \daxcont{ErrorExecution} and \daxcont{ErrorControl}, and they represent
-%% errors that happen in the respective execution and control environments.
+Readers familiar with parallel programming will probably note the
+difficulty in raising errors in multi-threaded execution like what happens
+in the execution environment. In fact some devices, like CUDA devices, do
+not support exceptions at all. VTK-m handles the error reporting in the
+execution environment by flagging an error when it occurs and then throwing
+an error in the control environment after all threads have terminated. This
+means that the amount of execution that happens after an error is flagged
+is indeterminate and any output values should be considered incorrect.
 
-%% Readers familiar with parallel programming will probably note the
-%% difficulty in raising errors in multi-threaded execution like what happens
-%% in the execution environment. In fact some devices, like CUDA devices, do
-%% not support exceptions at all. Dax handles the error reporting in the
-%% execution environment by flagging an error when it occurs and then throwing
-%% an error in the control environment after all threads have terminated. This
-%% means that the amount of execution that happens after an error is flagged
-%% is indeterminate and any output values should be considered incorrect.
+The \vtkmcont{ErrorControl} class is also broken down into several
+subclasses that can be independently caught to handle different types of
+errors. The following control errors exist and may be thrown.
+\begin{description}
+\item[\vtkmcont{ErrorControlAssert}] \index{assert} Thrown when an assertion
+  fails, meaning a VTK-m operation reached an unexpected state. The header
+  file \vtkmheader{vtkm/cont}{Assert.h} defines a macro named
+  \vtkmmacro{VTKM\_ASSERT\_CONT} that behaves much like the POSIX C assert
+  macro except that a \textidentifier{ErrorControlAssert} is thrown rather
+  than killing the application outright.
+\item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
+  method encounters an invalid value that inhibits progress.
+\item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
+  internal state that should never be reached. This error usually indicates
+  a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
+  should have.
+\item[\vtkmcont{ErrorControlOutOfMemory}] Thrown when a VTK-m function or
+  method tries to allocate an array and fails.
+\end{description}
 
-%% The \daxcont{ErrorControl} class is also broken down into several
-%% subclasses that can be independently caught to handle different types of
-%% errors. The following control errors exist and may be thrown.
-%% \begin{description}
-%% \item[\daxcont{ErrorControlAssert}] \index{assert} Thrown when an assertion
-%%   fails, meaning a Dax operation reached an unexpected state. The header
-%%   file \daxheader{dax/cont}{Assert.h} defines a macro named
-%%   \daxmacro{DAX\_ASSERT\_CONT} that behaves much like the POSIX C assert
-%%   macro except that a \textidentifier{ErrorControlAssert} is thrown rather
-%%   than killing the application outright.
-%% \item[\daxcont{ErrorControlBadValue}] Thrown when a Dax function or method
-%%   encounters an invalid value that inhibits progress.
-%% \item[\daxcont{ErrorControlInternal}] Thrown when Dax detects an internal
-%%   state that should never be reached. This error usually indicates a bug in
-%%   Dax or, at best, Dax failed to detect an invalid input it should have.
-%% \item[\daxcont{ErrorControlOutOfMemory}] Thrown when a Dax function or
-%%   method tries to allocate an array and fails.
-%% \end{description}
-
-%% \index{errors|)}
+\index{errors|)}
 
 %% \index{device~adapter|(}
 

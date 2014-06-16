@@ -6,8 +6,10 @@ set(example_src
   ArrayHandleImplicit.cxx
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx
+  ErrorHandling.cxx
   ExportMacro.cxx
   ListTags.cxx
+  Timer.cxx
   Traits.cxx
   )
 

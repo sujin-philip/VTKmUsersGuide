@@ -7,6 +7,7 @@ set(example_src
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx
   DeviceAdapterAlgorithms.cxx
+  DynamicArrayHandle.cxx
   ErrorHandling.cxx
   ExportMacro.cxx
   ListTags.cxx

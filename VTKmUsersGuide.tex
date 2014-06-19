@@ -130,6 +130,11 @@
                    ArrayTransfer,
                    ArrayManagerExecution,
                    ArrayManagerExecutionShareWithControl,
+                   DynamicArrayHandle,
+                   DynamicPointCoordinates,
+                   PointCoordinatesArray,PointCoordinatesUniform,
+                   PointCoordinatesBase,
+                   PointCoordinatesListTagCommon,
                    DeviceAdapterAlgorithm, DeviceAdapterAlgorithmGeneral,
                    IteratorFromArrayPortal,
                    UniformGrid,UnstructuredGrid,
@@ -185,7 +190,9 @@
                    VTKM_ARRAY_CONTAINER_CONTROL_ERROR,
                    VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
                    VTKM_ASSERT_CONT,
-                   VTKM_DEFAULT_TYPE_LIST_TAG
+                   VTKM_DEFAULT_TYPE_LIST_TAG,
+                   VTKM_DEFAULT_CONTAINER_LIST_TAG,
+                   VTKM_DEFAULT_POINT_COORDINATES_LIST_TAG
                    },
   morekeywords={[4]vtkm,exec,cont,worklet,math,cuda,openmp,tbb,internal,detail},
   morekeywords={[5]ControlSignature, ExecutionSignature,

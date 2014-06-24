@@ -1,6 +1,6 @@
-#include <vtkm/cont/ArrayContainerControlBasic.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DeviceAdapter.h>
+#include <vtkm/cont/StorageBasic.h>
 
 #include <vtkm/exec/FunctorBase.h>
 
@@ -41,12 +41,11 @@ void BasicConstruction()
   ////
 
   ////
-  //// BEGIN-EXAMPLE ArrayHandleContainerParameter.cxx
+  //// BEGIN-EXAMPLE ArrayHandleStorageParameter.cxx
   ////
-  vtkm::cont::ArrayHandle<
-      vtkm::Scalar, vtkm::cont::ArrayContainerControlTagBasic> arrayHandle;
+  vtkm::cont::ArrayHandle<vtkm::Scalar,vtkm::cont::StorageTagBasic> arrayHandle;
   ////
-  //// END-EXAMPLE ArrayHandleContainerParameter.cxx
+  //// END-EXAMPLE ArrayHandleStorageParameter.cxx
   ////
 }
 

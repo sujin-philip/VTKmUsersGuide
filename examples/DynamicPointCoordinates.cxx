@@ -85,13 +85,13 @@ void QueryAndCast()
 ////
 struct PrintPointCoordinatesFunctor
 {
-  template<typename Container>
+  template<typename Storage>
   VTKM_CONT_EXPORT
   void operator()(
-      const vtkm::cont::ArrayHandle<vtkm::Vector3,Container> &array) const
+      const vtkm::cont::ArrayHandle<vtkm::Vector3,Storage> &array) const
   {
     typename vtkm::cont::ArrayHandle<
-        vtkm::Vector3,Container>::PortalConstControl portal =
+        vtkm::Vector3,Storage>::PortalConstControl portal =
           array.GetPortalConstControl();
     for (vtkm::Id index = 0; index < portal.GetNumberOfValues(); index++)
     {
@@ -134,9 +134,9 @@ public:
   VTKM_CONT_EXPORT
   PointCoordinatesCounting(vtkm::Id numPoints) : NumberOfPoints(numPoints) {  }
 
-  template<typename Functor, typename TypeList, typename ContainerList>
+  template<typename Functor, typename TypeList, typename StorageList>
   VTKM_CONT_EXPORT
-  void CastAndCall(const Functor &f, TypeList, ContainerList) const
+  void CastAndCall(const Functor &f, TypeList, StorageList) const
   {
     vtkm::cont::ArrayHandleCounting<vtkm::Vector3>
         countingArray(vtkm::Vector3(0.0), this->NumberOfPoints);

@@ -103,35 +103,35 @@ private:
 }
 
 ////
-//// BEGIN-EXAMPLE ArrayContainerControlPrototype.cxx
+//// BEGIN-EXAMPLE StoragePrototype.cxx
 ////
 namespace vtkm {
 namespace cont {
 namespace internal {
 
-template<typename T, class ArrayContainerControlTag>
-class ArrayContainerControl;
+template<typename T, class StorageTag>
+class Storage;
 
 }
 }
 } // namespace vtkm::cont::internal
 ////
-//// END-EXAMPLE ArrayContainerControlPrototype.cxx
+//// END-EXAMPLE StoragePrototype.cxx
 ////
 
 ////
-//// BEGIN-EXAMPLE ArrayContainerControlAdapter.cxx
+//// BEGIN-EXAMPLE StorageAdapter.cxx
 ////
 // Includes or definition for ArrayPortalFooPressure
 
-struct ArrayContainerControlTagFooPressure {  };
+struct StorageTagFooPressure {  };
 
 namespace vtkm {
 namespace cont {
 namespace internal {
 
 template<>
-class ArrayContainerControl<vtkm::Scalar, ArrayContainerControlTagFooPressure>
+class Storage<vtkm::Scalar, StorageTagFooPressure>
 {
 public:
   typedef vtkm::Scalar ValueType;
@@ -140,10 +140,10 @@ public:
   typedef ArrayPortalFooPressure<const FooFieldsDeque> PortalConstType;
 
   VTKM_CONT_EXPORT
-  ArrayContainerControl() : Container(NULL) {  }
+  Storage() : Container(NULL) {  }
 
   VTKM_CONT_EXPORT
-  ArrayContainerControl(FooFieldsDeque *container) : Container(container) {  }
+  Storage(FooFieldsDeque *container) : Container(container) {  }
 
   VTKM_CONT_EXPORT
   PortalType GetPortal() { return PortalType(this->Container); }
@@ -179,7 +179,7 @@ private:
 }
 } // namespace vtkm::cont::internal
 ////
-//// END-EXAMPLE ArrayContainerControlAdapter.cxx
+//// END-EXAMPLE StorageAdapter.cxx
 ////
 
 namespace {
@@ -189,20 +189,19 @@ namespace {
 ////
 class ArrayHandleFooPressure
     : public vtkm::cont::ArrayHandle<
-          vtkm::Scalar, ArrayContainerControlTagFooPressure>
+          vtkm::Scalar, StorageTagFooPressure>
 {
 private:
-  typedef vtkm::cont::internal::ArrayContainerControl<
-      vtkm::Scalar, ArrayContainerControlTagFooPressure>
-      ArrayContainerControlType;
+  typedef vtkm::cont::internal::Storage<vtkm::Scalar, StorageTagFooPressure>
+      StorageType;
 
 public:
-  typedef vtkm::cont::ArrayHandle<
-      vtkm::Scalar, ArrayContainerControlTagFooPressure> Superclass;
+  typedef vtkm::cont::ArrayHandle<vtkm::Scalar, StorageTagFooPressure>
+      Superclass;
 
   VTKM_CONT_EXPORT
   ArrayHandleFooPressure(FooFieldsDeque *container)
-    : Superclass(ArrayContainerControlType(container)) {  }
+    : Superclass(StorageType(container)) {  }
 };
 ////
 //// END-EXAMPLE ArrayHandleAdapter.cxx

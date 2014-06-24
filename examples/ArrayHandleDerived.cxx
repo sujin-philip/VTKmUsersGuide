@@ -1,10 +1,10 @@
 ////
 //// BEGIN-EXAMPLE DerivedArrayPortal.cxx
 ////
-#include <vtkm/cont/ArrayContainerControlImplicit.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayPortal.h>
 #include <vtkm/cont/Assert.h>
+#include <vtkm/cont/StorageImplicit.h>
 #include <vtkm/cont/internal/IteratorFromArrayPortal.h>
 
 template<typename P1, typename P2>
@@ -87,24 +87,24 @@ private:
 ////
 
 ////
-//// BEGIN-EXAMPLE DerivedArrayContainer.cxx
+//// BEGIN-EXAMPLE DerivedArrayStorage.cxx
 ////
 template<typename ArrayHandleType1, typename ArrayHandleType2>
-struct ArrayContainerControlTagConcatenate {  };
+struct StorageTagConcatenate {  };
 
 namespace vtkm {
 namespace cont {
 namespace internal {
 
-template<typename T, typename Container1, typename Container2>
-class ArrayContainerControl<
+template<typename T, typename Storage1, typename Storage2>
+class Storage<
     T,
-    ArrayContainerControlTagConcatenate<
-      vtkm::cont::ArrayHandle<T, Container1>,
-      vtkm::cont::ArrayHandle<T, Container2> > >
+    StorageTagConcatenate<
+      vtkm::cont::ArrayHandle<T, Storage1>,
+      vtkm::cont::ArrayHandle<T, Storage2> > >
 {
-  typedef vtkm::cont::ArrayHandle<T, Container1> ArrayHandleType1;
-  typedef vtkm::cont::ArrayHandle<T, Container2> ArrayHandleType2;
+  typedef vtkm::cont::ArrayHandle<T, Storage1> ArrayHandleType1;
+  typedef vtkm::cont::ArrayHandle<T, Storage2> ArrayHandleType2;
 
 public:
   typedef T ValueType;
@@ -117,11 +117,10 @@ public:
       typename ArrayHandleType2::PortalConstControl> PortalConstType;
 
   VTKM_CONT_EXPORT
-  ArrayContainerControl() : Valid(false) {  }
+  Storage() : Valid(false) {  }
 
   VTKM_CONT_EXPORT
-  ArrayContainerControl(const ArrayHandleType1 array1,
-                        const ArrayHandleType2 array2)
+  Storage(const ArrayHandleType1 array1, const ArrayHandleType2 array2)
     : Array1(array1), Array2(array2), Valid(true) {  }
 
   VTKM_CONT_EXPORT
@@ -199,7 +198,7 @@ private:
 }
 } // namespace vtkm::cont::internal
 ////
-//// END-EXAMPLE DerivedArrayContainer.cxx
+//// END-EXAMPLE DerivedArrayStorage.cxx
 ////
 
 ////
@@ -209,7 +208,7 @@ namespace vtkm {
 namespace cont {
 namespace internal {
 
-template<typename T,typename ArrayContainerControlTag,typename DeviceAdapterTag>
+template<typename T,typename StorageTag,typename DeviceAdapterTag>
 class ArrayTransfer;
 
 }
@@ -231,21 +230,21 @@ template<typename ArrayHandleType1,
          typename Device>
 class ArrayTransfer<
     typename ArrayHandleType1::ValueType,
-    ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
+    StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2>,
     Device>
 {
 public:
   typedef typename ArrayHandleType1::ValueType ValueType;
 
 private:
-  typedef ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
-      ContainerTag;
-  typedef vtkm::cont::internal::ArrayContainerControl<ValueType,ContainerTag>
-      ContainerType;
+  typedef StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2>
+      StorageTag;
+  typedef vtkm::cont::internal::Storage<ValueType,StorageTag>
+      StorageType;
 
 public:
-  typedef typename ContainerType::PortalType PortalControl;
-  typedef typename ContainerType::PortalConstType PortalConstControl;
+  typedef typename StorageType::PortalType PortalControl;
+  typedef typename StorageType::PortalConstType PortalConstControl;
 
   typedef ArrayPortalConcatenate<
       typename ArrayHandleType1::template ExecutionTypes<Device>::Portal,
@@ -277,9 +276,9 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  void LoadDataForInput(const ContainerType &container) {
-    this->Array1 = container.GetArray1();
-    this->Array2 = container.GetArray2();
+  void LoadDataForInput(const StorageType &storage) {
+    this->Array1 = storage.GetArray1();
+    this->Array2 = storage.GetArray2();
     this->ArraysValid = true;
 
     this->ExecutionPortalConst =
@@ -290,9 +289,9 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  void LoadDataForInPlace(ContainerType &container) {
-    this->Array1 = container.GetArray1();
-    this->Array2 = container.GetArray2();
+  void LoadDataForInPlace(StorageType &storage) {
+    this->Array1 = storage.GetArray1();
+    this->Array2 = storage.GetArray2();
     this->ArraysValid = true;
 
     this->ExecutionPortal =
@@ -304,10 +303,10 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  void AllocateArrayForOutput(ContainerType &container, vtkm::Id numberOfValues)
+  void AllocateArrayForOutput(StorageType &storage, vtkm::Id numberOfValues)
   {
-    this->Array1 = container.GetArray1();
-    this->Array2 = container.GetArray2();
+    this->Array1 = storage.GetArray1();
+    this->Array2 = storage.GetArray2();
     this->ArraysValid = true;
 
     // This implementation of allocate, which allocates the same amount in both
@@ -325,7 +324,7 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  void RetrieveOutputData(ContainerType &vtkmNotUsed(container)) const {
+  void RetrieveOutputData(StorageType &vtkmNotUsed(storage)) const {
     // Implementation of this method should be unnecessary. The internal
     // array handles should automatically retrieve the output data as
     // necessary.
@@ -390,21 +389,21 @@ template<typename ArrayHandleType1, typename ArrayHandleType2>
 class ArrayHandleConcatenate
     : public vtkm::cont::ArrayHandle<
         typename ArrayHandleType1::ValueType,
-        ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2> >
+        StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2> >
 {
-  typedef ArrayContainerControlTagConcatenate<ArrayHandleType1,ArrayHandleType2>
-      ContainerTag;
+  typedef StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2>
+      StorageTag;
   typedef vtkm::cont::ArrayHandle<
-        typename ArrayHandleType1::ValueType, ContainerTag>
+        typename ArrayHandleType1::ValueType, StorageTag>
       Superclass;
   typedef typename Superclass::ValueType ValueType;
-  typedef vtkm::cont::internal::ArrayContainerControl<ValueType,ContainerTag>
-      ContainerType;
+  typedef vtkm::cont::internal::Storage<ValueType,StorageTag>
+      StorageType;
 
 public:
   ArrayHandleConcatenate(const ArrayHandleType1 &array1,
                          const ArrayHandleType2 &array2)
-    : Superclass(ContainerType(array1, array2)) {  }
+    : Superclass(StorageType(array1, array2)) {  }
 };
 ////
 //// END-EXAMPLE DerivedArrayHandle.cxx

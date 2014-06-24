@@ -3,7 +3,7 @@
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/DynamicArrayHandle.h>
 
-#include <vtkm/cont/internal/ArrayContainerControlError.h>
+#include <vtkm/cont/internal/StorageError.h>
 
 #include <vtkm/cont/testing/Testing.h>
 
@@ -41,23 +41,23 @@ void TryLoadDynamicArray()
   vtkm::cont::DynamicArrayHandle handle =
       LoadDynamicArray(scalarBuffer, 10, "float");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndContainer(vtkm::Scalar(),
-                                  VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG()),
+        handle.IsTypeAndStorage(vtkm::Scalar(),
+                                VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndContainer(vtkm::Id(),
-                                   VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG()),
+        !handle.IsTypeAndStorage(vtkm::Id(),
+                                 VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
 
   vtkm::Id idBuffer[10];
   handle = LoadDynamicArray(idBuffer, 10, "int");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndContainer(vtkm::Id(),
-                                   VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG()),
+        handle.IsTypeAndStorage(vtkm::Id(),
+                                VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndContainer(vtkm::Scalar(),
-                                  VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG()),
+        !handle.IsTypeAndStorage(vtkm::Scalar(),
+                                 VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
 }
 
@@ -71,31 +71,31 @@ void QueryCastDynamicArrayHandle()
         vtkm::cont::make_ArrayHandle(scalarBuffer));
 
   // This returns true
-  bool isScalar = dynamicHandle.IsTypeAndContainer(
-                    vtkm::Scalar(), VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG());
+  bool isScalar = dynamicHandle.IsTypeAndStorage(vtkm::Scalar(),
+                                                 VTKM_DEFAULT_STORAGE_TAG());
 
   // This returns false
-  bool isId = dynamicHandle.IsTypeAndContainer(
-                vtkm::Id(), VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG());
+  bool isId = dynamicHandle.IsTypeAndStorage(vtkm::Id(),
+                                             VTKM_DEFAULT_STORAGE_TAG());
 
   // This returns false
-  bool isErrorContainer = dynamicHandle.IsTypeAndContainer(
+  bool isErrorStorage = dynamicHandle.IsTypeAndStorage(
                             vtkm::Scalar(),
-                            vtkm::cont::internal::ArrayContainerControlTagError());
+                            vtkm::cont::internal::StorageTagError());
   ////
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
 
   VTKM_TEST_ASSERT(isScalar, "Didn't query right.");
   VTKM_TEST_ASSERT(!isId, "Didn't query right.");
-  VTKM_TEST_ASSERT(!isErrorContainer, "Didn't query right.");
+  VTKM_TEST_ASSERT(!isErrorStorage, "Didn't query right.");
 
   ////
   //// BEGIN-EXAMPLE CastDynamicArrayHandle.cxx
   ////
   vtkm::cont::ArrayHandle<vtkm::Scalar> concreteHandle =
       dynamicHandle.CastToArrayHandle(vtkm::Scalar(),
-                                      VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG());
+                                      VTKM_DEFAULT_STORAGE_TAG());
   ////
   //// END-EXAMPLE CastDynamicArrayHandle.cxx
   ////
@@ -109,9 +109,9 @@ void QueryCastDynamicArrayHandle()
 ////
 struct PrintArrayContentsFunctor
 {
-  template<typename T, typename Container>
+  template<typename T, typename Storage>
   VTKM_CONT_EXPORT
-  void operator()(const vtkm::cont::ArrayHandle<T,Container> &array) const
+  void operator()(const vtkm::cont::ArrayHandle<T,Storage> &array) const
   {
     this->PrintArrayPortal(array.GetPortalConstControl());
   }
@@ -139,20 +139,20 @@ void PrintArrayContents(const DynamicArrayType &array)
 ////
 
 ////
-//// BEGIN-EXAMPLE CastAndCallContainer.cxx
+//// BEGIN-EXAMPLE CastAndCallStorage.cxx
 ////
-struct MyIdContainers :
+struct MyIdStorageList :
     vtkm::ListTagBase2<
-        vtkm::cont::ArrayContainerControlTagBasic,
-        vtkm::cont::ArrayHandleCounting<vtkm::Id>::ArrayContainerControlTag>
+        vtkm::cont::StorageTagBasic,
+        vtkm::cont::ArrayHandleCounting<vtkm::Id>::StorageTag>
 {  };
 
 void PrintIds(vtkm::cont::DynamicArrayHandle array)
 {
-  PrintArrayContents(array.ResetContainerList(MyIdContainers()));
+  PrintArrayContents(array.ResetStorageList(MyIdStorageList()));
 }
 ////
-//// END-EXAMPLE CastAndCallContainer.cxx
+//// END-EXAMPLE CastAndCallStorage.cxx
 ////
 
 void TryPrintArrayContents()
@@ -188,13 +188,13 @@ void TryPrintArrayContents()
   PrintIds(dynamicArray);
 
   ////
-  //// BEGIN-EXAMPLE CastAndCallTypeAndContainer.cxx
+  //// BEGIN-EXAMPLE CastAndCallTypeAndStorage.cxx
   ////
   PrintArrayContents(dynamicArray.
-                       ResetTypeList(vtkm::TypeListTagId()).
-                       ResetContainerList(MyIdContainers()));
+                     ResetTypeList(vtkm::TypeListTagId()).
+                     ResetStorageList(MyIdStorageList()));
   ////
-  //// END-EXAMPLE CastAndCallTypeAndContainer.cxx
+  //// END-EXAMPLE CastAndCallTypeAndStorage.cxx
   ////
 }
 

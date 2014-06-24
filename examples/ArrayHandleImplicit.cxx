@@ -1,8 +1,8 @@
 ////
 //// BEGIN-EXAMPLE ImplicitArrayPortal.cxx
 ////
-#include <vtkm/cont/ArrayContainerControlImplicit.h>
 #include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/StorageImplicit.h>
 #include <vtkm/cont/internal/IteratorFromArrayPortal.h>
 
 class ArrayPortalEvenNumbers
@@ -45,12 +45,12 @@ private:
 ////
 
 ////
-//// BEGIN-EXAMPLE ImplicitArrayContainer.cxx
+//// BEGIN-EXAMPLE ImplicitArrayStorage.cxx
 ////
-typedef vtkm::cont::ArrayContainerControlTagImplicit<ArrayPortalEvenNumbers>
-    ArrayContainerControlTagEvenNumbers;
+typedef vtkm::cont::StorageTagImplicit<ArrayPortalEvenNumbers>
+    StorageTagEvenNumbers;
 ////
-//// END-EXAMPLE ImplicitArrayContainer.cxx
+//// END-EXAMPLE ImplicitArrayStorage.cxx
 ////
 
 ////
@@ -58,9 +58,9 @@ typedef vtkm::cont::ArrayContainerControlTagImplicit<ArrayPortalEvenNumbers>
 ////
 class ArrayHandleEvenNumbers
     : public vtkm::cont::ArrayHandle<
-         vtkm::Id, ArrayContainerControlTagEvenNumbers>
+         vtkm::Id, StorageTagEvenNumbers>
 {
-  typedef vtkm::cont::ArrayHandle<vtkm::Id, ArrayContainerControlTagEvenNumbers>
+  typedef vtkm::cont::ArrayHandle<vtkm::Id, StorageTagEvenNumbers>
       Superclass;
 
 public:

@@ -134,7 +134,7 @@ that determines in which environments the function may be run. These export
 modifiers are C macros that VTK-m uses to instruct the compiler for which
 architectures to compile each method. Most user code outside of VTK-m need
 not use these macros with the important exception of any classes passed to
-VTK-m. This occurs when defining new worklets, array containers, and device
+VTK-m. This occurs when defining new worklets, array storage, and device
 adapters.
 
 VTK-m provides three export macros, \vtkmcontexport, \vtkmexecexport, and
@@ -493,8 +493,8 @@ metaprogramming is a list of class names (also sometimes called a tuple or
 vector, although both of those names have different meanings in VTK-m).
 
 Many VTK-m users only need predefined lists, such as the type lists
-specified in Section~\ref{sec:TypeLists} or the container lists specified
-in Section~\ref{sec:ContainerLists}. Those users can skip most of the
+specified in Section~\ref{sec:TypeLists} or the storage lists specified
+in Section~\ref{sec:StorageLists}. Those users can skip most of the
 details of this section. However, it is sometimes useful to modify lists,
 create new lists, or operate on lists, and these usages are documented
 here.

@@ -217,14 +217,14 @@ copies are reference counted so that when all copies of the
 \vtkmcont{ArrayHandle} is a templated class with two template
 parameters. The first template parameter is the only one required and
 specifies the base type of the entries in the array. The second template
-parameter specifies the container used when storing data in the control
-environment. Containers are discussed later in this section, and for now we
-will use the default value.
+parameter specifies the storage used when storing data in the control
+environment. Storage objects are discussed later in this section, and for
+now we will use the default value.
 
 \begin{vtkmexample}{Declaration of the \protect\vtkmcont{ArrayHandle} templated class.}
 template<
     typename T,
-    typename ArrayContainerControlTag = VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG>
+    typename StorageTag = VTKM_DEFAULT_STORAGE_TAG>
 class ArrayHandle;
 \end{vtkmexample}
 
@@ -388,62 +388,58 @@ execution array portal to finish before the next call to any
 are typically used in the process of scheduling an algorithm in the
 execution environment, this is seldom an issue.
 
-\subsection{Basic Container}
+\subsection{Basic Storage}
 
-\index{array~handle!container|(}
-\index{container|(}
+\index{array~handle!storage|(}
+\index{storage|(}
 
 As previously discussed, \vtkmcont{ArrayHandle} takes two template arguments.
 \begin{vtkmexample}{Declaration of the \protect\vtkmcont{ArrayHandle} templated class (again).}
 template<
     typename T,
-    typename ArrayContainerControlTag = VTKM_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG>
+    typename StorageTag = VTKM_DEFAULT_STORAGE_TAG>
 class ArrayHandle;
 \end{vtkmexample}
 The first argument is the only one required and has been demonstrated
 multiple times before. The second (optional) argument specifies something
-called a container, which provides the interface between the generic
+called a storage, which provides the interface between the generic
 \vtkmcont{ArrayHandle} class and a specific storage mechanism in the
 control environment.
 
-In this and the following sections we describe these control environment
-containers. A default container is specified in much the same way as a
-default device adapter is defined. It is done by setting the
-\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL} macro. This macro must be set
-before including any VTK-m header files. Currently the only practical
-container provided by the VTK-m toolkit is the basic container, which simply
-allocates a continuous section of memory of the given base type. This
-container can be explicitly specified by setting
-\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL} to
-\vtkmmacro{VTKM\_ARRAY\_CONTAINER\_CONTROL\_BASIC} although the basic
-container will also be used as the default if no other container is
+In this and the following sections we describe this storage mechanism.  A
+default storage is specified in much the same way as a default device
+adapter is defined. It is done by setting the \vtkmmacro{VTKM\_STORAGE}
+macro. This macro must be set before including any VTK-m header
+files. Currently the only practical storage provided by VTK-m is the basic
+storage, which simply allocates a continuous section of memory of the given
+base type. This storage can be explicitly specified by setting
+\vtkmmacro{VTKM\_STORAGE} to \vtkmmacro{VTKM\_STORAGE\_BASIC} although the
+basic storage will also be used as the default if no other storage is
 specified (which is typical).
 
-The default array container can always be overridden by specifying an array
-container tag. The tag for the basic container is located in the
-\vtkmheader{vtkm/cont}{ArrayContainerControl.h} header file and is named
-\vtkmcont{ArrayContainerControlTagBasic}. Here is an example of specifying
-the container type when declaring an array handle.
+The default storage can always be overridden by specifying an array
+storage tag. The tag for the basic storage is located in the
+\vtkmheader{vtkm/cont}{StorageBasic.h} header file and is named
+\vtkmcont{StorageTagBasic}. Here is an example of specifying
+the storage type when declaring an array handle.
 
-\vtkmlisting{Specifying the container type for an \textidentifier{ArrayHandle.}}{ArrayHandleContainerParameter.cxx}
+\vtkmlisting{Specifying the storage type for an \textidentifier{ArrayHandle.}}{ArrayHandleStorageParameter.cxx}
 
-VTK-m also defines a macro named
-\vtkmmacro{VTKM\_DEFAULT\_ARRAY\_CONTAINER\_CONTROL\_TAG} that can be used
-in place of an explicit array container tag to use the default tag. This
-macro is used to create new templates that have template parameters for
-array containers that can use the default or to create array handles with
-the default container but a specific device adapter.
+VTK-m also defines a macro named \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_TAG}
+that can be used in place of an explicit storage tag to use the
+default tag. This macro is used to create new templates that have template
+parameters for storage that can use the default.
 
 \subsection{Adapting Data Structures}
 
 \index{array~handle!adapting|(}
-\index{container!adapting|(}
+\index{storage!adapting|(}
 
-The intention of the container parameter for \vtkmcont{ArrayHandle} is to
+The intention of the storage parameter for \vtkmcont{ArrayHandle} is to
 implement the strategy design pattern to enable VTK-m to interface directly
 with the data of any third party code source. VTK-m is designed to work
 with data originating in other libraries or applications. By creating a new
-type of array container, VTK-m can be entirely adapted to new kinds of data
+type of storage, VTK-m can be entirely adapted to new kinds of data
 structures.
 
 In this section we demonstrate the steps required to adapt the array handle
@@ -453,15 +449,15 @@ structure named \textcode{FooFields} that holds the field values for a
 particular part of a mesh, and then maintain the field values for all
 locations in a mesh in a \textcode{std::deque} object.
 
-\vtkmlisting{Fictitious field storage used in custom array container examples.}{FictitiousFieldStorage.cxx}
+\vtkmlisting{Fictitious field storage used in custom array storage examples.}{FictitiousFieldStorage.cxx}
 
 VTK-m expects separate arrays for each of the fields rather than a single
 array containing a structure holding all of the fields. However, rather
-than copy each field to its own array, we can create a container for each
+than copy each field to its own array, we can create a storage for each
 field that points directly to the data in a \textcode{FooFieldsDeque}
 object.
 
-The first step in creating an adapter container is to create a control
+The first step in creating an adapter storage is to create a control
 environment array portal to the data. This is described in more detail in
 Section~\ref{sec:ArrayPortals} and is generally straightforward for simple
 containers like this. Here is an example implementation for our
@@ -469,20 +465,20 @@ containers like this. Here is an example implementation for our
 
 \vtkmlisting[ex:ArrayPortalAdapter]{Array portal to adapt a third-party container to VTK-m.}{ArrayPortalAdapter.cxx}
 
-The next step in creating an adapter container is to define a tag for the
+The next step in creating an adapter storage is to define a tag for the
 adapter. We shall call ours
-\textcode{ArrayContainerControlTagFooPressure}. Then, we need to create a
-specialization of the templated \vtkmcontinternal{ArrayContainerControl}
+\textcode{StorageTagFooPressure}. Then, we need to create a
+specialization of the templated \vtkmcontinternal{Storage}
 class. The \textidentifier{ArrayHandle} will instantiate an object using
 the array container tag we give it, and we define our own specialization so
 that it runs our interface into the code.
 
-\vtkmcontinternal{ArrayContainerControl} has two template arguments: the
-base type of the array and the array container tag.
+\vtkmcontinternal{Storage} has two template arguments: the
+base type of the array and the storage tag.
 
-\vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayContainerControl}.}{ArrayContainerControlPrototype.cxx}
+\vtkmlisting{Prototype for \protect\vtkmcontinternal{Storage}.}{StoragePrototype.cxx}
 
-The \vtkmcontinternal{ArrayContainerControl} must define the following items.
+The \vtkmcontinternal{Storage} must define the following items.
 \begin{description}
 \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
   in the array. This is the same type as the first template argument.
@@ -493,11 +489,11 @@ The \vtkmcontinternal{ArrayContainerControl} must define the following items.
   \textcode{PortalType}.
 \item[\textcode{GetPortal}] A method that returns an array portal of type
   \textcode{PortalType} that can be used to access the data manged in this
-  container.
+  storage.
 \item[\textcode{GetPortalConst}] Same as \textcode{GetPortal} except it
   returns a read-only (const) array portal.
 \item[\textcode{GetNumberOfValues}] A method that returns the number of
-  values the container is currently allocated for.
+  values the storage is currently allocated for.
 \item[\textcode{Allocate}] A method that allocates the array to a given
   size. An values stored in the previous allocation may be destroyed.
 \item[\textcode{Shrink}] A method like \textcode{Allocate} with two
@@ -506,7 +502,7 @@ The \vtkmcontinternal{ArrayContainerControl} must define the following items.
   currently stored in the array will be valid after the array is
   resized. This constrained form of allocation allows the array to be
   resized and values valid without ever having to copy data.
-\item[\textcode{ReleaseResources}] A method that instructs the container to
+\item[\textcode{ReleaseResources}] A method that instructs the storage to
   free all of its memory.
 \end{description}
 
@@ -515,11 +511,11 @@ The following provides an example implementation of our adapter to a
 \textcode{ArrayPortalFooPressure} provided in
 Example~\ref{ex:ArrayPortalAdapter}.
 
-\vtkmlisting{Array container to adapt a third-party container to VTK-m.}{ArrayContainerControlAdapter.cxx}
+\vtkmlisting{Storage to adapt a third-party container to VTK-m.}{StorageAdapter.cxx}
 
-The final step to make a container adapter is to make a mechanism to
+The final step to make a storage adapter is to make a mechanism to
 construct an \textidentifier{ArrayHandle} that points to a particular
-container. This can be done by creating a trivial subclass of
+storage. This can be done by creating a trivial subclass of
 \vtkmcont{ArrayHandle} that simply constructs the array handle to the state
 of an existing container.
 
@@ -537,23 +533,23 @@ data from the execution environment to the control environment. \fix{Should
 
 \vtkmlisting{Using an \textidentifier{ArrayHandle} with custom container.}{UsingArrayHandleAdapter.cxx}
 
-\index{container!adapting|)}
+\index{storage!adapting|)}
 \index{array~handle!adapting|)}
 
-\subsection{Implicit Containers}
+\subsection{Implicit Storage}
 
 \index{array~handle!implicit|(}
-\index{container!implicit|(}
-\index{implicit~container|(}
+\index{storage!implicit|(}
+\index{implicit~storage|(}
 \index{functional~array|(}
 
-The generic array handle and array container templating in VTK-m allows for
+The generic array handle and storage templating in VTK-m allows for
 any type of operations to retrieve a particular value. Typically this is
 used to convert an index to some location or locations in memory. However,
 it is also possible to compute a value directly from an index rather than
 look up some value in memory. Such an array is completely functional and
 requires no storage in memory at all. Such a functional array is specified
-with an \keyterm{implicit container}.
+with an \keyterm{implicit storage}.
 
 \fix{There also exists a special complete array handle that can run a
   functor with a much easier implementation. However, it has not made it
@@ -562,15 +558,15 @@ with an \keyterm{implicit container}.
   description from earlier Dax documentation, I just include it for now.}
 
 Specifying a functional or implicit array in VTK-m is straightforward.
-VTK-m comes with a generic implicit container that can be templated to any
+VTK-m comes with a generic implicit storage that can be templated to any
 function you like. In this section we demonstrate the steps required to
-create an implicit container. For the purposes of the example, let us say
+create an implicit storage. For the purposes of the example, let us say
 we want an array of even numbers. That is, the array has the values
 $[0,2,4,6,\ldots]$ up to some given size. Although we could easily create
 this array in memory, we can save space and possibly time by computing
 these values on demand.
 
-The first step to creating an implicit container is to build a read-only
+The first step to creating an implicit storage is to build a read-only
 array portal that computes the desired value in the \textcode{Get}
 method. The portal must work in both the control and execution environments
 (although the iterators only need to work in the control environment), and
@@ -585,26 +581,26 @@ Note that this array portal uses the template
 \vtkmcontinternal{IteratorFromArrayPortal}, which can convert any array
 portal to STL-compatible iterators.
 
-Once the implicit array portal is built, an implicit array container is
-defined using the \vtkmcont{ArrayContainerControlTagImplicit} tag. This tag
+Once the implicit array portal is built, an implicit array storage is
+defined using the \vtkmcont{StorageTagImplicit} tag. This tag
 is templated, and the template parameter is the implicit array portal.
 
-\vtkmlisting[ex:ImplicitArrayContainer]{Defining the container tag for an implicit array of even numbers.}{ImplicitArrayContainer.cxx}
+\vtkmlisting[ex:ImplicitArrayStorage]{Defining the storage tag for an implicit array of even numbers.}{ImplicitArrayStorage.cxx}
 
-An array handle can be created directly with this tag as the container
+An array handle can be created directly with this tag as the storage
 template parameter to \vtkmcont{ArrayHandle}. However, it is common to
 create a trivial subclass of \vtkmcont{ArrayHandle} that simply constructs
 the array handle to an implicit array portal of a given state. The
 following example, which builds on Examples \ref{ex:ImplicitArrayPortal}
-and \ref{ex:ImplicitArrayContainer} demonstrates the convenience
+and \ref{ex:ImplicitArrayStorage} demonstrates the convenience
 \vtkmcont{ArrayHandle} subclass.
 
 \vtkmlisting{Implicit array handle of even numbers.}{ImplicitArrayHandle.cxx}
 
-VTK-m comes with some examples of implicit
-containers. \vtkmcont{ArrayHandleConstant} returns the same value for every
-index in the array. The constant array is useful when an algorithm that can
-work on a variable field is used on a constant value.
+VTK-m comes with some examples of implicit storage.
+\vtkmcont{ArrayHandleConstant} returns the same value for every index in
+the array. The constant array is useful when an algorithm that can work on
+a variable field is used on a constant value.
 \vtkmcont{ArrayHandleCounting} returns the index as the value with a
 possible offset. The counting array is useful for generating fields of
 identifiers or for indexing operations.
@@ -616,8 +612,8 @@ VTK-m to create point coordinates for these types of data structures.
 %% building these arrays.
 
 \index{functional~array|)}
-\index{implicit~container|)}
-\index{container!implicit|)}
+\index{implicit~storage|)}
+\index{storage!implicit|)}
 \index{array~handle!implicit|)}
 
 \subsection{Transformed Arrays}
@@ -631,33 +627,33 @@ VTK-m to create point coordinates for these types of data structures.
 \index{transformed~array|)}
 \index{array~handle!transform|)}
 
-\subsection{Derived Containers}
+\subsection{Derived Storage}
 
 \index{array~handle!derived|(}
-\index{container!derived|(}
-\index{derived~container|(}
+\index{storage!derived|(}
+\index{derived~storage|(}
 
-So far, we have discussed using the array container mechanism to adapt to
+So far, we have discussed using the array storage mechanism to adapt to
 particular memory layout and to create implicit arrays. Yet another option
-is to create a \keyterm{derived container}. A derived container shares
-attributes with both adaptive containers and implicit containers. A derived
-container takes one or more other arrays and changes their behavior in some
+is to create a \keyterm{derived storage}. A derived storage shares
+attributes with both adaptive storage and implicit storage. A derived
+storage takes one or more other arrays and changes their behavior in some
 way. Their implementation is similar to adapting a memory layout, but some
 of the details are different.
 
 In this section we will demonstrate the steps required to create a derived
-container. A transformed array, documented in
+storage. A transformed array, documented in
 Section~\ref{sec:TransformedArrays}, provides a specific form of a derived
-container. When applicable, it is much easier to implement an array
-transform than a general derived container. However, if a simple transform
+storage. When applicable, it is much easier to implement an array
+transform than a general derived storage. However, if a simple transform
 does not work, for example if your derivation uses multiple arrays or
 requires general lookups, you can do so by creating your own derived
-container.  For the purposes of the example in this section, let us say we
+storage.  For the purposes of the example in this section, let us say we
 want 2 array handles to behave as one array with the contents concatenated
 together. We could of course actually copy the data, but we can also do it
 in place.
 
-The first step to creating a derived container is to build an array portal
+The first step to creating a derived storage is to build an array portal
 that will take portals from arrays being derived. The portal must work in
 both the control and execution environment (or have a separate version for
 control and execution).
@@ -670,33 +666,33 @@ control and execution).
 
 \vtkmlisting[ex:DerivedArrayPortal]{Derived array portal for concatenated arrays.}{DerivedArrayPortal.cxx}
 
-Like in an adapter container, the next step in creating a derived container
+Like in an adapter storage, the next step in creating a derived storage
 is to define a tag for the adapter. We shall call ours
-\textcode{ArrayContainerControlTagConcatenate} and it will be templated on
+\textcode{StorageTagConcatenate} and it will be templated on
 the two array handle types that we are deriving. Then, we need to create a
-specialization of the templated \vtkmcontinternal{ArrayContainerControl}
-class. The implementation for an \textidentifier{ArrayContainerControl} for
-a derived container is usually trivial compared to an adapter container
+specialization of the templated \vtkmcontinternal{Storage}
+class. The implementation for an \textidentifier{Storage} for
+a derived storage is usually trivial compared to an adapter storage
 because the majority of the work is deferred to the derived arrays.
 
-\vtkmlisting[ex:DerivedArrayContainer]{\textidentifier{ArrayContainerControl} for derived container of concatenated arrays.}{DerivedArrayContainer.cxx}
+\vtkmlisting[ex:DerivedArrayStorage]{\textidentifier{Storage} for derived container of concatenated arrays.}{DerivedArrayStorage.cxx}
 
 One of the responsibilities of an array handle is to copy data between the
 control and execution environments. The default behavior is to request the
 device adapter to copy data items from one environment to another. This
 might involve transferring data between a host and device. For an array of
-data resting in memory, this is necessary. However, implicit containers
+data resting in memory, this is necessary. However, implicit storage
 (described in the previous section) override this behavior to pass nothing
 but the functional array portal. Likewise, it is undesirable to do a raw
-transfer of data with derived containers. The underlying arrays being
+transfer of data with derived storage. The underlying arrays being
 derived may be used in other contexts, and it would be good to share the
 data wherever possible. It is also sometimes more efficient to copy data
-independently from the arrays being derived than from the derived container
+independently from the arrays being derived than from the derived storage
 itself.
 
 \index{array~transfer|(}
 
-The mechanism that controls how a particular control array container gets
+The mechanism that controls how a particular storage gets
 transferred to and from the execution environment is encapsulated in the
 templated \vtkmcontinternal{ArrayTransfer} class. By creating a
 specialization of \vtkmcontinternal{ArrayTransfer}, we can modify the
@@ -704,7 +700,7 @@ transfer behavior to instead transfer the arrays being derived and use the
 respective copies in the control and execution environments.
 
 \vtkmcontinternal{ArrayTransfer} has three template arguments: the base type
-of the array, the array container tag, and the device adapter tag.
+of the array, the storage tag, and the device adapter tag.
 
 \vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayTransfer}.}{ArrayTransferPrototype.cxx}
 
@@ -728,7 +724,7 @@ following items.
 \item[\textcode{LoadDataForInput}] There are actually two versions of this
   overloaded method. The first form takes a portal of type
   \textcode{PortalControl} and the second takes an instance of
-  \textidentifier{ArrayContainerControl}. Both methods are expected to
+  \textidentifier{Storage}. Both methods are expected to
   allocate enough space in the execution environment and copy the given
   data to that array. In both cases allocated array can later be accessed
   via the and \textcode{GetPortalConstExecution} method. The data is
@@ -737,20 +733,20 @@ following items.
   the implemented form is called in practice. This is done my forcing the
   \textidentifier{ArrayHandle} to be constructed either with an array portal
   (which will lead to the first form being called) or constructed with an
-  array container (which will lead to the second form being called).
+  array storage (which will lead to the second form being called).
 \item[\textcode{LoadDataForInPlace}] A method that takes an instance of
-  \textidentifier{ArrayContainerControl}, allocates enough space in the
+  \textidentifier{Storage}, allocates enough space in the
   execution environment, and copies the given data to that array. The
   allocated array can later be accessed via the
   \textcode{GetPortalExecution} and \textcode{GetPortalConstExecution}
   methods. The data can be read and written.
 \item[\textcode{AllocateArrayForOutput}] A method that takes an array
-  container and a size and allocates an array in the execution environment
+  storage and a size and allocates an array in the execution environment
   of the specified size. The initial memory is uninitialized and can be
-  accessed via the \textcode{GetPortalExecution} method. The container
+  accessed via the \textcode{GetPortalExecution} method. The storage
   argument can be used to allocate data when the control and execution
   share arrays, but this argument is often ignored.
-\item[\textcode{RetrieveOutputData}] This method takes an array container,
+\item[\textcode{RetrieveOutputData}] This method takes an array storage,
   allocates memory in the control environment, and copies data from the
   execution environment into it.
 \item[\textcode{Shrink}] A method that adjusts the size of the array in the
@@ -768,53 +764,37 @@ following items.
   (typically memory) in the execution environment.
 \end{description}
 
-Continuing our example derived container that concatenates two arrays
+Continuing our example derived storage that concatenates two arrays
 started in Examples \ref{ex:DerivedArrayPortal} and
-\ref{ex:DerivedArrayContainer}, the following provides an
-\textidentifier{ArrayTransfer} appropriate for the derived container.
+\ref{ex:DerivedArrayStorage}, the following provides an
+\textidentifier{ArrayTransfer} appropriate for the derived storage.
 
-\vtkmlisting[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived container of concatenated arrays.}{DerivedArrayTransfer.cxx}
+\vtkmlisting[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived storage of concatenated arrays.}{DerivedArrayTransfer.cxx}
 
 \index{array~transfer|)}
 
-The final step to make a derived container is to create a mechanism to
-construct an \textidentifier{ArrayHandle} with a container derived from the
+The final step to make a derived storage is to create a mechanism to
+construct an \textidentifier{ArrayHandle} with a storage derived from the
 desired arrays. This can be done by creating a trivial subclass of
 \vtkmcont{ArrayHandle} that simply constructs the array handle to the state
-of an existing container. It uses a protected constructor of
-\vtkmcont{ArrayHandle} that accepts a constructed container.
+of an existing storage. It uses a protected constructor of
+\vtkmcont{ArrayHandle} that accepts a constructed storage.
 
-\vtkmlisting{\textidentifier{ArrayHandle} for derived container of concatenated arrays.}{DerivedArrayHandle.cxx}
+\vtkmlisting{\textidentifier{ArrayHandle} for derived storage of concatenated arrays.}{DerivedArrayHandle.cxx}
 
 \vtkmcont{ArrayHandleCompositeVector} is an example of a derived array
 handle provided by VTK-m. It references some fixed number of other arrays,
 pulls a specified component out of each, and produces a new component that
 is a tuple of these retrieved components.
 
-\index{derived~container|)}
-\index{container!derived|)}
+\index{derived~storage|)}
+\index{storage!derived|)}
 \index{array~handle!derived|)}
 
-\index{container|)}
-\index{array~handle!container|)}
+\index{storage|)}
+\index{array~handle!storage|)}
 
 \index{array~handle|)}
-
-%% \section{Container Lists}
-%% \label{sec:ContainerLists}
-
-%% \index{container lists|(}
-%% \index{lists!containers|(}
-%% \index{tag!container lists|(}
-
-%% As we just saw in Section~\ref{sec:ArrayHandles}, an
-%% \textidentifier{ArrayHandle} is templated by both a base type for the
-%% component and a container type. Sometimes we will not know specifically one
-%% or both of these types.
-
-%% \index{tag!container lists|)}
-%% \index{lists!containers|)}
-%% \index{container lists|)}
 
 \section{Dynamic Array Handle}
 \label{sec:DynamicArrayHandle}
@@ -824,7 +804,7 @@ is a tuple of these retrieved components.
 
 The \textidentifier{ArrayHandle} class uses templating to make very
 efficient and type-safe access to data. However, it is sometimes
-inconvenient or impossible to specify the element type and container at
+inconvenient or impossible to specify the element type and storage at
 run-time. The \textidentifier{DynamicArrayHandle} class provides a mechanism
 to manage arrays of data with unspecified types.
 
@@ -845,25 +825,25 @@ used to load an array whose type is not known until run-time.
 \label{sec:DynamicArrayHandleQueryingAndCasting}
 
 Data pointed to by a \textidentifier{DynamicArrayHandle} is not directly
-accessible. Before the data can be accessed, the type and container of the
+accessible. Before the data can be accessed, the type and storage of the
 array must be established. This is usually done internally within VTK-m
 when a worklet \fix{or filter?} is invoked. However, it is also possible to
 query the types and cast to a concrete \textidentifier{ArrayHandle}.
 
 \index{dynamic~array~handle!query}
-You can query the component type and container type using the
-\textcode{IsTypeAndContainer} method. This templated method takes an
-example component type and an example container type as arguments and
+You can query the component type and storage type using the
+\textcode{IsTypeAndStorage} method. This templated method takes an
+example component type and an example storage type as arguments and
 returns whether the underlying array matches both types.
 
-\vtkmlisting{Querying the component and container types of a \textidentifier{DynamicArrayHandle}.}{QueryDynamicArrayHandle.cxx}
+\vtkmlisting{Querying the component and storage types of a \textidentifier{DynamicArrayHandle}.}{QueryDynamicArrayHandle.cxx}
 
 \index{dynamic~array~handle!cast}
 Once the types of the \textidentifier{DynamicArrayHandle} are known, it can
 be cast to a concrete \textidentifier{ArrayHandle}, which has access to the
 data as described in Section~\ref{sec:ArrayHandle}. This is done with the
 \textcode{CastToArrayHandle} method. This templated method takes an example
-component type and an example container type as arguments and returns an
+component type and an example storage type as arguments and returns an
 \textidentifier{ArrayHandle} also pointing to the array. If the given types
 are incorrect, then \textcode{CastToArrayHandle} throws a
 \vtkmcont{ErrorControlBadValue} exception.
@@ -894,7 +874,7 @@ The \textcode{CastAndCall} method can only check a finite number of types.
 The default form of \textcode{CastAndCall} uses a default set of common
 types. These default lists can be overridden using the VTK-m list tags
 facility, which is discussed at length in Section~\ref{sec:ListTags}. There
-are separate lists for component types and for container types.
+are separate lists for component types and for storage types.
 
 Common type lists for components are defined in
 \vtkmheader{vtkm}{TypeListTag.h} and are documented in
@@ -902,36 +882,35 @@ Section~\ref{sec:TypeLists}. This header also defines
 \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG}, which defines the default list
 of component types tried in \textcode{CastAndCall}.
 
-\index{tag!container lists|(}
-\index{lists!containers|(}
-\index{container lists|(}
+\index{tag!storage lists|(}
+\index{lists!storage|(}
+\index{storage lists|(}
 
-Common container lists are defined in
-\vtkmheader{vtkm/cont}{ContainerListTag.h}.  There is only one common
-container distributed with VTK-m:
-\textidentifier{ArrayContainerControlBasic}. A list tag containing this
-type is defined as \vtkmcont{ContainerListTagBasic}.
+Common storage lists are defined in
+\vtkmheader{vtkm/cont}{StorageListTag.h}. There is only one common storage
+distributed with VTK-m: \textidentifier{StorageBasic}. A list tag
+containing this type is defined as \vtkmcont{StorageListTagBasic}.
 
-As with other lists, it is possible to create new container type lists
+As with other lists, it is possible to create new storage type lists
 using the existing type lists and the list bases from
 Section~\ref{sec:BuildingListTags}.
 
-The \vtkmheader{vtkm/cont}{ContainerListTag.h} header also defines a macro
-named \vtkmmacro{VTKM\_DEFAULT\_CONTAINER\_LIST\_TAG} that defines a
+The \vtkmheader{vtkm/cont}{StorageListTag.h} header also defines a macro
+named \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_LIST\_TAG} that defines a
 default list of types to use in classes like
 \textidentifier{DynamicArrayHandle}. This list can be overridden by
-defining the \vtkmmacro{VTKM\_DEFAULT\_CONTAINER\_LIST\_TAG} macro
+defining the \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_LIST\_TAG} macro
 \emph{before} any VTK-m headers are included. If included after a VTK-m
 header, the list is not likely to take effect. Do not ignore compiler
 warnings about the macro being redefined, which you will not get if defined
 correctly.
 
-\index{container lists|)}
-\index{lists!containers|)}
-\index{tag!container lists|)}
+\index{storage lists|)}
+\index{lists!storage|)}
+\index{tag!storage lists|)}
 
 There is a form of \textcode{CastAndCall} that accepts tags for the list of
-component types and container types. This can be used when the specific
+component types and storage types. This can be used when the specific
 lists are known at the time of the call. However, when creating generic
 operations like the \textcode{PrintArrayContents} function in
 Example~\ref{ex:UsingCastAndCall}, passing these tags is inconvenient at
@@ -939,10 +918,10 @@ best.
 
 To address this use case, \textidentifier{DynamicArrayHandle} has a pair of
 methods named \textcode{ResetTypeList} and
-\textcode{ResetContainerList}. These methods return a new object with that
+\textcode{ResetStorageList}. These methods return a new object with that
 behaves just like a \textidentifier{DynamicArrayHandle} with identical
 state except that the cast and call functionality uses the specified
-component type or container type instead of the default. (Note that
+component type or storage type instead of the default. (Note that
 \textcode{PrintArrayContents} in Example~\ref{ex:UsingCastAndCall} is
 templated on the type of \textidentifier{DynamicArrayHandle}. This is to
 accommodate using the objects from the \textcode{Reset*List} methods, which
@@ -960,14 +939,14 @@ templates in the compiler.
 
 \vtkmlisting{Specifying a single component type in a \textidentifier{DynamicArrayHandle}.}{CastAndCallSingleType.cxx}
 
-Container type lists can be changed similarly.
+Storage type lists can be changed similarly.
 
-\vtkmlisting{Specifying different container types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallContainer.cxx}
+\vtkmlisting{Specifying different storage types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallStorage.cxx}
 
-Both the component type list and the container type list can be modified by
+Both the component type list and the storage type list can be modified by
 chaining these reset calls.
 
-\vtkmlisting{Specifying both component and container types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallTypeAndContainer.cxx}
+\vtkmlisting{Specifying both component and storage types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallTypeAndStorage.cxx}
 
 \index{dynamic~array~handle!cast|)}
 
@@ -984,7 +963,7 @@ Point coordinates in VTK-m are represented as arrays much like any other
 field. In that aspect, a point coordinate array could be stored in a
 \textidentifier{DynamicArrayHandle}. However, point coordinates are often
 constructed as functional values or are derived and combined from other
-arrays. Constructing lists of containers for
+arrays. Constructing lists of storage types for
 \textidentifier{DynamicArrayHandle} is problematic.
 
 Thus, VTK-m provides a similar class named
@@ -1001,7 +980,7 @@ coordinate classes.
 \item[\vtkmcont{PointCoordinatesArray}] Holds point coordinates explicitly
   listed in an \textidentifier{ArrayHandle}. The component type of the
   array must be \vtkm{Vector3}, but the array can use any type of
-  container.
+  storage.
 \item[\vtkmcont{PointCoordinatesUniform}] Represents the point coordinates
   of a uniform rectilinear grid with a given extent, origin, and spacing.
 \end{description}
@@ -1046,7 +1025,7 @@ the way to an unknown array type.
 \index{dynamic~point~coordinates!cast|(}
 
 The use case of \textidentifier{DynamicPointCoordinates} is to cast to some
-form of \textidentifier{ArrayHandle}, which has a container that is often
+form of \textidentifier{ArrayHandle}, which has a storage that is often
 complex and usually unknown. To perform this operation
 \textidentifier{DynamicPointCoordinates} has a method named
 \textcode{CastAndCall} that attempts to cast the point coordinates to an
@@ -1101,13 +1080,13 @@ find an appropriate cast to a concrete point coordinates class. Once such a
 class is found, \textcode{CastAndCall} then delegates to this class the
 task of casting to an \textidentifier{ArrayHandle}. This delegate point
 coordinates class may (or may not) use a list of component types and
-container types similar to those used in the \textcode{CastAndCall} of
+storage types similar to those used in the \textcode{CastAndCall} of
 \textidentifier{DynamicArrayHandle} (as described in
 Section~\ref{sec:DynamicArrayHandleSpecifyingCastLists}).
 
 There is a form of \textcode{CastAndCall} that accepts tags for the list of
 point coordinate types, the list of component types and the list of
-container types. This can be used when the specific lists are known at the
+storage types. This can be used when the specific lists are known at the
 time of the call. However, when creating generic operations like the
 \textcode{PrintPointCoordinates} function in
 Example~\ref{ex:UsingPCCastAndCall}, passing these tags is inconvenient at
@@ -1115,11 +1094,11 @@ best.
 
 To address this use case, \textidentifier{DynamicPointCoordinates} has a
 set of methods named \textcode{ResetPointCoordinatesList},
-\textcode{ResetTypeList}, and \textcode{ResetContainerList}. These methods
+\textcode{ResetTypeList}, and \textcode{ResetStorageList}. These methods
 return a new object with that behaves just like a
 \textidentifier{DynamicPointCoordinates} object with identical state except
 that the cast and call functionality uses the specified point coordinates
-type, component type, or container type instead of the default. (Note that
+type, component type, or storage type instead of the default. (Note that
 \textcode{PrintPointCoordinates} in Example~\ref{ex:UsingPCCastAndCall} is
 templated on the type of \textidentifier{DynamicPointCoordinates}. This is
 to accommodate using the objects from the \textcode{Reset*List} methods,
@@ -1143,9 +1122,9 @@ Defining a point coordinates class is very straightforward and only has two
 requirements. First, a point coordinates class that publicly inherits from
 \vtkmcontinternal{PointCoordinatesBase}. Second, a point coordinates class
 defines a const \textcode{CastAndCall} method that accepts three templated
-arguments: a functor, a list of component types, and a list of container
+arguments: a functor, a list of component types, and a list of storage
 types. This method finds a concrete array class and calls the functor with
-this array. The list of component types and list of container types may be
+this array. The list of component types and list of storage types may be
 used or may be ignored.
 
 By convention, point coordinate class names begin with

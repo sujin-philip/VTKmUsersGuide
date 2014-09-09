@@ -280,16 +280,6 @@ An array portal object contains each of the following:
 \item[\textcode{Set}] A method that changes the value at a given
   index. This method does not need to exist for read-only (const) array
   portals.
-\item[\textcode{IteratorType}] A \textcode{typedef} of an STL-compatible
-  random-access iterator that can be used for alternative access. This
-  method does not need to exist in the execution environment.
-\item[\textcode{GetIteratorBegin}] A method that returns an STL-compatible
-  iterator of type \textcode{IteratorType} that points to the beginning of
-  the array. This method does not need exist in the execution environment.
-\item[\textcode{GetIteratorEnd}] A method that returns an STL-compatible
-  iterator of type \textcode{IteratorType} that points to the beginning of
-  the array. This method does not need to exist in the execution
-  environment.
 \end{description}
 
 The following code example defines an array portal for a simple C array of
@@ -298,6 +288,35 @@ more general \vtkmcontinternal{ArrayPortalFromIterators}), but demonstrates
 the function of each component.
 
 \vtkmlisting{A simple array portal implementation.}{SimpleArrayPortal.cxx}
+
+Although array portals are simple to implement and use and array portals'
+functionality is similar to iterators, there exists a great deal of code
+already based on STL iterators and it is often convienient to interface
+with an array through an iterator rather than an array portal. The
+\vtkmcont{ArrayPortalToIterators} class can be used to convert an array
+portal to an STL-compatible iterator. The class is templated on the array
+portal type and has a constructor that accepts an instance of the array
+portal. It contains the following features.
+\begin{description}
+\item[\textcode{IteratorType}] A \textcode{typedef} of an STL-compatible
+  random-access iterator that can provide the same access as the array
+  portal.
+\item[\textcode{GetBegin}] A method that returns an STL-compatible iterator
+  of type \textcode{IteratorType} that points to the beginning of the
+  array.
+\item[\textcode{GetEnd}] A method that returns an STL-compatible iterator
+  of type \textcode{IteratorType} that points to the end of the array.
+\end{description}
+
+\vtkmlisting{Using \textidentifier{ArrayPortalToIterators}.}{ArrayPortalToIterators.cxx}
+
+As a convenience, \vtkmheader{vtkm/cont}{ArrayPortalToIterators.h} also
+defines a pair of functions named \textcode{ArrayPortalToIteratorBegin}
+\index{ArrayPortalToIteratorBegin} and \textcode{ArrayPortalToIteratorEnd}
+\index{ArrayPortalToIteratorEnd} that each take an array portal as an
+argument and return a begin and end iterator, respectively.
+
+\vtkmlisting{Using \textidentifier{ArrayPortalToIteratorBegin} and \textidentifier{ArrayPortalToIteratorEnd}.}{ArrayPortalToIteratorBeginEnd.cxx}
 
 \vtkmcont{ArrayHandle} contains two \textcode{typedef}s for array portal
 types that are capable of interfacing with the underlying data in the

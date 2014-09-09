@@ -1,4 +1,5 @@
 #include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ArrayPortalToIterators.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/StorageBasic.h>
 
@@ -179,18 +180,6 @@ public:
     this->Array[index] = value;
   }
 
-  typedef ValueType *IteratorType;
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorBegin() const {
-    return this->Array;
-  }
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorEnd() const {
-    return this->Array + this->GetNumberOfValues();
-  }
-
 private:
   ValueType *Array;
   vtkm::Id NumberOfValues;
@@ -198,6 +187,62 @@ private:
 ////
 //// END-EXAMPLE SimpleArrayPortal.cxx
 ////
+
+////
+//// BEGIN-EXAMPLE ArrayPortalToIterators.cxx
+////
+template<typename PortalType>
+VTKM_CONT_EXPORT
+std::vector<typename PortalType::ValueType>
+CopyArrayPortalToVector(const PortalType &portal)
+{
+  typedef typename PortalType::ValueType ValueType;
+  std::vector<ValueType> result(portal.GetNumberOfValues());
+
+  vtkm::cont::ArrayPortalToIterators<PortalType> iterators(portal);
+
+  std::copy(iterators.GetBegin(), iterators.GetEnd(), result.begin());
+
+  return result;
+}
+////
+//// END-EXAMPLE ArrayPortalToIterators.cxx
+////
+
+void TestArrayPortalVectors()
+{
+  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
+  std::vector<vtkm::Scalar> vec =
+      CopyArrayPortalToVector(inputArray.GetPortalConstControl());
+
+  VTKM_TEST_ASSERT(vec.size() == inputArray.GetNumberOfValues(),
+                   "Vector was sized wrong.");
+
+  for (vtkm::Id index = 0; index < inputArray.GetNumberOfValues(); index++)
+  {
+    VTKM_TEST_ASSERT(vec[index] == TestValue(index), "Bad data value.");
+  }
+
+  vtkm::cont::ArrayHandle<vtkm::Scalar>::PortalConstControl portal =
+      inputArray.GetPortalConstControl();
+
+  ////
+  //// BEGIN-EXAMPLE ArrayPortalToIteratorBeginEnd.cxx
+  ////
+  std::vector<vtkm::Scalar> myContainer(portal.GetNumberOfValues());
+
+  std::copy(vtkm::cont::ArrayPortalToIteratorBegin(portal),
+            vtkm::cont::ArrayPortalToIteratorEnd(portal),
+            myContainer.begin());
+  ////
+  //// END-EXAMPLE ArrayPortalToIteratorBeginEnd.cxx
+  ////
+
+  for (vtkm::Id index = 0; index < inputArray.GetNumberOfValues(); index++)
+  {
+    VTKM_TEST_ASSERT(myContainer[index] == TestValue(index), "Bad data value.");
+  }
+}
 
 ////
 //// BEGIN-EXAMPLE ControlPortals.cxx
@@ -213,8 +258,8 @@ void SortCheckArrayHandle(vtkm::cont::ArrayHandle<T> arrayHandle)
   PortalType readwritePortal = arrayHandle.GetPortalControl();
   // This is actually pretty dumb. Sorting would be generally faster in
   // parallel in the execution environment using the device adapter algorithms.
-  std::sort(readwritePortal.GetIteratorBegin(),
-            readwritePortal.GetIteratorEnd());
+  std::sort(vtkm::cont::ArrayPortalToIteratorBegin(readwritePortal),
+            vtkm::cont::ArrayPortalToIteratorEnd(readwritePortal));
 
   PortalConstType readPortal = arrayHandle.GetPortalConstControl();
   for (vtkm::Id index = 1; index < readPortal.GetNumberOfValues(); index++)
@@ -294,6 +339,7 @@ void Test()
   ArrayHandleFromCArray();
   ArrayHandleFromVector();
   CheckSafeDataLoad();
+  TestArrayPortalVectors();
   TestControlPortalsExample();
   TestExecutionPortalsExample();
 }

@@ -11,6 +11,12 @@ void DoTiming()
   //// BEGIN-EXAMPLE Timer.cxx
   ////
   vtkm::cont::ArrayHandle<vtkm::Scalar> results;
+  //// PAUSE-EXAMPLE
+  // This just makes sure that results has something allocated so that you
+  // don't crash when getting the portal. Delete this once the invoke works,
+  // since that should do the right thing.
+  results.PrepareForOutput(10, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  //// RESUME-EXAMPLE
 //  vtkm::cont::DispatchMapField<vtkm::worklet::Elevation> dispatcher;
 
   vtkm::cont::Timer<> timer;

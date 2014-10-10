@@ -1,5 +1,5 @@
 #include <vtkm/TypeTraits.h>
-#include <vtkm/VectorTraits.h>
+#include <vtkm/VecTraits.h>
 
 #include <vtkm/testing/Testing.h>
 
@@ -21,18 +21,18 @@ namespace detail {
 
 template<typename T>
 T RemainderImpl(const T &numerator,
-              const T &denominator,
-              vtkm::TypeTraitsIntegerTag,
-              vtkm::TypeTraitsScalarTag)
+                const T &denominator,
+                vtkm::TypeTraitsIntegerTag,
+                vtkm::TypeTraitsScalarTag)
 {
   return numerator % denominator;
 }
 
 template<typename T>
 T RemainderImpl(const T &numerator,
-              const T &denominator,
-              vtkm::TypeTraitsRealTag,
-              vtkm::TypeTraitsScalarTag)
+                const T &denominator,
+                vtkm::TypeTraitsRealTag,
+                vtkm::TypeTraitsScalarTag)
 {
   T quotient = numerator / denominator;
   return (quotient - floor(quotient))*denominator;
@@ -40,9 +40,9 @@ T RemainderImpl(const T &numerator,
 
 template<typename T, typename NumericTag>
 T RemainderImpl(const T &numerator,
-              const T &denominator,
-              NumericTag,
-              vtkm::TypeTraitsVectorTag)
+                const T &denominator,
+                NumericTag,
+                vtkm::TypeTraitsVectorTag)
 {
   T result;
   for (int componentIndex = 0;
@@ -61,9 +61,9 @@ template<typename T>
 T Remainder(const T &numerator, const T &denominator)
 {
   return detail::RemainderImpl(numerator,
-                             denominator,
-                             typename vtkm::TypeTraits<T>::NumericTag(),
-                             typename vtkm::TypeTraits<T>::DimensionalityTag());
+                               denominator,
+                               typename vtkm::TypeTraits<T>::NumericTag(),
+                               typename vtkm::TypeTraits<T>::DimensionalityTag());
 }
 ////
 //// END-EXAMPLE TypeTraits.cxx
@@ -74,22 +74,23 @@ void TryRemainder()
   vtkm::Id m1 = Remainder(7, 3);
   VTKM_TEST_ASSERT(m1 == 1, "Got bad remainder");
 
-  vtkm::Scalar m2 = Remainder(7.0, 3.0);
-  VTKM_TEST_ASSERT(test_equal(m2, vtkm::Scalar(1)), "Got bad remainder");
+  vtkm::Float32 m2 = Remainder(7.0, 3.0);
+  VTKM_TEST_ASSERT(test_equal(m2, 1), "Got bad remainder");
 
   vtkm::Id3 m3 = Remainder(vtkm::Id3(10, 9, 8), vtkm::Id3(7, 6, 5));
   VTKM_TEST_ASSERT(test_equal(m3, vtkm::Id3(3, 3, 3)), "Got bad remainder");
 
-  vtkm::Vector3 m4 = Remainder(vtkm::Vector3(10, 9, 8), vtkm::Vector3(7, 6, 5));
-  VTKM_TEST_ASSERT(test_equal(m4, vtkm::Vector3(3, 3, 3)), "Got bad remainder");
+  vtkm::Vec<vtkm::Float32,3> m4 =
+      Remainder(vtkm::make_Vec(10, 9, 8), vtkm::make_Vec(7, 6, 5));
+  VTKM_TEST_ASSERT(test_equal(m4, vtkm::make_Vec(3, 3, 3)), "Got bad remainder");
 }
 
 } // anonymous namespace
 
 ////
-//// BEGIN-EXAMPLE VectorTraits.cxx
+//// BEGIN-EXAMPLE VecTraits.cxx
 ////
-#include <vtkm/VectorTraits.h>
+#include <vtkm/VecTraits.h>
 //// PAUSE-EXAMPLE
 namespace {
 //// RESUME-EXAMPLE
@@ -103,13 +104,13 @@ struct LessTotalOrder
   VTKM_EXEC_CONT_EXPORT
   bool operator()(const T &left, const T &right)
   {
-    for (int index = 0; index < vtkm::VectorTraits<T>::NUM_COMPONENTS; index++)
+    for (int index = 0; index < vtkm::VecTraits<T>::NUM_COMPONENTS; index++)
     {
-      typedef typename vtkm::VectorTraits<T>::ComponentType ComponentType;
+      typedef typename vtkm::VecTraits<T>::ComponentType ComponentType;
       const ComponentType &leftValue =
-          vtkm::VectorTraits<T>::GetComponent(left, index);
+          vtkm::VecTraits<T>::GetComponent(left, index);
       const ComponentType &rightValue =
-          vtkm::VectorTraits<T>::GetComponent(right, index);
+          vtkm::VecTraits<T>::GetComponent(right, index);
       if (leftValue < rightValue) { return true; }
       if (rightValue < leftValue) { return false; }
     }
@@ -128,13 +129,13 @@ struct LessPartialOrder
   VTKM_EXEC_CONT_EXPORT
   bool operator()(const T &left, const T &right)
   {
-    for (int index = 0; index < vtkm::VectorTraits<T>::NUM_COMPONENTS; index++)
+    for (int index = 0; index < vtkm::VecTraits<T>::NUM_COMPONENTS; index++)
     {
-      typedef typename vtkm::VectorTraits<T>::ComponentType ComponentType;
+      typedef typename vtkm::VecTraits<T>::ComponentType ComponentType;
       const ComponentType &leftValue =
-          vtkm::VectorTraits<T>::GetComponent(left, index);
+          vtkm::VecTraits<T>::GetComponent(left, index);
       const ComponentType &rightValue =
-          vtkm::VectorTraits<T>::GetComponent(right, index);
+          vtkm::VecTraits<T>::GetComponent(right, index);
       if (!(leftValue < rightValue)) { return false; }
     }
     // If we are here, all components satisfy less than relation.
@@ -142,7 +143,7 @@ struct LessPartialOrder
   }
 };
 ////
-//// END-EXAMPLE VectorTraits.cxx
+//// END-EXAMPLE VecTraits.cxx
 ////
 
 void TryLess()

@@ -10,19 +10,21 @@ namespace {
 //// RESUME-EXAMPLE
 
 // A list of 2D vector types.
-struct Vectors2List : vtkm::ListTagBase2<vtkm::Id2, vtkm::Vector2> {  };
+struct Vec2List
+    : vtkm::ListTagBase<vtkm::Id2,
+                        vtkm::Vec<vtkm::Float32,2>,
+                        vtkm::Vec<vtkm::Float64,3> > {  };
 
 // An application that uses 2D geometry might commonly encounter this list of
 // types.
-struct MyCommonTypes :
-    vtkm::ListTagJoin<Vectors2List,vtkm::TypeListTagCommon> {  };
+struct MyCommonTypes : vtkm::ListTagJoin<Vec2List,vtkm::TypeListTagCommon> {  };
 ////
 //// END-EXAMPLE CustomTypeLists.cxx
 ////
 
 } // anonymous namespace
 
-#include <vtkm/VectorTraits.h>
+#include <vtkm/VecTraits.h>
 
 #include <vtkm/testing/Testing.h>
 
@@ -50,11 +52,11 @@ class Xyzzy;
 
 struct FooList : vtkm::ListTagBase<Foo> {  };
 
-struct FooBarList : vtkm::ListTagBase2<Foo,Bar> {  };
+struct FooBarList : vtkm::ListTagBase<Foo,Bar> {  };
 
-struct BazQuxXyzzyList : vtkm::ListTagBase3<Baz,Qux,Xyzzy> {  };
+struct BazQuxXyzzyList : vtkm::ListTagBase<Baz,Qux,Xyzzy> {  };
 
-struct QuxBazBarFooList : vtkm::ListTagBase4<Qux,Baz,Bar,Foo> {  };
+struct QuxBazBarFooList : vtkm::ListTagBase<Qux,Baz,Bar,Foo> {  };
 
 struct FooBarBazQuxXyzzyList
     : vtkm::ListTagJoin<FooBarList, BazQuxXyzzyList> {  };
@@ -72,18 +74,16 @@ struct ListTagsFunctor
 {
   std::string FoundTags;
 
+  template<typename T>
+  void operator()(T) {
+    this->FoundTags.append(vtkm::testing::TypeName<T>::Name());
+  }
+
   void operator()(Foo) { this->FoundTags.append("Foo"); }
   void operator()(Bar) { this->FoundTags.append("Bar"); }
   void operator()(Baz) { this->FoundTags.append("Baz"); }
   void operator()(Qux) { this->FoundTags.append("Qux"); }
   void operator()(Xyzzy) { this->FoundTags.append("Xyzzy"); }
-  void operator()(vtkm::Id) { this->FoundTags.append("Id"); }
-  void operator()(vtkm::Id2) { this->FoundTags.append("Id2"); }
-  void operator()(vtkm::Id3) { this->FoundTags.append("Id3"); }
-  void operator()(vtkm::Scalar) { this->FoundTags.append("Scalar"); }
-  void operator()(vtkm::Vector2) { this->FoundTags.append("Vector2"); }
-  void operator()(vtkm::Vector3) { this->FoundTags.append("Vector3"); }
-  void operator()(vtkm::Vector4) { this->FoundTags.append("Vector4"); }
 };
 
 template<typename ListTag>
@@ -91,6 +91,9 @@ void TryListTag(ListTag, const char *expectedString)
 {
   ListTagsFunctor checkFunctor;
   vtkm::ListForEach(checkFunctor, ListTag());
+  std::cout << std::endl
+            << "Expected " << expectedString << std::endl
+            << "Found    " << checkFunctor.FoundTags << std::endl;
   VTKM_TEST_ASSERT(checkFunctor.FoundTags == expectedString, "List wrong");
 }
 
@@ -105,8 +108,8 @@ void TestBaseListTags()
 
 void TestCustomTypeLists()
 {
-  TryListTag(Vectors2List(), "Id2Vector2");
-  TryListTag(MyCommonTypes(), "Id2Vector2IdScalarVector3");
+  TryListTag(Vec2List(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 3 >");
+  TryListTag(MyCommonTypes(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 3 >vtkm::Int32vtkm::Int64vtkm::Float32vtkm::Float64vtkm::Vec< vtkm::Float32, 3 >vtkm::Vec< vtkm::Float64, 3 >");
 }
 
 ////
@@ -126,7 +129,7 @@ struct MyArrayImpl : public MyArrayBase {
 template<typename T>
 void PrefixSum(std::vector<T> &array)
 {
-  T sum(typename vtkm::VectorTraits<T>::ComponentType(0));
+  T sum(typename vtkm::VecTraits<T>::ComponentType(0));
   for (typename std::vector<T>::iterator iter = array.begin();
        iter != array.end();
        iter++)

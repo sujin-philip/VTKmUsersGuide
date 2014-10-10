@@ -14,7 +14,7 @@ void CreateDynamicPointCoordinates()
   ////
   //// BEGIN-EXAMPLE CreateDynamicPointCoordinates.cxx
   ////
-  std::vector<vtkm::Vector3> coordinatesBuffer;
+  std::vector<vtkm::Vec<vtkm::Float32,3> > coordinatesBuffer;
   // Fill coordinatesBuffer...
   vtkm::cont::PointCoordinatesArray arrayPointCoords(
         vtkm::cont::make_ArrayHandle(coordinatesBuffer));
@@ -22,8 +22,8 @@ void CreateDynamicPointCoordinates()
 
   vtkm::cont::PointCoordinatesUniform uniformPointCoords(
         vtkm::Extent3(vtkm::Id3(0,0,0),vtkm::Id3(10,10,10)),
-        vtkm::Vector3(0, 0, 0),
-        vtkm::Vector3(1, 1, 1));
+        vtkm::make_Vec(0, 0, 0),
+        vtkm::make_Vec(1, 1, 1));
   vtkm::cont::DynamicPointCoordinates pointCoords2(uniformPointCoords);
   ////
   //// END-EXAMPLE CreateDynamicPointCoordinates.cxx
@@ -51,8 +51,8 @@ void QueryAndCast()
   ////
   vtkm::cont::PointCoordinatesUniform uniformPointCoords(
         vtkm::Extent3(vtkm::Id3(0,0,0),vtkm::Id3(10,10,10)),
-        vtkm::Vector3(0, 0, 0),
-        vtkm::Vector3(1, 1, 1));
+        vtkm::make_Vec(0, 0, 0),
+        vtkm::make_Vec(1, 1, 1));
   vtkm::cont::DynamicPointCoordinates dynamicPointCoords(uniformPointCoords);
 
   // This returns true
@@ -85,13 +85,11 @@ void QueryAndCast()
 ////
 struct PrintPointCoordinatesFunctor
 {
-  template<typename Storage>
+  template<typename ArrayHandleType>
   VTKM_CONT_EXPORT
-  void operator()(
-      const vtkm::cont::ArrayHandle<vtkm::Vector3,Storage> &array) const
+  void operator()(const ArrayHandleType &array) const
   {
-    typename vtkm::cont::ArrayHandle<
-        vtkm::Vector3,Storage>::PortalConstControl portal =
+    typename ArrayHandleType::PortalConstControl portal =
           array.GetPortalConstControl();
     for (vtkm::Id index = 0; index < portal.GetNumberOfValues(); index++)
     {
@@ -114,8 +112,8 @@ void TryPrintPointCoordinates()
 {
   vtkm::cont::PointCoordinatesUniform uniformPointCoords(
         vtkm::Extent3(vtkm::Id3(0,0,0),vtkm::Id3(2,2,2)),
-        vtkm::Vector3(0, 0, 0),
-        vtkm::Vector3(1, 1, 1));
+        vtkm::make_Vec(0, 0, 0),
+        vtkm::make_Vec(1, 1, 1));
   vtkm::cont::DynamicPointCoordinates dynamicPointCoords(uniformPointCoords);
 
   PrintPointCoordinates(dynamicPointCoords);
@@ -138,8 +136,10 @@ public:
   VTKM_CONT_EXPORT
   void CastAndCall(const Functor &f, TypeList, StorageList) const
   {
-    vtkm::cont::ArrayHandleCounting<vtkm::Vector3>
-        countingArray(vtkm::Vector3(0.0), this->NumberOfPoints);
+    typedef vtkm::Vec<vtkm::FloatDefault,3> PointCoordinatesType;
+
+    vtkm::cont::ArrayHandleCounting<PointCoordinatesType>
+        countingArray(PointCoordinatesType(0.0), this->NumberOfPoints);
     f(countingArray);
   }
 private:

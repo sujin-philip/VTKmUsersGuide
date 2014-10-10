@@ -19,14 +19,14 @@ LoadDynamicArray(const void *buffer, vtkm::Id length, std::string type)
   vtkm::cont::DynamicArrayHandle handle;
   if (type == "float")
   {
-    vtkm::cont::ArrayHandle<vtkm::Scalar> concreteArray =
+    vtkm::cont::ArrayHandle<vtkm::Float32> concreteArray =
         vtkm::cont::make_ArrayHandle(
-          reinterpret_cast<const vtkm::Scalar*>(buffer), length);
+          reinterpret_cast<const vtkm::Float32*>(buffer), length);
     handle = concreteArray;
   } else if (type == "int") {
-    vtkm::cont::ArrayHandle<vtkm::Id> concreteArray =
+    vtkm::cont::ArrayHandle<vtkm::Int32> concreteArray =
         vtkm::cont::make_ArrayHandle(
-          reinterpret_cast<const vtkm::Id*>(buffer), length);
+          reinterpret_cast<const vtkm::Int32*>(buffer), length);
     handle = concreteArray;
   }
   return handle;
@@ -37,26 +37,26 @@ LoadDynamicArray(const void *buffer, vtkm::Id length, std::string type)
 
 void TryLoadDynamicArray()
 {
-  vtkm::Scalar scalarBuffer[10];
+  vtkm::Float32 scalarBuffer[10];
   vtkm::cont::DynamicArrayHandle handle =
       LoadDynamicArray(scalarBuffer, 10, "float");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndStorage(vtkm::Scalar(),
+        handle.IsTypeAndStorage(vtkm::Float32(),
                                 VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndStorage(vtkm::Id(),
+        !handle.IsTypeAndStorage(vtkm::Int32(),
                                  VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
 
-  vtkm::Id idBuffer[10];
+  vtkm::Int32 idBuffer[10];
   handle = LoadDynamicArray(idBuffer, 10, "int");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndStorage(vtkm::Id(),
+        handle.IsTypeAndStorage(vtkm::Int32(),
                                 VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndStorage(vtkm::Scalar(),
+        !handle.IsTypeAndStorage(vtkm::Float32(),
                                  VTKM_DEFAULT_STORAGE_TAG()),
         "Type not right.");
 }
@@ -66,13 +66,13 @@ void QueryCastDynamicArrayHandle()
   ////
   //// BEGIN-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
-  std::vector<vtkm::Scalar> scalarBuffer(10);
+  std::vector<vtkm::Float32> scalarBuffer(10);
   vtkm::cont::DynamicArrayHandle dynamicHandle(
         vtkm::cont::make_ArrayHandle(scalarBuffer));
 
   // This returns true
-  bool isScalar = dynamicHandle.IsTypeAndStorage(vtkm::Scalar(),
-                                                 VTKM_DEFAULT_STORAGE_TAG());
+  bool isFloat32 = dynamicHandle.IsTypeAndStorage(vtkm::Float32(),
+                                                  VTKM_DEFAULT_STORAGE_TAG());
 
   // This returns false
   bool isId = dynamicHandle.IsTypeAndStorage(vtkm::Id(),
@@ -80,21 +80,21 @@ void QueryCastDynamicArrayHandle()
 
   // This returns false
   bool isErrorStorage = dynamicHandle.IsTypeAndStorage(
-                            vtkm::Scalar(),
+                            vtkm::Float32(),
                             vtkm::cont::internal::StorageTagError());
   ////
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
 
-  VTKM_TEST_ASSERT(isScalar, "Didn't query right.");
+  VTKM_TEST_ASSERT(isFloat32, "Didn't query right.");
   VTKM_TEST_ASSERT(!isId, "Didn't query right.");
   VTKM_TEST_ASSERT(!isErrorStorage, "Didn't query right.");
 
   ////
   //// BEGIN-EXAMPLE CastDynamicArrayHandle.cxx
   ////
-  vtkm::cont::ArrayHandle<vtkm::Scalar> concreteHandle =
-      dynamicHandle.CastToArrayHandle(vtkm::Scalar(),
+  vtkm::cont::ArrayHandle<vtkm::Float32> concreteHandle =
+      dynamicHandle.CastToArrayHandle(vtkm::Float32(),
                                       VTKM_DEFAULT_STORAGE_TAG());
   ////
   //// END-EXAMPLE CastDynamicArrayHandle.cxx
@@ -142,7 +142,7 @@ void PrintArrayContents(const DynamicArrayType &array)
 //// BEGIN-EXAMPLE CastAndCallStorage.cxx
 ////
 struct MyIdStorageList :
-    vtkm::ListTagBase2<
+    vtkm::ListTagBase<
         vtkm::cont::StorageTagBasic,
         vtkm::cont::ArrayHandleCounting<vtkm::Id>::StorageTag>
 {  };

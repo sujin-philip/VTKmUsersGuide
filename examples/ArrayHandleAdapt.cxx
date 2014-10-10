@@ -42,7 +42,7 @@ template<typename DequeType>
 class ArrayPortalFooPressure
 {
 public:
-  typedef vtkm::Scalar ValueType;
+  typedef float ValueType;
 
   VTKM_CONT_EXPORT
   ArrayPortalFooPressure() : Container(NULL) {  }
@@ -63,30 +63,17 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  vtkm::Scalar Get(vtkm::Id index) const {
+  ValueType Get(vtkm::Id index) const {
     VTKM_ASSERT_CONT(index >= 0);
     VTKM_ASSERT_CONT(index < this->GetNumberOfValues());
-    return static_cast<vtkm::Scalar>((*this->Container)[index].Pressure);
+    return (*this->Container)[index].Pressure;
   }
 
   VTKM_CONT_EXPORT
-  void Set(vtkm::Id index, vtkm::Scalar value) const {
+  void Set(vtkm::Id index, ValueType value) const {
     VTKM_ASSERT_CONT(index >= 0);
     VTKM_ASSERT_CONT(index < this->GetNumberOfValues());
     (*this->Container)[index].Pressure = value;
-  }
-
-  typedef vtkm::cont::internal::IteratorFromArrayPortal<
-       ArrayPortalFooPressure<DequeType> > IteratorType;
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorBegin() const {
-    return IteratorType(*this, 0);
-  }
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorEnd() const {
-    return IteratorType(*this, this->GetNumberOfValues());
   }
 
   // Here for the copy constructor.
@@ -131,10 +118,10 @@ namespace cont {
 namespace internal {
 
 template<>
-class Storage<vtkm::Scalar, StorageTagFooPressure>
+class Storage<float, StorageTagFooPressure>
 {
 public:
-  typedef vtkm::Scalar ValueType;
+  typedef float ValueType;
 
   typedef ArrayPortalFooPressure<FooFieldsDeque> PortalType;
   typedef ArrayPortalFooPressure<const FooFieldsDeque> PortalConstType;
@@ -188,15 +175,14 @@ namespace {
 //// BEGIN-EXAMPLE ArrayHandleAdapter.cxx
 ////
 class ArrayHandleFooPressure
-    : public vtkm::cont::ArrayHandle<
-          vtkm::Scalar, StorageTagFooPressure>
+    : public vtkm::cont::ArrayHandle<float, StorageTagFooPressure>
 {
 private:
-  typedef vtkm::cont::internal::Storage<vtkm::Scalar, StorageTagFooPressure>
+  typedef vtkm::cont::internal::Storage<float, StorageTagFooPressure>
       StorageType;
 
 public:
-  typedef vtkm::cont::ArrayHandle<vtkm::Scalar, StorageTagFooPressure>
+  typedef vtkm::cont::ArrayHandle<float, StorageTagFooPressure>
       Superclass;
 
   VTKM_CONT_EXPORT
@@ -229,7 +215,7 @@ void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
 
   // In lieu of running something interesting, for now just copy from one array
   // to another in the execution environment.
-  vtkm::cont::ArrayHandleCounting<vtkm::Scalar> countingArray(1, 50);
+  vtkm::cont::ArrayHandleCounting<float> countingArray(1, 50);
   vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
         countingArray, pressureHandle);
 

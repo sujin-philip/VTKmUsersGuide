@@ -97,18 +97,17 @@ class ExposedClass;
   \item Although tags are technically classes, they behave as an
     enumeration for the compiler. Multiple tags that make up this
     enumeration are collected together.
-  \item Some classes, such as \vtkm{Tuple} are meant to behave as basic
+  \item Some classes, such as \vtkm{Vec} are meant to behave as basic
     types. These are sometimes collected together as if they were related
     \textcode{typedef}s. The \vtkmheader{vtkm}{Types.h} header is a good
     example of this.
   \end{itemize}
-\item The indentation style can be characterized as the ``hanging brace''
-  \fix{?}  (a modified whitesmith \fix{wrong, look it up})
-  style. Indentations are two spaces, and the curly brace (scope delimiter)
-  is placed on the following line and indented with the outer scope
-  (i.e. the curly brace does not line up with the code in the block). This
-  differs from VTK style, but was agreed on by the developers as the more
-  common style.
+\item The indentation follows the Allman style. The curly brace (scope
+  delimiter) for a block is placed on the line following the prototype or
+  control statement and is indented with the outer scope (i.e. the curly
+  brace does not line up with the code in the block). This differs from VTK
+  style, but was agreed on by the developers as the more common
+  style. Indentations are two spaces.
 \item Conditional clauses (including loop conditionals such as
   \textcode{for} and \textcode{while}) must be in braces below the
   conditional. That is, instead of
@@ -118,9 +117,9 @@ if (test) { clause; }
   use
 \begin{verbatim}
 if (test)
-  {
+{
   clause;
-  }
+}
 \end{verbatim}
   The rational for this requirement is to make it obvious whether the
   clause is executed when stepping through the code with the debugger. The
@@ -192,14 +191,18 @@ if (test)
   on different architectures.
 \item All code must compile and run without error or warning messages on
   the nightly dashboards, which should include Windows, Mac, and Linux.
-\item Use \vtkm{Scalar} in lieu of \textcode{float} or \textcode{double} to
-  represent data for computation and use \vtkm{Id} in lieu of \textcode{int}
-  or \textcode{long} for data structure indices. This future-proofs code
-  against changes in precision of the architecture. The indices of
-  \vtkm{Tuple} are an exception. Using \textcode{int} to reference
-  \vtkm{Tuple} (and other related classes like \vtkmexec{CellField} and
-  \vtkmmath{Matrix}) indices are acceptable as it is unreasonable to make
-  these vectors longer than the precision of \textcode{int}.
+\item Use \vtkm{Id} in lieu of \textcode{int} or \textcode{long} for data
+  structure indices and \vtkm{IdComponent} for component indices of
+  \vtkm{Vec} and related classes (like \vtkmexec{CellField} and
+  \vtkmmath{Matrix}).
+\item Whenever possible, use templates to resolve data types like
+  \textcode{float}, \textcode{double}, or vectors to make code as flexible
+  as possible. If a specific data type is required, prefer the
+  VTK-m--provided types like \vtkm{Float32} and \vtkm{Float64} over the
+  standard C types like \textcode{float} or
+  \textcode{double}. \vtkm{FloatDefault} can be used in cases where there
+  is no reasonable way to specify data precision (for example, when
+  generating coordinates for uniform grids), but should be use sparingly.
 \item All functions and methods defined within the Dax toolkit should be
   declared with \vtkmcontexport, \vtkmexecexport, or \vtkmexeccontexport.
 \end{itemize}

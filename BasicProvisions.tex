@@ -178,95 +178,103 @@ are declared in \vtkmheader{vtkm}{Types.h}.
 
 \subsection{Single Number Types}
 
-All floating point values should be declared as type \vtkm{Scalar}, and all
-integer values, generally used for indexing, should be declared as type
-\vtkm{Id}. The chief advantage of using these declared types rather than
-the core C types is that the precision can easily be changed. By default,
-both types are 32 bits wide. The CMake configuration options
-\cmakevar{VTKM\_USE\_DOUBLE\_PRECISION} and
-\cmakevar{VTKM\_USE\_64BIT\_IDS} can be used to change the \vtkm{Scalar}
-type and \vtkm{Id} type, respectively, to be 64 bits wide. The
-configuration can be overridden by defining the C macro
-\vtkmmacro{VTKM\_USE\_DOUBLE\_PRECISION} or
-\vtkmmacro{VTKM\_NO\_DOUBLE\_PRECISION} to force \vtkm{Scalar} to be either
-64 or 32 bits and defining the C macro \vtkmmacro{VTKM\_USE\_64BIT\_IDS} or
-\vtkmmacro{VTKM\_NO\_64BIT\_IDS} to force \vtkm{Id} to be either 64 or 32
-bits. These macros must be defined before any VTK-m header files are
-included to take effect. For convenience, you can include either
+To ensure portability across different compilers and architectures, VTK-m
+provides \textcode{typedef}s for the following basic types with explicit
+precision: \vtkm{Float32}, \vtkm{Float64}, \vtkm{Int8}, \vtkm{Int16},
+\vtkm{Int32}, \vtkm{Int64}, \vtkm{UInt8}, \vtkm{UInt16}, \vtkm{UInt32}, and
+\vtkm{UInt64}. Under most circumstances when using VTK-m (and performing
+visualization in general) the type of data is determined by the source of the
+data or resolved through templates. In the case where a specific type of
+data is required, these VTK-m--defined types should be preferred over basic
+C types like \textcode{int} or \textcode{float}.
+
+Many of the structures in VTK-m require indices to identify elements like
+points and cells. All indices for arrays and other lists use the type
+\vtkm{Id}. By default this type is a 32-bit wide integer but can be easily
+changed by compile options. The CMake configuration option
+\cmakevar{VTKM\_USE\_64BIT\_IDS} can be used to change \vtkm{Id} to be 64
+bits wide. This configuration can be overridden by defining the C macro
+\vtkmmacro{VTKM\_USE\_64BIT\_IDS} or \vtkmmacro{VTKM\_NO\_64BIT\_IDS} to
+force \vtkm{Id} to be either 64 or 32 bits. These macros must be defined
+before any VTK-m header files are included to take effect.
+
+There is also a secondary index type named \vtkm{IdComponent} that is used
+to index components of short vectors (discussed in
+Section~\ref{sec:VectorTypes}). This type is an integer that might be a
+shorter width than \vtkm{Id}.
+
+There is also the rare circumstance in which an algorithm in VTK-m computes
+data values for which there is no indication what the precision should
+be. For these circumstances, the type \vtkm{FloatDefault} is provided. By
+default this type is a 32-bit wide floating point number but can be easily
+changed by compile options. The CMake configuration option
+\cmakevar{VTKM\_USE\_DOUBLE\_PRECISION} can be used to change
+\vtkm{FloatDefault} to be 64 bits wide. This configuration can be
+overridden by defining the C macro \vtkmmacro{VTKM\_USE\_DOUBLE\_PRECISION}
+or \vtkmmacro{VTKM\_NO\_DOUBLE\_PRECISION} to force \vtkm{FloatDefault} to
+be either 64 or 32 bits. These macros must be defined before any VTK-m
+header files are included to take
+effect.
+
+For convenience, you can include either
 \vtkmheader{vtkm/internal}{ConfigureFor32.h} or
-\vtkmheader{vtkm/internal}{ConfigureFor64.h} to force both \vtkm{Scalar}
-and \vtkm{Id} to be 32 or 64 bits. The reason VTK-m uses macros to
-determine these type widths rather than templates is to reduce the number
-of template parameters required in the already template-heavy VTK-m classes
-and functions.
+\vtkmheader{vtkm/internal}{ConfigureFor64.h} to force both \vtkm{Id} and
+\vtkm{FloatDefault} to be 32 or 64 bits.
 
 \subsection{Vector Types}
+\label{sec:VectorTypes}
 
 Visualization algorithms also often require operations on short vectors.
 Arrays indexed in up to three dimensions are common. Data are often defined
 in 2-space and 3-space, and transformations are typically done in
 homogeneous coordinates of length 4. To simplify these types of operations,
-VTK-m provides several vector data types.
+VTK-m provides the \vtkm{Vec}\tparams{T,Size} templated type, which is
+essentially a fixed length array of a given type.
 
-The types \vtkm{Id2} and \vtkm{Id3} are couple and triple values of type
-\vtkm{Id}. The types \vtkm{Vector2}, \vtkm{Vector3}, and \vtkm{Vector4} are
-couple, triple, and quadruple values of type \vtkm{Scalar}. The elements of
-these vectors are accessed with the bracket operator, so they syntactically
-appear like short arrays. They additionally have a constant named
-\textidentifier{NUM\_COMPONENTS}\index{NUM\_COMPONENTS} to specify how many
-components are in the tuple.
-
-The default constructor of these vector types leaves the values
-uninitialized. All vectors have a constructor with one arguments that is
-used to initialize all components. All these vectors also have a
-constructor that allows you to set the individual components. Likewise,
-there are a set of \vtkm{make\_Id*} and \vtkm{make\_Vector*} functions that
-build initialized vector types. \fix{I'm starting to question why we have
-  make\_Vector* and make\_Id* when the constructors work just fine. The
-  real point of these make* functions is to return a templated type without
-  having to declare the template. But none of these methods are templated.}
+The default constructor of \vtkm{Vec} objects leaves the values
+uninitialized. All vectors have a constructor with one argument that is
+used to initialize all components. All \vtkm{Vec} objects with a size of 4
+or less is specialized to also have a constructor that allows you to set
+the individual components. Likewise, there is a \vtkm{make\_Vec} function
+that builds initialized vector types of up to 4 components. Once created,
+you can use the bracket operator to get and set component values with the
+same syntax as an array.
 
 \vtkmlisting{Creating vector types.}{CreatingVectorTypes.cxx}
 
-The vector types all support component-wise arithmetic using the operators
+The types \vtkm{Id2} and \vtkm{Id3} are \textcode{typedef}s of
+\vtkm{Vec}\tparams{\vtkm{Id},2} and \vtkm{Vec}\tparams{\vtkm{Id},2}. These
+are used to index arrays of 2 and 3 dimensions, which is common.
+
+Vectors longer than 4 are also supported, but independent component values
+must be set after construction. The \vtkm{Vec} class contains a constant
+named \textidentifier{NUM\_COMPONENTS}\index{NUM\_COMPONENTS} to specify how many
+components are in the vector.
+
+\vtkmlisting{A Longer Vector.}{LongerVector.cxx}
+
+\vtkm{Vec} supports component-wise arithmetic using the operators
 for plus (\textcode{+}), minus (\textcode{-}), multiply (\textcode{*}), and
-divide (\textcode{/}). They also support scalar to vector multiplication
+divide (\textcode{/}). It also supports scalar to vector multiplication
 with the multiply operator. The comparison operators equal (\textcode{==})
 is true if every pair of corresponding components are true and not equal
-(\textcode{!=}) is true otherwise.  A special \vtkm{dot} function is
+(\textcode{!=}) is true otherwise. A special \vtkm{dot} function is
 overloaded to provide a dot product for every type of vector.
 
 \vtkmlisting{Vector operations.}{VectorOperations.cxx}
 
-\subsection{Tuple}
-
-VTK-m provides the templated class \vtkm{Tuple}\tparams{T,Size}, which is
-essentially a fixed length array of a given type. \vtkm{Tuple} objects
-behave just like the vector types previously described but with any type
-and length that you specify.
-
-\vtkmlisting{The tuple class.}{TupleClass.cxx}
-
-The same operators that work on the vector types work on \vtkm{Tuple} with
-the caveat that the operator must work on the component type of the
-tuple. For example, the multiply operator will work fine on objects of type
-\vtkm{Tuple}\tparams{char,3}, but the multiply operator will not work on objects
-of type \vtkm{Tuple}\tparams{std::string,3} because you cannot multiply
-objects of type \textcode{std::string}.
-
-A \vtkm{Tuple} of the appropriate type can be used interchangeably with a
-matching vector type. In fact, a vector type is really just a typedef over
-a \vtkm{Tuple}. This is convenient for a number of things including writing
-generic functions that work over all types.
-
-\vtkmlisting{Interchangeability of tuples and vector types.}{TuplesAndVectors.cxx}
+These operators, of course, only work if they are also defined for the
+component type of the \vtkm{Vec}. For example, the multiply operator will
+work fine on objects of type \vtkm{Vec}\tparams{char,3}, but the multiply
+operator will not work on objects of type \vtkm{Vec}\tparams{std::string,3}
+because you cannot multiply objects of type \textcode{std::string}.
 
 In addition to generalizing vector operations and making arbitrarily long
-vectors, \vtkm{Tuple} is useful for creating any sequence of homogeneous
-objects. Here is a simple example of using \vtkm{Tuple} to hold the state of
-a polygon.
+vectors, \vtkm{Vec} can be repurposed for creating any sequence of
+homogeneous objects. Here is a simple example of using \vtkm{Vec} to hold
+the state of a polygon.
 
-\vtkmlisting{Usage of a tuple.}{EquilateralTriangle.cxx}
+\vtkmlisting{Repurposing a \protect\vtkm{Vec}.}{EquilateralTriangle.cxx}
 
 \subsection{Extents}
 
@@ -378,13 +386,13 @@ elements.
   the type represents either a single scalar value or a tuple of values.
 \end{description}
 
-The definition of \vtkm{TypeTraits} for \vtkm{Scalar} could like something
+The definition of \vtkm{TypeTraits} for \vtkm{Float32} could like something
 like this.
-\begin{vtkmexample}{Definition of \protect \vtkm{TypeTraits}\tparams{\protect \vtkm{Scalar}}.}
+\begin{vtkmexample}{Definition of \protect \vtkm{TypeTraits}\tparams{\protect \vtkm{Float32}}.}
 namespace vtkm {
 
 template<>
-struct TypeTraits<vtkm::Scalar>
+struct TypeTraits<vtkm::Float32>
 {
   typedef vtkm::TypeTraitsRealTag NumericTag;
   typedef vtkm::TypeTraitsScalarTag DimensionalityTag;
@@ -407,43 +415,42 @@ types including floating points and vectors.
 
 \subsection{Vector Traits}
 
-The \vtkm{VectorTraits}\tparams{T} templated class provides information and
-accessors to vector and tuple types. It contains the following elements.
+The \vtkm{VecTraits}\tparams{T} templated class provides information and
+accessors to vector types. It contains the following elements.
 
 \index{tag!vector traits|(}
 
 \begin{description}
 \item[\textidentifier{ComponentType}] \index{ComponentType} This type is
   set to the type for each component in the vector. For example, a
-  \vtkm{Vector3} has \textidentifier{ComponentType} defined as
-  \vtkm{Scalar}.
+  \vtkm{Id3} has \textidentifier{ComponentType} defined as \vtkm{Id}.
 \item[\textidentifier{NUM\_COMPONENTS}] \index{NUM\_COMPONENTS} An integer
   specifying how many components are contained in the vector.
 \item[\textidentifier{HasMultipleComponents}] \index{HasMultipleComponents}
   \index{tag!single component} \index{tag!multiple components}
-  This type is set to either \vtkm{VectorTraitsTagSingleComponent} if the
-  vector length is size 1 or \vtkm{VectorTraitsTagMultipleComponents}
+  This type is set to either \vtkm{VecTraitsTagSingleComponent} if the
+  vector length is size 1 or \vtkm{VecTraitsTagMultipleComponents}
   otherwise. This tag can be useful for creating specialized functions when
   a vector is really just a scalar.
 \item[\textcode{GetComponent}] \index{GetComponent} A static method that
   takes a vector and returns a particular component.
 \item[\textcode{SetComponent}] \index{SetComponent} A static method that
   takes a vector and sets a particular component to a given value.
-\item[\textcode{ToTuple}] \index{ToTuple} A static method that converts a
-  vector of the given type to a \vtkm{Tuple}.
+\item[\textcode{ToVec}] \index{ToVec} A static method that converts a
+  vector of the given type to a \vtkm{Vec}.
 \end{description}
 
-The definition of \vtkm{VectorTraits} for \vtkm{Id3} could like something
-like this.
-\begin{vtkmexample}{Definition of \protect \vtkm{VectorTraits}\tparams{\protect \vtkm{Id3}}.}
+The definition of \vtkm{VecTraits} for \vtkm{Id3} could like something like
+this.
+\begin{vtkmexample}{Definition of \protect \vtkm{VecTraits}\tparams{\protect \vtkm{Id3}}.}
 namespace vtkm {
 
 template<>
-struct VectorTraits<vtkm::Id3>
+struct VecTraits<vtkm::Id3>
 {
   typedef vtkm::Id ComponentType;
   static const int NUM_COMPONENTS = 3;
-  typedef VectorTraitsTagMultipleComponents HasMultipleComponents;
+  typedef VecTraitsTagMultipleComponents HasMultipleComponents;
 
   VTKM_EXEC_CONT_EXPORT
   static vtkm::Id &GetComponent(vtkm::Id3 &vector, int component) {
@@ -456,7 +463,7 @@ struct VectorTraits<vtkm::Id3>
   }
 
   VTKM_EXEC_CONT_EXPORT
-  static vtkm::Tuple<vtkm::Id,3> ToTuple(const vtkm::Id3 &vector) {
+  static vtkm::Vec<vtkm::Id,3> ToTuple(const vtkm::Id3 &vector) {
     return vector;
   }
 };
@@ -473,7 +480,7 @@ following code uses vector traits to simplify the implementation of less
 functors\index{less} that define an ordering that can be used for sorting
 and other operations.
 
-\vtkmlisting{Using \textidentifier{VectorTraits} for less functors.}{VectorTraits.cxx}
+\vtkmlisting{Using \textidentifier{VecTraits} for less functors.}{VecTraits.cxx}
 
 \index{traits|)}
 
@@ -519,11 +526,9 @@ the \vtkmheader{vtkm}{ListTag.h} header.
 The most basic list is defined with \vtkm{ListTagEmpty}. This tag
 represents an empty list.
 
-\vtkm{ListTagBase}\tparams{T} represents a list of size one containing the
-class named in the template parameter. The tags
-\vtkm{ListTagBase2}\tparams{T1,T2}, \vtkm{ListTagBase3}\tparams{T1,T2,T3},
-and \vtkm{ListTagBase4}\tparams{T1,T2,T3,T4} provide convenient ways to
-define lists with up to 4 items.
+\vtkm{ListTagBase}\tparams{T, ...} represents a list of the types given as
+template parameters. \vtkm{ListTagBase} supports a variable number of
+parameters with the maximum specified by \vtkmmacro{VTKM\_MAX\_BASE\_LIST}.
 
 Finally, lists can be combined together with
 \vtkm{ListTagJoin}\tparams{ListTag1,ListTag2}, which concatinates two lists
@@ -551,27 +556,46 @@ One of the major use cases for template metaprogramming lists in VTK-m is
 to identify a set of potential data types for arrays. The
 \vtkmheader{vtkm}{TypeListTag.h} header contains predefined lists for known
 VTK-m types. Although technically all these lists are of C++ types, the
-types we refer to here are those data types stored in data arrays.
+types we refer to here are those data types stored in data arrays. The
+following lists are provided.
 
-There is a list tag for a list containing a single type for every data type
-defined by VTK-m. These tags are: \vtkm{TypeListTagId},
-\vtkm{TypeListTagId2}, \vtkm{TypeListTagId3}, \vtkm{TypeListTagScalar},
-\vtkm{TypeListTagVector2}, \vtkm{TypeListTagVector3}, and
-\vtkm{TypeListTagVector4}.
-
-\vtkm{TypeListTagAll} is a list tag containing all the basic types in
-VTK-m. It is a concatenation of all the types listed in the previous
-paragraph.
-
-\vtkm{TypeListTagIndex} is a list of all the types appropriate for
-indices. Specifically, it contains the types \vtkm{Id}, \vtkm{Id2},
-\vtkm{Id3}. \vtkm{TypeListTagReal} is a list of all the types for floating
-point numbers. Specifically, it contains the types \vtkm{Scalar},
-\vtkm{Vector2}, \vtkm{Vector3}, \vtkm{Vector4}.
-
-\vtkm{TypeListTagCommon} is a list of the most commonly used types across
-multiple domains. It contains the types \vtkm{Id}, \vtkm{Scalar},
-\vtkm{Vector3}.
+\begin{description}
+\item[\vtkm{TypeListTagId}] Contains the single item \vtkm{Id}.
+\item[\vtkm{TypeListTagId2}] Contains the single item \vtkm{Id2}.
+\item[\vtkm{TypeListTagId3}] Contains the single item \vtkm{Id3}.
+\item[\vtkm{TypeListTagIndex}] A list of all types used to index
+  arrays. Contains \vtkm{Id}, \vtkm{Id2}, and \vtkm{Id3}.
+\item[\vtkm{TypeListTagFieldScalar}] A list containing types used for
+  scalar fields. Specifically, it contains floating point numbers of
+  different widths (i.e. \vtkm{Float32} and \vtkm{Float64}).
+\item[\vtkm{TypeListTagFieldVec2}] A list containing types for values of
+  fields with 2 dimensional vectors. All these vectors use floating point
+  numbers.
+\item[\vtkm{TypeListTagFieldVec3}] A list containing types for values of
+  fields with 3 dimensional vectors. All these vectors use floating point
+  numbers.
+\item[\vtkm{TypeListTagFieldVec3}] A list containing types for values of
+  fields with 3 dimensional vectors. All these vectors use floating point
+  numbers.
+\item[\vtkm{TypeListTagField}] A list containing all the types generally
+  used for fields. It is the combination of \vtkm{TypeListTagFieldScalar},
+  \vtkm{TypeListTagFieldVec2}, \vtkm{TypeListTagFieldVec3}, and
+  \vtkm{TypeListTagFieldVec4}.
+\item[\vtkm{TypeListTagScalarAll}] A list of all scalar types. It contains
+  signed and unsigned integers of widths from 8 to 64 bits. It also
+  contains floats of 32 and 64 bit widths.
+\item[\vtkm{TypeListTagVecCommon}] A list of the most common vector
+  types. It contains all \vtkm{Vec} class of size 2 through 4 containing
+  components of unsigned bytes, signed 32-bit integers, signed 64-bit
+  integers, 32-bit floats, or 64-bit floats.
+\item[\vtkm{TypeListTagVecAll}] A list of all types included in
+  \vtkmheader{vtkm}{Types.h} with \vtkm{Vec}s with up to 4 components.
+\item[\vtkm{TypeListTagCommon}] A list containing only the most used types
+  in visualization. This includes signed integers and floats that are 32 or
+  64 bit. It also includes 3 dimensional vectors of floats. This is the
+  default list used when resolving the type in dynamic arrays (described in
+  Section~\ref{sec:DynamicArrayHandle}).
+\end{description}
 
 If these lists are not sufficient, it is possible to build new type lists
 using the existing type lists and the list bases from

@@ -12,13 +12,13 @@
 
 namespace {
 
-vtkm::Scalar TestValue(vtkm::Id index)
+vtkm::Float32 TestValue(vtkm::Id index)
 {
   return 1 + 0.001 * index;
 }
 
-void CheckArrayValues(const vtkm::cont::ArrayHandle<vtkm::Scalar> &array,
-                      vtkm::Scalar factor = 1)
+void CheckArrayValues(const vtkm::cont::ArrayHandle<vtkm::Float32> &array,
+                      vtkm::Float32 factor = 1)
 {
   // So far all the examples are using 50 entries. Could change.
   VTKM_TEST_ASSERT(array.GetNumberOfValues() == 50, "Wrong number of values");
@@ -36,7 +36,7 @@ void BasicConstruction()
   ////
   //// BEGIN-EXAMPLE CreateArrayHandle.cxx
   ////
-  vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray;
+vtkm::cont::ArrayHandle<vtkm::Float32> outputArray;
   ////
   //// END-EXAMPLE CreateArrayHandle.cxx
   ////
@@ -44,7 +44,7 @@ void BasicConstruction()
   ////
   //// BEGIN-EXAMPLE ArrayHandleStorageParameter.cxx
   ////
-  vtkm::cont::ArrayHandle<vtkm::Scalar,vtkm::cont::StorageTagBasic> arrayHandle;
+vtkm::cont::ArrayHandle<vtkm::Float32,vtkm::cont::StorageTagBasic> arrayHandle;
   ////
   //// END-EXAMPLE ArrayHandleStorageParameter.cxx
   ////
@@ -55,7 +55,7 @@ void ArrayHandleFromCArray()
   ////
   //// BEGIN-EXAMPLE ArrayHandleFromCArray.cxx
   ////
-  vtkm::Scalar dataBuffer[50];
+  vtkm::Float32 dataBuffer[50];
   // Populate dataBuffer with meaningful data. Perhaps read data from a file.
   //// PAUSE-EXAMPLE
   for (vtkm::Id index = 0; index < 50; index++)
@@ -64,7 +64,7 @@ void ArrayHandleFromCArray()
   }
   //// RESUME-EXAMPLE
 
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray =
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray =
       vtkm::cont::make_ArrayHandle(dataBuffer, 50);
   ////
   //// END-EXAMPLE ArrayHandleFromCArray.cxx
@@ -77,12 +77,12 @@ void ArrayHandleFromCArray()
 //// BEGIN-EXAMPLE ArrayOutOfScope.cxx
 ////
 VTKM_CONT_EXPORT
-vtkm::cont::ArrayHandle<vtkm::Scalar> BadDataLoad()
+vtkm::cont::ArrayHandle<vtkm::Float32> BadDataLoad()
 {
   ////
   //// BEGIN-EXAMPLE ArrayHandleFromVector.cxx
   ////
-  std::vector<vtkm::Scalar> dataBuffer;
+  std::vector<vtkm::Float32> dataBuffer;
   // Populate dataBuffer with meaningful data. Perhaps read data from a file.
   //// PAUSE-EXAMPLE
   dataBuffer.resize(50);
@@ -92,7 +92,7 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> BadDataLoad()
   }
   //// RESUME-EXAMPLE
 
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray =
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray =
       vtkm::cont::make_ArrayHandle(dataBuffer);
   ////
   //// END-EXAMPLE ArrayHandleFromVector.cxx
@@ -109,9 +109,9 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> BadDataLoad()
 }
 
 VTKM_CONT_EXPORT
-vtkm::cont::ArrayHandle<vtkm::Scalar> SafeDataLoad()
+vtkm::cont::ArrayHandle<vtkm::Float32> SafeDataLoad()
 {
-  std::vector<vtkm::Scalar> dataBuffer;
+  std::vector<vtkm::Float32> dataBuffer;
   // Populate dataBuffer with meaningful data. Perhaps read data from a file.
   //// PAUSE-EXAMPLE
   dataBuffer.resize(50);
@@ -121,7 +121,7 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> SafeDataLoad()
   }
   //// RESUME-EXAMPLE
 
-  vtkm::cont::ArrayHandle<vtkm::Scalar> tmpArray =
+  vtkm::cont::ArrayHandle<vtkm::Float32> tmpArray =
       vtkm::cont::make_ArrayHandle(dataBuffer);
 
   // This copies the data from one ArrayHandle to another (in the execution
@@ -130,7 +130,7 @@ vtkm::cont::ArrayHandle<vtkm::Scalar> SafeDataLoad()
   // the std::vector never goes out of scope before all the ArrayHandle
   // references, but this extra step allows the ArrayHandle to manage its own
   // memory and ensure everything is valid.
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray;
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray;
   vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
       tmpArray, inputArray);
 
@@ -148,17 +148,18 @@ void ArrayHandleFromVector()
 
 void CheckSafeDataLoad()
 {
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray = SafeDataLoad();
   CheckArrayValues(inputArray);
 }
 
 ////
 //// BEGIN-EXAMPLE SimpleArrayPortal.cxx
 ////
+template<typename T>
 class SimpleScalarArrayPortal
 {
 public:
-  typedef vtkm::Scalar ValueType;
+  typedef T ValueType;
 
   // There is no specification for creating array portals, but they generally
   // need a constructor like this to be practical.
@@ -211,25 +212,24 @@ CopyArrayPortalToVector(const PortalType &portal)
 
 void TestArrayPortalVectors()
 {
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
-  std::vector<vtkm::Scalar> vec =
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray = SafeDataLoad();
+  std::vector<vtkm::Float32> buffer =
       CopyArrayPortalToVector(inputArray.GetPortalConstControl());
 
-  VTKM_TEST_ASSERT(vec.size() == inputArray.GetNumberOfValues(),
+  VTKM_TEST_ASSERT(buffer.size() == inputArray.GetNumberOfValues(),
                    "Vector was sized wrong.");
 
   for (vtkm::Id index = 0; index < inputArray.GetNumberOfValues(); index++)
   {
-    VTKM_TEST_ASSERT(vec[index] == TestValue(index), "Bad data value.");
+    VTKM_TEST_ASSERT(buffer[index] == TestValue(index), "Bad data value.");
   }
 
-  vtkm::cont::ArrayHandle<vtkm::Scalar>::PortalConstControl portal =
-      inputArray.GetPortalConstControl();
+  SimpleScalarArrayPortal<vtkm::Float32> portal(&buffer.at(0), buffer.size());
 
   ////
   //// BEGIN-EXAMPLE ArrayPortalToIteratorBeginEnd.cxx
   ////
-  std::vector<vtkm::Scalar> myContainer(portal.GetNumberOfValues());
+  std::vector<vtkm::Float32> myContainer(portal.GetNumberOfValues());
 
   std::copy(vtkm::cont::ArrayPortalToIteratorBegin(portal),
             vtkm::cont::ArrayPortalToIteratorEnd(portal),
@@ -286,13 +286,13 @@ void TestControlPortalsExample()
 ////
 //// BEGIN-EXAMPLE ExecutionPortals.cxx
 ////
-template<typename Device>
+template<typename T, typename Device>
 struct DoubleFunctor : public vtkm::exec::FunctorBase
 {
-  typedef typename vtkm::cont::ArrayHandle<vtkm::Scalar>::
-      ExecutionTypes<Device>::PortalConst InputPortalType;
-  typedef typename vtkm::cont::ArrayHandle<vtkm::Scalar>::
-      ExecutionTypes<Device>::Portal OutputPortalType;
+  typedef typename vtkm::cont::ArrayHandle<T>::
+      template ExecutionTypes<Device>::PortalConst InputPortalType;
+  typedef typename vtkm::cont::ArrayHandle<T>::
+      template ExecutionTypes<Device>::Portal OutputPortalType;
 
   VTKM_CONT_EXPORT
   DoubleFunctor(InputPortalType inputPortal, OutputPortalType outputPortal)
@@ -307,14 +307,14 @@ struct DoubleFunctor : public vtkm::exec::FunctorBase
   OutputPortalType OutputPortal;
 };
 
-template<typename Device>
-void DoubleArray(vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray,
-                 vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray,
+template<typename T, typename Device>
+void DoubleArray(vtkm::cont::ArrayHandle<T> inputArray,
+                 vtkm::cont::ArrayHandle<T> outputArray,
                  Device)
 {
   vtkm::Id numValues = inputArray.GetNumberOfValues();
 
-  DoubleFunctor<Device> functor(
+  DoubleFunctor<T, Device> functor(
         inputArray.PrepareForInput(Device()),
         outputArray.PrepareForOutput(numValues, Device()));
 
@@ -326,9 +326,9 @@ void DoubleArray(vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray,
 
 void TestExecutionPortalsExample()
 {
-  vtkm::cont::ArrayHandle<vtkm::Scalar> inputArray = SafeDataLoad();
+  vtkm::cont::ArrayHandle<vtkm::Float32> inputArray = SafeDataLoad();
   CheckArrayValues(inputArray);
-  vtkm::cont::ArrayHandle<vtkm::Scalar> outputArray;
+  vtkm::cont::ArrayHandle<vtkm::Float32> outputArray;
   DoubleArray(inputArray, outputArray, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   CheckArrayValues(outputArray, 2);
 }

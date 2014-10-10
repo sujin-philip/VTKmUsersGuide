@@ -10,7 +10,7 @@ void DoTiming()
   ////
   //// BEGIN-EXAMPLE Timer.cxx
   ////
-  vtkm::cont::ArrayHandle<vtkm::Scalar> results;
+  vtkm::cont::ArrayHandle<vtkm::Float32> results;
   //// PAUSE-EXAMPLE
   // This just makes sure that results has something allocated so that you
   // don't crash when getting the portal. Delete this once the invoke works,
@@ -27,7 +27,7 @@ void DoTiming()
   // architecture.
   results.GetPortalConstControl();
 
-  vtkm::Scalar elapsedTime = timer.GetElapsedTime();
+  vtkm::Float64 elapsedTime = timer.GetElapsedTime();
 
   std::cout << "Time to run: " << elapsedTime << std::endl;
   ////

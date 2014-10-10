@@ -9,10 +9,10 @@ void CreatingVectorTypes()
   ////
   //// BEGIN-EXAMPLE CreatingVectorTypes.cxx
   ////
-  vtkm::Vector3 A(1);                            // A is (1, 1, 1)
-  A[1] = 2;                                      // A is now (1, 2, 1)
-  vtkm::Vector3 B(1, 2, 3);                      // B is (1, 2, 3)
-  vtkm::Vector3 C = vtkm::make_Vector3(3, 4, 5); // C is (3, 4, 5)
+  vtkm::Vec<vtkm::Float32,3> A(1);                        // A is (1, 1, 1)
+  A[1] = 2;                                               // A is now (1, 2, 1)
+  vtkm::Vec<vtkm::Float32,3> B(1, 2, 3);                  // B is (1, 2, 3)
+  vtkm::Vec<vtkm::Float32,3> C = vtkm::make_Vec(3, 4, 5); // C is (3, 4, 5)
   ////
   //// END-EXAMPLE CreatingVectorTypes.cxx
   ////
@@ -30,37 +30,37 @@ void VectorOperations()
   ////
   //// BEGIN-EXAMPLE VectorOperations.cxx
   ////
-  vtkm::Vector3 A(1, 2, 3);
-  vtkm::Vector3 B(4, 5, 6.5);
-  vtkm::Vector3 C = A + B;                      // C is (5, 7, 9.5)
-  vtkm::Vector3 D = 2 * C;                      // D is (10, 14, 19)
-  vtkm::Scalar s = vtkm::dot(A, B);             // s is 33.5
+  vtkm::Vec<vtkm::Float32,3> A(1, 2, 3);
+  vtkm::Vec<vtkm::Float32,3> B(4, 5, 6.5);
+  vtkm::Vec<vtkm::Float32,3> C = A + B;         // C is (5, 7, 9.5)
+  vtkm::Vec<vtkm::Float32,3> D = 2 * C;         // D is (10, 14, 19)
+  vtkm::Float32 s = vtkm::dot(A, B);            // s is 33.5
   bool b1 = (A == B);                           // b1 is false
-  bool b2 = (A == vtkm::make_Vector3(1, 2, 3)); // b2 is true
+  bool b2 = (A == vtkm::make_Vec(1, 2, 3));     // b2 is true
   ////
   //// END-EXAMPLE VectorOperations.cxx
   ////
 
-  VTKM_TEST_ASSERT(test_equal(C, vtkm::Vector3(5, 7, 9.5)), "C is wrong");
-  VTKM_TEST_ASSERT(test_equal(D, vtkm::Vector3(10, 14, 19)), "D is wrong");
-  VTKM_TEST_ASSERT(test_equal(s, vtkm::Scalar(33.5)), "s is wrong");
+  VTKM_TEST_ASSERT(test_equal(C, vtkm::Vec<vtkm::Float32,3>(5, 7, 9.5)), "C is wrong");
+  VTKM_TEST_ASSERT(test_equal(D, vtkm::Vec<vtkm::Float32,3>(10, 14, 19)), "D is wrong");
+  VTKM_TEST_ASSERT(test_equal(s, 33.5), "s is wrong");
   VTKM_TEST_ASSERT(!b1, "b1 is wrong");
   VTKM_TEST_ASSERT(b2, "b2 is wrong");
 }
 
-void TupleClass()
+void LongerVector()
 {
   ////
-  //// BEGIN-EXAMPLE TupleClass.cxx
+  //// BEGIN-EXAMPLE LongerVector.cxx
   ////
-  vtkm::Tuple<vtkm::Scalar, 5> A(2); // A is (2, 2, 2, 2, 2)
-  for (int index = 1; index < A.NUM_COMPONENTS; index++)
+  vtkm::Vec<vtkm::Float32, 5> A(2); // A is (2, 2, 2, 2, 2)
+  for (vtkm::IdComponent index = 1; index < A.NUM_COMPONENTS; index++)
   {
     A[index] = A[index-1] * 1.5;
   }
   // A is now (2, 3, 4.5, 6.75, 10.125)
   ////
-  //// END-EXAMPLE TupleClass.cxx
+  //// END-EXAMPLE LongerVector.cxx
   ////
 
   VTKM_TEST_ASSERT(
@@ -72,48 +72,21 @@ void TupleClass()
       "A is wrong");
 }
 
-////
-//// BEGIN-EXAMPLE TuplesAndVectors.cxx
-////
-template<typename T, int Size>
-VTKM_EXEC_CONT_EXPORT
-T SumComponents(const vtkm::Tuple<T,Size> &tuple)
-{
-  T result = tuple[0];
-  for (int componentIndex = 1; componentIndex < Size; componentIndex++)
-  {
-    result += tuple[componentIndex];
-  }
-  return result;
-}
-
-void Foo()
-{
-  vtkm::Id a = SumComponents(vtkm::Id3(1, 2, 3));                    // a is 6
-  vtkm::Scalar b = SumComponents(vtkm::Vector4(1.5, 2.5, 3.5, 4.5)); // b is 12
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(a == 6, "A is wrong");
-  VTKM_TEST_ASSERT(b == 12, "B is wrong");
-  //// RESUME-EXAMPLE
-}
-////
-//// END-EXAMPLE TuplesAndVectors.cxx
-////
-
 void EquilateralTriangle()
 {
   ////
   //// BEGIN-EXAMPLE EquilateralTriangle.cxx
   ////
-  vtkm::Tuple<vtkm::Vector2,3> equilateralTriangle(vtkm::Vector2(0.0, 0.0),
-                                                   vtkm::Vector2(1.0, 0.0),
-                                                   vtkm::Vector2(0.5, 0.866));
+  vtkm::Vec<vtkm::Vec<vtkm::Float32,2>, 3> equilateralTriangle(
+                                                   vtkm::make_Vec(0.0, 0.0),
+                                                   vtkm::make_Vec(1.0, 0.0),
+                                                   vtkm::make_Vec(0.5, 0.866));
   ////
   //// END-EXAMPLE EquilateralTriangle.cxx
   ////
 
-  vtkm::Scalar edgeLengthSqr = 1.0;
-  vtkm::Tuple<vtkm::Vector2,3> edges(
+  vtkm::Float32 edgeLengthSqr = 1.0;
+  vtkm::Vec<vtkm::Vec<vtkm::Float32,2>,3> edges(
       equilateralTriangle[1] - equilateralTriangle[0],
       equilateralTriangle[2] - equilateralTriangle[0],
       equilateralTriangle[2] - equilateralTriangle[1]);
@@ -209,8 +182,7 @@ void Test()
 {
   CreatingVectorTypes();
   VectorOperations();
-  TupleClass();
-  Foo();
+  LongerVector();
   EquilateralTriangle();
   ExtentExample();
 }

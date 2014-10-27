@@ -203,10 +203,17 @@
                    VTKM_DEFAULT_POINT_COORDINATES_LIST_TAG
                    },
   morekeywords={[4]vtkm,exec,cont,worklet,math,cuda,openmp,tbb,internal,detail},
-  morekeywords={[5]ControlSignature, ExecutionSignature,
-                   Field,Topology,Geometry,
-                   In,Out,Point,Cell,Vertices,Values,KeyGroup,ExecObject,
-                   WorkId,VisitIndex,
+  morekeywords={[5]ControlSignature,ExecutionSignature,InputDomain,
+                   FieldIn,FieldOut,
+                   FieldPointIn,FieldCellIn,FieldCellOut,
+                   TopologyIn,
+                   ExecObject,
+                   WorkIndex,VisitIndex,
+                   IdType,Id2Type,Id3Type,Index,
+                   Scalar,ScalarAll,
+                   Vec2,Vec3,Vec4,VecAll,
+                   FieldCommon,VecCommon,
+                   CommonTypes,AllTypes,
                    _1,_2,_3,_4,_5,_6,_7,_8,_9
                    }
 }
@@ -236,11 +243,12 @@
 
 \newcommand{\controlsignature}{\textsignature{ControlSignature}\index{control~signature}\index{signature!control}\xspace}
 \newcommand{\executionsignature}{\textsignature{ExecutionSignature}\index{execution~signature}\index{signature!execution}\xspace}
+\newcommand{\inputdomain}{\textsignature{InputDomain}\index{input~domain}\xspace}
 
 \newcommand*{\sigtag}[1]{\textsignature{#1}\index{#1}\index{signature tags!#1}}
 \newcommand*{\sigtagnum}[1]{\sigtag{\_#1}}
-\newcommand*{\sigtagmod}[2]{\sigtag{#1}\textcode{(}\sigtag{#2}\textcode{)}}
-\newcommand*{\sigtagmodnum}[2]{\sigtag{#1}\textcode{(}\sigtagnum{#2}\textcode{)}}
+\newcommand*{\sigtagmod}[2]{\sigtag{#1}\textcode{<}\sigtag{#2}\textcode{>}}
+\newcommand*{\sigtagmodnum}[2]{\sigtag{#1}\textcode{<}\sigtagnum{#2}\textcode{>}}
 
 \newcommand*{\writenamespaceone}[1]{%
   \textnamespace{#1}}
@@ -445,13 +453,11 @@
 
 \input{BasicProvisions}
 
-\chapter{Provided Worklets}
-\label{chap:ProvidedWorklets}
+\chapter{Provided Filters}
+\label{chap:ProvidedFilters}
 
-\fix{Write this once some worklets are provided. I expect before this we
-  will have a chapter on provided filters. In fact, that probably means
-  this chapter should move after the chapters on control and execution
-  environments.}
+\fix{Write this once some filters are provided. Should also make a
+  reference to using worklets (Chapter \ref{chap:Worklets}).}
 
 \input{ControlEnvironment}
 
@@ -459,6 +465,10 @@
 \label{chap:ExecutionEnvironment}
 
 \fix{Write this.}
+
+\input{Worklets}
+
+\input{AdvancedWorklets}
 
 \chapter{OpenGL Interoperability}
 \label{chap:OpenGLInteroperability}

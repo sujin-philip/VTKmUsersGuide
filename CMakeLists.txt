@@ -14,6 +14,8 @@ set(input_docs
   Introduction.tex
   BasicProvisions.tex
   ControlEnvironment.tex
+  Worklets.tex
+  AdvancedWorklets.tex
   CodingConventions.tex
   Distribution.tex
   )

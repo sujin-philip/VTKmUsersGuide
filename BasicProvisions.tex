@@ -339,17 +339,15 @@ corredspondingly.
 
 \subsection{Pair}
 
-\fix{Pair not implemented yet. (Maybe it won't be.)}
+VTK-m defines a \vtkm{Pair}\tparams{T1,T2} templated object that
+behaves just like \textcode{std:\colonhyp{}pair} from the standard template
+library. The difference is that \vtkm{Pair} will work in both the execution
+and control environment, whereas the STL \textcode{std::pair} does not
+always work in the execution environment.
 
-%% VTK-m defines a \vtkm{Pair}\tparams{T1,T2} templated object that
-%% behaves just like \textcode{std:\colonhyp{}pair} from the standard template
-%% library. The difference is that \vtkm{Pair} will work in both the execution
-%% and control environment, whereas the STL \textcode{std::pair} does not
-%% always work in the execution environment.
-
-%% The VTK-m version of \vtkm{Pair} supports the same types, fields, and
-%% operations as the STL version. VTK-m also provides a \vtkm{make\_Pair}
-%% function for convenience.
+The VTK-m version of \vtkm{Pair} supports the same types, fields, and
+operations as the STL version. VTK-m also provides a \vtkm{make\_Pair}
+function for convenience.
 
 \section{Traits}
 \label{sec:Traits}
@@ -588,7 +586,10 @@ following lists are provided.
   types. It contains all \vtkm{Vec} class of size 2 through 4 containing
   components of unsigned bytes, signed 32-bit integers, signed 64-bit
   integers, 32-bit floats, or 64-bit floats.
-\item[\vtkm{TypeListTagVecAll}] A list of all types included in
+\item[\vtkm{TypeListTagVecAll}] A list of all \vtkm{Vec} classes with
+  standard integers or floating points as components and lengths between 2
+  and 4.
+\item[\vtkm{TypeListTagAll}] A list of all types included in
   \vtkmheader{vtkm}{Types.h} with \vtkm{Vec}s with up to 4 components.
 \item[\vtkm{TypeListTagCommon}] A list containing only the most used types
   in visualization. This includes signed integers and floats that are 32 or

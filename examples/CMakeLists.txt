@@ -14,6 +14,7 @@ set(example_src
   ListTags.cxx
   Timer.cxx
   Traits.cxx
+  UseWorkletMapField.cxx
   )
 
 # Set up compiling and testing of examples.

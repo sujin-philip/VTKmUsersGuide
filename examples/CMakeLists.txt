@@ -14,6 +14,7 @@ set(example_src
   ListTags.cxx
   Timer.cxx
   Traits.cxx
+  TransferringArguments.cxx
   UseWorkletMapField.cxx
   )
 

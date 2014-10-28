@@ -150,6 +150,15 @@
                    DispatcherGenerateTopology, DispatcherInterpolatedCell,
                    DispatcherGenerateKeysValues,
                    DispatcherReduceKeysValues,
+                   TypeCheck,TypeCheckTagArray,TypeCheckTagExecObject,
+                   Transport,
+                   TransportTagArrayIn,TransportTagArrayOut,
+                   TransportTagExecObject,
+                   Fetch,
+                   FetchTagArrayDirectIn,FetchTagArrayDirectOut,
+                   FetchTagExecObject,
+                   AspectTagDefault,
+                   Invocation,
                    CellField, CellVertices,
                    InterpolatedCellPoints,
                    CellTraits,NUM_VERTICES,
@@ -202,7 +211,8 @@
                    VTKM_DEFAULT_CONTAINER_LIST_TAG,
                    VTKM_DEFAULT_POINT_COORDINATES_LIST_TAG
                    },
-  morekeywords={[4]vtkm,exec,cont,worklet,math,cuda,openmp,tbb,internal,detail},
+  morekeywords={[4]vtkm,exec,cont,worklet,math,arg,internal,detail,
+                   cuda,openmp,tbb},
   morekeywords={[5]ControlSignature,ExecutionSignature,InputDomain,
                    FieldIn,FieldOut,
                    FieldPointIn,FieldCellIn,FieldCellOut,
@@ -293,13 +303,21 @@
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacethree{vtkm}{cont}{internal}\indexnamespacethree{vtkm}{cont}{internal}}%
              {\writeindexidentifierthree{vtkm}{cont}{internal}{#1}}}
+\newcommand*{\vtkmcontarg}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{cont}{arg}\indexnamespacethree{vtkm}{cont}{arg}}%
+             {\writeindexidentifierthree{vtkm}{cont}{arg}{#1}}}
 \newcommand*{\vtkmexec}[1]{%
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{exec}\indexnamespacetwo{vtkm}{exec}}%
              {\writeindexidentifiertwo{vtkm}{exec}{#1}}}
+\newcommand*{\vtkmexecarg}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{exec}{arg}\indexnamespacethree{vtkm}{exec}{arg}}%
+             {\writeindexidentifierthree{vtkm}{exec}{arg}{#1}}}
 \newcommand*{\vtkmexecinternal}[1]{%
   \ifthenelse{\equal{#1}{}}%
-             {\writenamespacethree{vtkm}{exec}{internal}\indexnamespacethree{vtkm}{cont}{internal}}%
+             {\writenamespacethree{vtkm}{exec}{internal}\indexnamespacethree{vtkm}{exec}{internal}}%
              {\writeindexidentifierthree{vtkm}{exec}{internal}{#1}}}
 \newcommand*{\vtkmworklet}[1]{%
   \ifthenelse{\equal{#1}{}}%

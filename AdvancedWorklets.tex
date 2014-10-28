@@ -3,15 +3,78 @@
 \chapter{Advanced Worklet Customization}
 \label{chap:AdvancedWorklets}
 
+Chapter~\ref{chap:Worklets} describes the basics of creating and using
+worklets. Many visualization algorithms can be implemented using VTK-m's
+existing worklet types and features. However, new algorithms and designs
+may require features not provided by VTK-m's current worklet set. In such
+cases it is possible to directly design filters using the lower level
+device adapter operations \fix{as described in section bla}. But by adding
+features to the worklet mechanisms, new designs can be integrated better
+with the other VTK-m features and can be repurposed in interesting ways for
+other algorithms.
+
+This chapter provides the information necessary to create new mechanisms
+for worklets. It first describes the interface for getting data from the
+control environment objects to the data passed to a worklet invocation and
+back. It then describes how to modify these mechanisms to create new data
+movement structures and new worklet types.
+
 \section{Transferring Arguments from Control to Execution}
 \label{sec:TransferringArguments}
+
+From the \controlsignature and \executionsignature defined in worklets,
+VTK-m uses template meta-programming to build the code required to manage
+data from control to execution environment. This management is handled by
+three classes that provide type checking, transportation, and fetching.
+
+\fix{I've been thinking that one more feature that these classes should
+  provide is the ability to return the size of the domain. That would make
+  things simpler and safer for getting the input domain size and checking
+  the remaining domain sizes.}
 
 \subsection{Type Checks}
 \label{sec:TypeChecks}
 
 \index{type~check|(}
 
-\fix{Also add index entries for each type check supported.}
+Before attempting to move data from the control to the execution
+environment, the VTK-m dispatchers check the input types to ensure that
+they are compatible with the associated \controlsignature concept. This is
+done with the \vtkmcontarg{TypeCheck} \textcode{struct}.
+
+The \textidentifier{TypeCheck} \textcode{struct} is templated with two
+parameters. The first parameter is a tag that identifies which check to
+perform. The second parameter is the type of the control argument (after any
+dynamic casts). The \textidentifier{TypeCheck} class contains a static
+constant Boolean named \textcode{value} that is \textcode{true} if the type
+in the second parameter is compatible with the tag in the first or
+\textcode{false} otherwise.
+
+Type checks are implemented with a defined type check tag (which, by
+convention, is defined in the \vtkmcontarg{} namespace and starts with
+\textcode{TypeCheckTag}) and a partial specialization of the
+\vtkmcontarg{TypeCheck} structure. The following type checks (identified by
+their tags) are provided in VTK-m.
+
+\begin{description}
+\item[\vtkmcontarg{TypeCheckTagArray}] \index{type~check!array} True if the
+  type is a \vtkmcont{ArrayHandle}. \textidentifier{TypeCheckTagArray} also
+  has a template parameter that is a type list. The
+  \textidentifier{ArrayHandle} must also have a value type contained in
+  this type list.
+\item[\vtkmcontarg{TypeCheckTagExecObject}]
+  \index{type~check!execution~object} True if the type is an execution
+  object. All execution objects must derive from
+  \vtkmexec{ExecutionObjectBase} and must be copyable through
+  \textcode{memcpy} or similar mechanism.
+\end{description}
+
+Here are some trivial examples of using
+\textidentifier{TypeCheck}. Typically these checks are done internally in
+the base VTK-m dispatcher code, so these examples are for demonstration
+only.
+
+\vtkmlisting{Behavior of \protect\vtkmcontarg{TypeCheck}.}{TypeCheck.cxx}
 
 \index{type~check|)}
 
@@ -20,7 +83,50 @@
 
 \index{transport|(}
 
-\fix{Also add index entries for each transport supported.}
+After all the argument types are checked, the base dispatcher must load the
+data into the execution environment before scheduling a job to run
+there. This is done with the \vtkmcontarg{Transport} \textcode{struct}.
+
+The \textidentifier{Transport} \textcode{struct} is templated with three
+parameters. The first parameter is a tag that identifies which transport to
+perform. The second parameter is the type of the control parameter (after any
+dynamic casts). The third parameter is a device adapter tag for the device
+on which the data will be loaded.
+
+A \textidentifier{Transport} contains a \textcode{typedef} named
+\textcode{ExecObjectType} that is the type used after data is moved to the
+execution environment. A \textidentifier{Transport} also has a
+\textcode{const} parenthesis operator that takes the control-side object
+and the size of the domain and returns an execution-side object. This
+operator is called in the control environment, and the returned object must
+be ready to be passed to the execution environment.
+
+Transports are implemented with a defined transport tag (which, by
+convention, is defined in the \vtkmcontarg{} namespace and starts with
+\textcode{TransportTag}) and a partial specialization of the
+\vtkmcontarg{Transport} structure. The following transports (identified by
+their tags) are provided in VTK-m.
+
+\begin{description}
+\item[\vtkmcontarg{TransportTagArrayIn}] \index{transport!input~array}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using
+  the array handle's \textcode{PrepareForInput} method. The returned
+  execution object is an array portal.
+\item[\vtkmcontarg{TransportTagArrayOut}] \index{transport!output~array}
+  Allocates data onto the specified device for a \vtkmcont{ArrayHandle}
+  using the array handle's \textcode{PrepareForOutput} method. The returned
+  execution object is an array portal.
+\item[\vtkmcontarg{TransportTagExecObject}]
+  \index{transport!execution~object} Simply returns the given execution
+  object, which should be ready to load onto the device.
+\end{description}
+
+Here are some trivial examples of using
+\textidentifier{Transport}. Typically this movement is done internally in
+the base VTK-m dispatcher code, so these examples are for demonstration
+only.
+
+\vtkmlisting{Behavior of \protect\vtkmcontarg{Transport}.}{Transport.cxx}
 
 \index{transport|)}
 
@@ -29,12 +135,83 @@
 
 \index{fetch|(}
 
-\fix{Also add index entries for each fetch supported.}
+Before the function of a worklet is invoked, the VTK-m internals pull the
+appropriate data out of the execution object and pass it to the worklet
+function. A class named \vtkmexecarg{Fetch} is responsible for pulling this
+data out and putting computed data in to the execution objects.
 
-\fix{Also add index entry for aspect and entries for each aspect
-  supported.}
+The \textidentifier{Fetch} \textcode{struct} is templated with four
+parameters. The first parameter is a tag that identifies which type of
+fetch to perform. The second parameter is a different tag that identifies
+the aspect of the data to fetch. The third parameter is an
+\textidentifier{Invocation} type that provides details about how the
+worklet is being dispatched including a list of execution object parameters
+passed to the invocation. The fourth parameter is a \vtkm{IdComponent} that
+points to the invocation parameter that the data should be fetched from.
 
+A \textidentifier{Fetch} contains a \textcode{typedef} named
+\textcode{ValueType} that is the type of data that is passed to and from
+the worklet function. A \textidentifier{Fetch} also has a pair of methods
+named \textcode{Load} and \textcode{Store} that get data from and add data
+to the execution object at a given domain or thread index.
+
+\index{aspect|(}
+\index{fetch!aspect|see{aspect}}
+
+Fetches are specified with a pair of fetch and aspect tags. Fetch tags are by
+convention defined in the \vtkmexecarg{} namespace and start with
+\textcode{FetchTag}. Likewise, aspect tags are also defined in the
+\vtkmexecarg{} namespace and start with \textcode{AspectTag}. The
+\textidentifier{Fetch} \textcode{typedef} is partially specialized on these
+two tags.
+
+\index{aspect!default} The most common aspect tag is
+\vtkmexecarg{AspectTagDefault}, and all fetch tags should have a
+specialization of \vtkmexecarg{Fetch} with this tag. The following list of
+fetch tags describes the execution objects they work with and the data they
+pull for each aspect tag they support.
+
+\fix{Don't forget to add index entries for both fetch and aspect where
+  appropriate.}
+
+\begin{description}
+\item[\vtkmexecarg{FetchTagArrayDirectIn}] \index{fetch!direct input array}
+  Loads data from an array portal. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Load} gets data
+  directly from the domain (thread) index. The \textcode{Store} does
+  nothing.
+\item[\vtkmexecarg{FetchTagArrayDirectOut}] \index{fetch!direct output array}
+  Stores data to an array portal. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Store} sets data
+  directly to the domain (thread) index. The \textcode{Load} does nothing.
+\item[\vtkmexecarg{FetchTagExecObject}] \index{fetch!execution object}
+  Simply returns an execution object. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Load} returns the
+  executive object in the associated parameter. The \textcode{Store} does
+  nothing.
+\end{description}
+
+In addition to the aforementioned aspect tags that are explicitly paired
+with fetch tags, VTK-m also provides some aspect tags that either modify
+the behavior of a general fetch or simply ignore the type of fetch.
+
+\begin{description}
+\item[\vtkmexecarg{AspectTagWorkIndex}] \index{aspect!work index} Simply
+  returns the domain (or thread) index ignoring any associated data. This
+  aspect is used to implement the \sigtag{WorkIndex} execution signature
+  tag.
+\end{description}
+
+\index{aspect|)}
 \index{fetch|)}
+
+
+\section{Function Interface Objects}
+\label{sec:FunctionInterfaceObjects}
+
+
+\section{Invocation Objects}
+\label{sec:InvocationObjects}
 
 
 \section{Creating New \protect\controlsignature Tags}
@@ -47,3 +224,12 @@
 
 \section{Creating New Worklet Types}
 \label{sec:NewWorkletTypes}
+
+\subsection{New Worklet Superclasses}
+\label{sec:NewWorkletSuperclasses}
+
+\subsection{Dispatch Workflow}
+\label{sec:DispatchWorkflow}
+
+\subsection{New Dispatch Classes}
+\label{sec:NewDispatchClasses}

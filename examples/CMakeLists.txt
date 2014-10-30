@@ -11,6 +11,7 @@ set(example_src
   DynamicPointCoordinates.cxx
   ErrorHandling.cxx
   ExportMacro.cxx
+  FunctionInterface.cxx
   ListTags.cxx
   Timer.cxx
   Traits.cxx

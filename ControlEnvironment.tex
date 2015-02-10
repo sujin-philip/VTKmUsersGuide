@@ -289,7 +289,7 @@ the function of each component.
 
 \vtkmlisting{A simple array portal implementation.}{SimpleArrayPortal.cxx}
 
-Although array portals are simple to implement and use and array portals'
+Although array portals are simple to implement and use, and array portals'
 functionality is similar to iterators, there exists a great deal of code
 already based on STL iterators and it is often convienient to interface
 with an array through an iterator rather than an array portal. The
@@ -379,12 +379,13 @@ in the execution environment. The methods are as follows.
   if necessary, and readies the space for writing.
 \end{description}
 
-Each of these methods takes a single argument that is the device adapter
-tag for the device to run the execution environment in (see
-Section~\ref{sec:DeviceAdapterTag} for more information on device adapter
-tags).  Each of these methods returns an array portal that can be used in
-the execution environment. \textcode{PrepareForInput} returns an object of
-type
+The \textcode{PrepareForInput} and \textcode{PrepareForInPlace} methods
+each take a single argument that is the device adapter tag where execution
+will take place (see Section~\ref{sec:DeviceAdapterTag} for more
+information on device adapter tags). \textcode{PrepareForOutput} takes two
+arguments: the size of the space to allocate and the device adapter tag.
+Each of these methods returns an array portal that can be used in the
+execution environment. \textcode{PrepareForInput} returns an object of type
 \textidentifier{ArrayHandle}\textcode{:\colonhyp{}ExecutionTypes<{\it{}DeviceAdapterTag}>:\colonhyp{}PortalConst}
 whereas \textcode{PrepareForInPlace} and \textcode{PrepareForOutput} each
 return an object of type

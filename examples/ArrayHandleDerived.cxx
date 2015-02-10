@@ -151,8 +151,8 @@ public:
     // alone and change the size of Array2. Or, probably most likely, it could
     // simply throw an error and state that this operation is invalid.
     vtkm::Id half = numberOfValues/2;
-    this->Array1.PrepareForOutput(numberOfValues-half);
-    this->Array2.PrepareForOutput(half);
+    this->Array1.Allocate(numberOfValues-half);
+    this->Array2.Allocate(half);
   }
 
   VTKM_CONT_EXPORT

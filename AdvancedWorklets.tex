@@ -375,11 +375,21 @@ whereas the dynamic transform happens at run-time.
 
 The static transform methods (named \textcode{StaticTransformCont} and
 \textcode{StaticTransformExec}) operate by accepting a functor that defines
-a unary function whose argument is the \textidentifier{FunctionInterface}
-parameter to transform and whose return value is the transformed
-parameter. The functor must also contain a templated class named
-\textcode{ReturnType} with an internal type named \textcode{type} that
-defines the return type of the transform for a given parameter type.
+a function with two arguments. The first argument is the
+\textidentifier{FunctionInterface} parameter to transform. The second
+argument is an instance of the \vtkminternal{IndexTag} templated class that
+statically identifies the parameter index being transformed. An
+\textidentifier{IndexTag} object has no state, but the class contains a
+static integer named \textidentifier{INDEX}. The function returns the
+transformed argument.
+
+The functor must also contain a templated class named \textcode{ReturnType}
+with an internal type named \textcode{type} that defines the return type of
+the transform for a given parameter type. \textcode{ReturnType} must have
+two template parameters. The first template parameter is the type of the
+\textidentifier{FunctionInterface} parameter to transform. It is the same
+type as passed to the operator. The second template parameter is a
+\vtkm{IdComponent} specifying the index.
 
 The transformation is only applied to the parameters of the function. The
 return argument is unaffected.
@@ -392,7 +402,8 @@ transformed \textidentifier{FunctionInterface}.
 
 In the following example, a static transform is used to convert a
 \textidentifier{FunctionInterface} to a new object that has the pointers to
-the parameters rather than the values themselves.
+the parameters rather than the values themselves. The parameter index is
+always ignored as all parameters are uniformly transformed.
 
 \vtkmlisting{Using a static transform of function interface class.}{FunctionInterfaceStaticTransform.cxx}
 
@@ -409,10 +420,11 @@ callback that gets called with the correct type at run-time.
 The dynamic transform works with two functors provided by the user code (as
 opposed to the one functor in static transform). These functors are called
 the transform functor and the finish functor. The transform functor accepts
-two arguments. The first argument is a parameter to transform. The second
+three arguments. The first argument is a parameter to transform. The second
 argument is a continue function. Rather than return the transformed value,
 the transform functor calls the continue function, passing the transformed
-value as an argument.
+value as an argument. The third argument is a \vtkminternal{IndexTag} for
+the index of the argument being transformed.
 
 Unlike its static counterpart, the dynamic transform method does not return
 the transformed \textidentifier{FunctionInterface}. Instead, it passes the
@@ -424,7 +436,8 @@ used to convert strings containing numbers into number arguments. Strings
 that do not have numbers and all other arguments are passed through. Note
 that because the types for strings are not determined till run-time, this
 transform cannot be determined at compile time with meta-template
-programming.
+programming. The index argument is ignored because all arguments are
+transformed the same way.
 
 
 \vtkmlisting{Using a dynamic transform of a function interface.}{FunctionInterfaceDynamicTransform.cxx}

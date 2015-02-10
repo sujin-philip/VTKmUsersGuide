@@ -411,17 +411,17 @@ void TryAppendReplace()
 namespace StaticTransformNamespace {
 
 ////
-//// BEGIN-EXAMPLE FunctioninterfaceStaticTransform.cxx
+//// BEGIN-EXAMPLE FunctionInterfaceStaticTransform.cxx
 ////
 struct ParametersToPointersFunctor {
-  template<typename T>
+  template<typename T, vtkm::IdComponent Index>
   struct ReturnType {
     typedef const T *type;
   };
 
-  template<typename T>
+  template<typename T, vtkm::IdComponent Index>
   VTKM_CONT_EXPORT
-  const T *operator()(const T &x) const {
+  const T *operator()(const T &x, vtkm::internal::IndexTag<Index>) const {
     return &x;
   }
 };
@@ -435,7 +435,7 @@ ParametersToPointers(const FunctionInterfaceType &functionInterface)
   return functionInterface.StaticTransformCont(ParametersToPointersFunctor());
 }
 ////
-//// END-EXAMPLE FunctioninterfaceStaticTransform.cxx
+//// END-EXAMPLE FunctionInterfaceStaticTransform.cxx
 ////
 
 } // namespace StaticTransformNamespace
@@ -467,18 +467,22 @@ namespace DynamicTransformNamespace {
 //// BEGIN-EXAMPLE FunctionInterfaceDynamicTransform.cxx
 ////
 struct UnpackNumbersTransformFunctor {
-  template<typename InputType, typename ContinueFunctor>
+  template<typename InputType,
+           typename ContinueFunctor,
+           vtkm::IdComponent Index>
   VTKM_CONT_EXPORT
   void operator()(const InputType &input,
-                  const ContinueFunctor &continueFunction) const
+                  const ContinueFunctor &continueFunction,
+                  vtkm::internal::IndexTag<Index>) const
   {
     continueFunction(input);
   }
 
-  template<typename ContinueFunctor>
+  template<typename ContinueFunctor, vtkm::IdComponent Index>
   VTKM_CONT_EXPORT
   void operator()(const std::string &input,
-                  const ContinueFunctor &continueFunction) const
+                  const ContinueFunctor &continueFunction,
+                  vtkm::internal::IndexTag<Index>) const
   {
     if ((input[0] >= '0') && (input[0] <= '9'))
     {
@@ -632,11 +636,11 @@ namespace ForEachNamespace {
 //// BEGIN-EXAMPLE FunctionInterfaceForEach.cxx
 ////
 struct PrintArgumentFunctor{
-  template<typename T>
+  template<typename T, vtkm::IdComponent Index>
   VTKM_CONT_EXPORT
-  void operator()(const T &argument) const
+  void operator()(const T &argument, vtkm::internal::IndexTag<Index>) const
   {
-    std::cout << argument << " ";
+    std::cout << Index << ":" << argument << " ";
   }
 };
 

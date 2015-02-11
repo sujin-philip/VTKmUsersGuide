@@ -76,14 +76,20 @@ void BasicFunctionInterface()
 void GetFirstParameterResolved(
     const vtkm::internal::FunctionInterface<void(const char *)> &interface)
 {
+  // The following two uses of GetParameter are equivalent
   std::cout << interface.GetParameter<1>() << std::endl;
+  std::cout << interface.GetParameter(vtkm::internal::IndexTag<1>())
+            << std::endl;
 }
 
 template<typename FunctionSignature>
 void GetFirstParameterTemplated(
     const vtkm::internal::FunctionInterface<FunctionSignature> &interface)
 {
+  // The following two uses of GetParameter are equivalent
   std::cout << interface.template GetParameter<1>() << std::endl;
+  std::cout << interface.GetParameter(vtkm::internal::IndexTag<1>())
+            << std::endl;
 }
 ////
 //// END-EXAMPLE FunctionInterfaceGetParameter.cxx
@@ -104,7 +110,9 @@ void SetFirstParameterResolved(
     vtkm::internal::FunctionInterface<void(const char *)> &interface,
     const char *newFirstParameter)
 {
+  // The following two uses of SetParameter are equivalent
   interface.SetParameter<1>(newFirstParameter);
+  interface.SetParameter(newFirstParameter, vtkm::internal::IndexTag<1>());
 }
 
 template<typename FunctionSignature, typename T>
@@ -112,7 +120,9 @@ void SetFirstParameterTemplated(
     vtkm::internal::FunctionInterface<FunctionSignature> &interface,
     T newFirstParameter)
 {
+  // The following two uses of SetParameter are equivalent
   interface.template SetParameter<1>(newFirstParameter);
+  interface.SetParameter(newFirstParameter, vtkm::internal::IndexTag<1>());
 }
 ////
 //// END-EXAMPLE FunctionInterfaceSetParameter.cxx

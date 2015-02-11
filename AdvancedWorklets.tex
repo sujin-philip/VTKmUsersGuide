@@ -264,13 +264,19 @@ templated method \textcode{GetParameter}. The template parameter is the
 index of the parameter. Note that the parameters in
 \textidentifier{FunctionInterface} start at index 1. Although this is
 uncommon in C++, it is customary to number function arguments starting at
-1. Also note that if the \textidentifier{FunctionInterface} is used in a
-templated function or method where the type is not fully resolved, the
-compiler will not register \textcode{GetParameter} as a templated method
-and will fail to parse the template argument. In this case, the
-\textcode{template} keyword must added before the \textcode{GetParameter}
-identifier to indicate that it is a template. Exactly one of the two forms
-will work, so try switching if you get a compiler error.
+1.
+
+There are two ways to specify the index for \textcode{GetParameter}. The
+first is to directly specify the template parameter (e.g.
+\textcode{GetParameter<1>()}). However, note that in a templated function
+or method where the type is not fully resolved the compiler will not
+register \textcode{GetParameter} as a templated method and will fail to
+parse the template argument without a \textcode{template} keyword. The
+second way to specify the index is to provide a \vtkminternal{IndexTag}
+object as an argument to \textcode{GetParameter}. Although this syntax is
+more verbose, it works the same whether the
+\textidentifier{FunctionInterface} is fully resolved or not. The following
+example shows both methods in action.
 
 \vtkmlisting{Using \textidentifier{FunctionInterface}\textcode{::GetParameter().}}{FunctionInterfaceGetParameter.cxx}
 

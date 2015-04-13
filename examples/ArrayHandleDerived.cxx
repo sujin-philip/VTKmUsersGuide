@@ -73,9 +73,9 @@ public:
     return IteratorType(*this, this->GetNumberOfValues());
   }
 
-  VTKM_EXEC_CONSTANT_EXPORT
+  VTKM_EXEC_CONT_EXPORT
   const PortalType1 &GetPortal1() const { return this->Portal1; }
-  VTKM_EXEC_CONSTANT_EXPORT
+  VTKM_EXEC_CONT_EXPORT
   const PortalType2 &GetPortal2() const { return this->Portal2; }
 
 private:

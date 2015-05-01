@@ -702,7 +702,7 @@ control and execution environments. The default behavior is to request the
 device adapter to copy data items from one environment to another. This
 might involve transferring data between a host and device. For an array of
 data resting in memory, this is necessary. However, implicit storage
-(described in the previous section) override this behavior to pass nothing
+(described in the previous section) overrides this behavior to pass nothing
 but the functional array portal. Likewise, it is undesirable to do a raw
 transfer of data with derived storage. The underlying arrays being
 derived may be used in other contexts, and it would be good to share the
@@ -722,10 +722,25 @@ respective copies in the control and execution environments.
 \vtkmcontinternal{ArrayTransfer} has three template arguments: the base type
 of the array, the storage tag, and the device adapter tag.
 
-\vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayTransfer}.}{ArrayTransferPrototype.cxx}
+\vtkmlisting[ex:ArrayTransferPrototype]{Prototype for \protect\vtkmcontinternal{ArrayTransfer}.}{ArrayTransferPrototype.cxx}
 
-The \vtkmcontinternal{ArrayTransfer} specialization must define the
-following items.
+All \vtkmcontinternal{ArrayTransfer} implementations must have a
+constructor method that accepts a pointer to a \vtkmcontinternal{Storage}
+object templated to the same base type and storage tag as the
+\textidentifier{ArrayTransfer} object. Assuming that an
+\textidentifier{ArrayHandle} is templated using the parameters in
+Example~\ref{ex:ArrayTransferPrototype}, the prototype for the constructor
+must be equivalent to the following.
+\begin{vtkmexample}{Prototype for \textidentifier{ArrayTransfer} constructor.}
+ArrayTransfer(vtkm::cont::internal::Storage<T, StorageTag> *storage);
+\end{vtkmexample}
+Typically the constructor either saves the \textidentifier{Storage} pointer
+or other relevant objects from the \textidentifier{Storage} for later use in
+the methods.
+
+In addition to this non-default constructor, the
+\vtkmcontinternal{ArrayTransfer} specialization must define the following
+items.
 \begin{description}
 \item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
   in the array. This is the same type as the first template argument.
@@ -741,45 +756,43 @@ following items.
   values currently allocated in the execution environment. The results may
   be undefined if none of the load or allocate methods have yet been
   called.
-\item[\textcode{LoadDataForInput}] There are actually two versions of this
-  overloaded method. The first form takes a portal of type
-  \textcode{PortalControl} and the second takes an instance of
-  \textidentifier{Storage}. Both methods are expected to
-  allocate enough space in the execution environment and copy the given
-  data to that array. In both cases allocated array can later be accessed
-  via the and \textcode{GetPortalConstExecution} method. The data is
-  assumed to be read-only. In derived arrays, it is common to implement
-  only one version and throw an error in the other and enforce that only
-  the implemented form is called in practice. This is done my forcing the
-  \textidentifier{ArrayHandle} to be constructed either with an array portal
-  (which will lead to the first form being called) or constructed with an
-  array storage (which will lead to the second form being called).
-\item[\textcode{LoadDataForInPlace}] A method that takes an instance of
-  \textidentifier{Storage}, allocates enough space in the
-  execution environment, and copies the given data to that array. The
-  allocated array can later be accessed via the
-  \textcode{GetPortalExecution} and \textcode{GetPortalConstExecution}
-  methods. The data can be read and written.
-\item[\textcode{AllocateArrayForOutput}] A method that takes an array
-  storage and a size and allocates an array in the execution environment
-  of the specified size. The initial memory is uninitialized and can be
-  accessed via the \textcode{GetPortalExecution} method. The storage
-  argument can be used to allocate data when the control and execution
-  share arrays, but this argument is often ignored.
-\item[\textcode{RetrieveOutputData}] This method takes an array storage,
-  allocates memory in the control environment, and copies data from the
-  execution environment into it.
+\item[\textcode{PrepareForInput}] A method responsible for transferring
+  data from the control to the execution for input.
+  \textcode{PrepareForInput} has one Boolean argument that controls whether
+  this transfer should actually take place. When true, data from the
+  \textidentifier{Storage} object given in the constructor should be
+  transferred to the execution environment; otherwise the data should not
+  be copied. An \textidentifier{ArrayTransfer} for a derived array
+  typically ignores this parameter since the arrays being derived manages
+  this transfer already. Regardless of the Boolean flag, a
+  \textcode{PortalConstExecution} is returned.
+\item[\textcode{PrepareForInPlace}] A method that behaves just like
+  \textcode{PrepareForInput} except that the data in the execution
+  environment is used for both reading and writing so the method returns a
+  \textidentifier{PortalExecution}. If the array is considered read-only,
+  which is common for derived arrays, then this method should throw a
+  \vtkmcont{ErrorControlBadValue}.
+\item[\textcode{PrepareForOutput}] A method that takes a size (in a
+  \vtkm{Id}) and allocates an array in the execution environment of the
+  specified size. The initial memory can be uninitialized. The method
+  returns a \textcode{PortalExecution} for the allocated data. If the array
+  is considered read-only, which is common for derived arrays, then this
+  method should throw a \vtkmcont{ErrorControlBadValue}.
+\item[\textcode{RetrieveOutputData}] This method takes an array storage
+  pointer (which is the same as that passed to the constructor, but
+  provided for convenience), allocates memory in the control environment,
+  and copies data from the execution environment into it. If the derived
+  array is considered read-only and both \textcode{PrepareForInPlace} and
+  \textcode{PrepareForOutput} throw exceptions, then this method should
+  never be called. If it is, then that is probably a bug in
+  \textidentifier{ArrayHandle}, and it is OK to throw
+  \vtkmcont{ErrorControlInternal}.
 \item[\textcode{Shrink}] A method that adjusts the size of the array in the
   execution environment to something that is a smaller size. All the data
   up to the new length must remain valid. Typically, no memory is actually
-  reallocated. Instead, a different end is marked.
-\item[\textcode{GetPortalExecution}] A method that returns an array portal
-  that can be used in the execution environment. The portal was defined in
-  either \textcode{LoadDataForInPlace} or
-  \textcode{AllocateArrayForOutput}.
-\item[\textcode{GetPortalConstExecution}] A method that returns a read-only
-  (const) array portal that can be used in the execution environment. The
-  portal was defined in one of the load or allocate methods.
+  reallocated. Instead, a different end is marked. If the derived array is
+  considered read-only, then this method should throw a
+  \vtkmcont{ErrorControlBadValue}.
 \item[\textcode{ReleaseResources}] A method that frees any resources
   (typically memory) in the execution environment.
 \end{description}

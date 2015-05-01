@@ -4,8 +4,6 @@
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayPortal.h>
 #include <vtkm/cont/Assert.h>
-#include <vtkm/cont/StorageImplicit.h>
-#include <vtkm/cont/internal/IteratorFromArrayPortal.h>
 
 template<typename P1, typename P2>
 class ArrayPortalConcatenate
@@ -58,19 +56,6 @@ public:
     {
       this->Portal2.Set(index - this->Portal1.GetNumberOfValues(), value);
     }
-  }
-
-  typedef vtkm::cont::internal::IteratorFromArrayPortal<
-      ArrayPortalConcatenate<PortalType1,PortalType2> > IteratorType;
-
-  VTKM_EXEC_CONT_EXPORT
-  IteratorType GetIteratorBegin() const {
-    return IteratorType(*this);
-  }
-
-  VTKM_EXEC_CONT_EXPORT
-  IteratorType GetIteratorEnd() const {
-    return IteratorType(*this, this->GetNumberOfValues());
   }
 
   VTKM_EXEC_CONT_EXPORT
@@ -256,75 +241,42 @@ public:
     PortalConstExecution;
 
   VTKM_CONT_EXPORT
-  ArrayTransfer()
-    : ArraysValid(false),
-      ExecutionPortalConstValid(false),
-      ExecutionPortalValid(false)
+  ArrayTransfer(StorageType *storage)
+    : Array1(storage->GetArray1()), Array2(storage->GetArray2())
   {  }
 
   VTKM_CONT_EXPORT
   vtkm::Id GetNumberOfValues() const {
-    VTKM_ASSERT_CONT(this->ArraysValid);
     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
   }
 
   VTKM_CONT_EXPORT
-  void LoadDataForInput(PortalConstControl vtkmNotUsed(portal)) {
-    throw vtkm::cont::ErrorControlInternal(
-          "Wrong version of LoadDataForInput called. "
-          "ArrayHandle must be in bad state.");
+  PortalConstExecution PrepareForInput(bool vtkmNotUsed(updateData)) {
+    return PortalConstExecution(this->Array1.PrepareForInput(Device()),
+                                this->Array2.PrepareForInput(Device()));
   }
 
   VTKM_CONT_EXPORT
-  void LoadDataForInput(const StorageType &storage) {
-    this->Array1 = storage.GetArray1();
-    this->Array2 = storage.GetArray2();
-    this->ArraysValid = true;
-
-    this->ExecutionPortalConst =
-        PortalConstExecution(this->Array1.PrepareForInput(Device()),
-                             this->Array2.PrepareForInput(Device()));
-    this->ExecutionPortalConstValid = true;
-    this->ExecutionPortalValid = false;
+  PortalExecution PrepareForInPlace(bool vtkmNotUsed(updateData)) {
+    return PortalExecution(this->Array1.PrepareForInPlace(Device()),
+                           this->Array2.PrepareForInPlace(Device()));
   }
 
   VTKM_CONT_EXPORT
-  void LoadDataForInPlace(StorageType &storage) {
-    this->Array1 = storage.GetArray1();
-    this->Array2 = storage.GetArray2();
-    this->ArraysValid = true;
-
-    this->ExecutionPortal =
-        PortalExecution(this->Array1.PrepareForInPlace(Device()),
-                        this->Array2.PrepareForInPlace(Device()));
-    this->ExecutionPortalConst = this->ExecutionPortal;
-    this->ExecutionPortalConstValid = true;
-    this->ExecutionPortalValid = true;
-  }
-
-  VTKM_CONT_EXPORT
-  void AllocateArrayForOutput(StorageType &storage, vtkm::Id numberOfValues)
+  PortalExecution PrepareForOutput(vtkm::Id numberOfValues)
   {
-    this->Array1 = storage.GetArray1();
-    this->Array2 = storage.GetArray2();
-    this->ArraysValid = true;
-
     // This implementation of allocate, which allocates the same amount in both
     // arrays, is arbitrary. It could, for example, leave the size of Array1
     // alone and change the size of Array2. Or, probably most likely, it could
     // simply throw an error and state that this operation is invalid.
     vtkm::Id half = numberOfValues/2;
-    this->ExecutionPortal =
-        PortalExecution(
+    return PortalExecution(
           this->Array1.PrepareForOutput(numberOfValues-half, Device()),
           this->Array2.PrepareForOutput(half, Device()));
-    this->ExecutionPortalConst = this->ExecutionPortal;
-    this->ExecutionPortalConstValid = true;
-    this->ExecutionPortalValid = true;
   }
 
   VTKM_CONT_EXPORT
-  void RetrieveOutputData(StorageType &vtkmNotUsed(storage)) const {
+  void RetrieveOutputData(StorageType *vtkmNotUsed(storage)) const {
     // Implementation of this method should be unnecessary. The internal
     // array handles should automatically retrieve the output data as
     // necessary.
@@ -332,7 +284,6 @@ public:
 
   VTKM_CONT_EXPORT
   void Shrink(vtkm::Id numberOfValues) {
-    VTKM_ASSERT_CONT(this->ArraysValid);
     if (numberOfValues < this->Array1.GetNumberOfValues())
     {
       this->Array1.Shrink(numberOfValues);
@@ -345,34 +296,14 @@ public:
   }
 
   VTKM_CONT_EXPORT
-  PortalExecution GetPortalExecution() {
-    VTKM_ASSERT_CONT(this->ExecutionPortalValid);
-    return this->ExecutionPortal;
-  }
-
-  VTKM_CONT_EXPORT
-  PortalConstExecution GetPortalConstExecution() const {
-    VTKM_ASSERT_CONT(this->ExecutionPortalConstValid);
-    return this->ExecutionPortalConst;
-  }
-
-  VTKM_CONT_EXPORT
   void ReleaseResources() {
-    VTKM_ASSERT_CONT(this->ArraysValid);
     this->Array1.ReleaseResourcesExecution();
     this->Array2.ReleaseResourcesExecution();
-    this->ExecutionPortalValid = false;
-    this->ExecutionPortalConstValid = false;
   }
 
 private:
   ArrayHandleType1 Array1;
   ArrayHandleType2 Array2;
-  bool ArraysValid;
-  PortalConstExecution ExecutionPortalConst;
-  bool ExecutionPortalConstValid;
-  PortalExecution ExecutionPortal;
-  bool ExecutionPortalValid;
 };
 
 }
@@ -461,6 +392,12 @@ void Test()
                        == index-HALF_ARRAY_SIZE,
                      "Wrong value.");
   }
+
+  // Check all PrepareFor* methods.
+  concatArray.ReleaseResourcesExecution();
+  concatArray.PrepareForInput(VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  concatArray.PrepareForInPlace(VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  concatArray.PrepareForOutput(ARRAY_SIZE+1, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 } // anonymous namespace

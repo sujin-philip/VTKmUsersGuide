@@ -1,3 +1,5 @@
+// The following method for declaring an implicit array still works, but
+// it is much easier to use the ArrayHandleImplict class.
 ////
 //// BEGIN-EXAMPLE ImplicitArrayPortal.cxx
 ////
@@ -44,6 +46,7 @@ private:
 //// END-EXAMPLE ImplicitArrayPortal.cxx
 ////
 
+// More of the example no longer being used.
 ////
 //// BEGIN-EXAMPLE ImplicitArrayStorage.cxx
 ////
@@ -53,6 +56,7 @@ typedef vtkm::cont::StorageTagImplicit<ArrayPortalEvenNumbers>
 //// END-EXAMPLE ImplicitArrayStorage.cxx
 ////
 
+// More of the example no longer being used.
 ////
 //// BEGIN-EXAMPLE ImplicitArrayHandle.cxx
 ////
@@ -72,6 +76,40 @@ public:
 //// END-EXAMPLE ImplicitArrayHandle.cxx
 ////
 
+////
+//// BEGIN-EXAMPLE ImplicitArrayFunctor.cxx
+////
+struct DoubleIndexFunctor
+{
+  VTKM_EXEC_CONT_EXPORT
+  vtkm::Id operator()(vtkm::Id index) const
+  {
+    return 2*index;
+  }
+};
+////
+//// END-EXAMPLE ImplicitArrayFunctor.cxx
+////
+
+////
+//// BEGIN-EXAMPLE ImplicitArrayHandle2.cxx
+////
+#include <vtkm/cont/ArrayHandleImplicit.h>
+
+class ArrayHandleDoubleIndex
+    : public vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
+{
+  typedef vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
+      Superclass;
+public:
+  VTKM_CONT_EXPORT
+  ArrayHandleDoubleIndex(vtkm::Id numberOfValues)
+    : Superclass(DoubleIndexFunctor(), numberOfValues) {  }
+};
+////
+//// END-EXAMPLE ImplicitArrayHandle2.cxx
+////
+
 #include <vtkm/cont/DeviceAdapter.h>
 
 #include <vtkm/cont/testing/Testing.h>
@@ -80,19 +118,50 @@ namespace {
 
 void Test()
 {
-  ArrayHandleEvenNumbers implicitArray(50);
+  ////
+  //// BEGIN-EXAMPLE DeclareImplicitArray.cxx
+  ////
+  vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
+      implicitArray(DoubleIndexFunctor(), 50);
+  ////
+  //// END-EXAMPLE DeclareImplicitArray.cxx
+  ////
+
+  ArrayHandleDoubleIndex implicitArray2(50);
+  ArrayHandleEvenNumbers implicitArray3(50);
 
   vtkm::cont::ArrayHandle<vtkm::Id> explicitArray;
+  vtkm::cont::ArrayHandle<vtkm::Id> explicitArray2;
+  vtkm::cont::ArrayHandle<vtkm::Id> explicitArray3;
 
   vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
         implicitArray, explicitArray);
+  vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
+        implicitArray2, explicitArray2);
+  vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
+        implicitArray3, explicitArray3);
 
   VTKM_TEST_ASSERT(explicitArray.GetNumberOfValues() == 50, "Wrong num vals.");
+  VTKM_TEST_ASSERT(explicitArray2.GetNumberOfValues() == 50, "Wrong num vals.");
+  VTKM_TEST_ASSERT(explicitArray3.GetNumberOfValues() == 50, "Wrong num vals.");
   for (vtkm::Id index = 0; index < explicitArray.GetNumberOfValues(); index++)
   {
     VTKM_TEST_ASSERT(explicitArray.GetPortalConstControl().Get(index) == 2*index,
                      "Bad array value.");
+    VTKM_TEST_ASSERT(explicitArray2.GetPortalConstControl().Get(index) == 2*index,
+                     "Bad array value.");
+    VTKM_TEST_ASSERT(explicitArray3.GetPortalConstControl().Get(index) == 2*index,
+                     "Bad array value.");
   }
+
+  // Just an example of using make_ArrayHandleImplicit
+  ////
+  //// BEGIN-EXAMPLE MakeArrayHandleImplicit.cxx
+  ////
+  vtkm::cont::make_ArrayHandleImplicit<vtkm::Id>(DoubleIndexFunctor(), 50);
+  ////
+  //// END-EXAMPLE MakeArrayHandleImplicit.cxx
+  ////
 }
 
 } // anonymous namespace

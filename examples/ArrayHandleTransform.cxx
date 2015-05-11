@@ -28,13 +28,20 @@ struct ScaleBiasFunctor
 ////
 #include <vtkm/cont/ArrayHandleTransform.h>
 
-template<typename ValueType, typename ArrayHandleType>
+template<typename ArrayHandleType>
 class ArrayHandleScaleBias
     : public vtkm::cont::ArrayHandleTransform<
-          ValueType, ArrayHandleType, ScaleBiasFunctor<ValueType> >
+          typename ArrayHandleType::ValueType,
+          ArrayHandleType,
+          ScaleBiasFunctor<typename ArrayHandleType::ValueType> >
 {
+public:
+  typedef typename ArrayHandleType::ValueType ValueType;
+
+private:
   typedef vtkm::cont::ArrayHandleTransform<
       ValueType, ArrayHandleType, ScaleBiasFunctor<ValueType> > Superclass;
+
 public:
   VTKM_CONT_EXPORT
   ArrayHandleScaleBias(const ArrayHandleType &array,
@@ -42,6 +49,16 @@ public:
                        ValueType bias)
     : Superclass(array, ScaleBiasFunctor<ValueType>(scale, bias)) {  }
 };
+
+template<typename ArrayHandleType>
+VTKM_CONT_EXPORT
+ArrayHandleScaleBias<ArrayHandleType>
+make_ArrayHandleScaleBias(const ArrayHandleType &array,
+                          typename ArrayHandleType::ValueType scale,
+                          typename ArrayHandleType::ValueType bias)
+{
+  return ArrayHandleScaleBias<ArrayHandleType>(array, scale, bias);
+}
 ////
 //// END-EXAMPLE TransformArrayHandle.cxx
 ////
@@ -78,19 +95,21 @@ void Test()
 
   CheckArray(
   ////
-  //// BEGIN-EXAMPLE MakeArrayHandleImplicit.cxx
+  //// BEGIN-EXAMPLE MakeArrayHandleTransform.cxx
   ////
   vtkm::cont::make_ArrayHandleTransform<vtkm::Float32>(
           array, ScaleBiasFunctor<vtkm::Float32>(2,3))
   ////
-  //// END-EXAMPLE MakeArrayHandleImplicit.cxx
+  //// END-EXAMPLE MakeArrayHandleTransform.cxx
   ////
   );
 
-  ArrayHandleScaleBias<vtkm::Float32, vtkm::cont::ArrayHandle<vtkm::Float32> >
+  ArrayHandleScaleBias<vtkm::cont::ArrayHandle<vtkm::Float32> >
       transformArray(array, 2, 3);
 
   CheckArray(transformArray);
+
+  CheckArray(make_ArrayHandleScaleBias(array, 2, 3));
 }
 
 } // anonymous namespace

@@ -5,7 +5,6 @@
 ////
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/StorageImplicit.h>
-#include <vtkm/cont/internal/IteratorFromArrayPortal.h>
 
 class ArrayPortalEvenNumbers
 {
@@ -23,21 +22,6 @@ public:
 
   VTKM_EXEC_CONT_EXPORT
   ValueType Get(vtkm::Id index) const { return 2*index; }
-
-  typedef vtkm::cont::internal::IteratorFromArrayPortal<ArrayPortalEvenNumbers>
-      IteratorType;
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorBegin() const
-  {
-    return IteratorType(*this);
-  }
-
-  VTKM_CONT_EXPORT
-  IteratorType GetIteratorEnd() const
-  {
-    return IteratorType(*this, this->GetNumberOfValues());
-  }
 
 private:
   vtkm::Id NumberOfValues;

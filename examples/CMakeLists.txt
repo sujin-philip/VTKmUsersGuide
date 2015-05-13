@@ -6,6 +6,7 @@ set(example_src
   ArrayHandleImplicit.cxx
   ArrayHandlePermutation.cxx
   ArrayHandleTransform.cxx
+  ArrayHandleZip.cxx
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx
   DeviceAdapterAlgorithms.cxx

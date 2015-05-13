@@ -765,7 +765,7 @@ an array. Elements in the array can be skipped over or replicated. The
 permutation array provides this reordered array without actually coping any
 data. Instead, indices are adjusted as the array is accessed.
 
-Specifying a transformed array in VTK-m is straightforward. VTK-m has a
+Specifying a permutation array in VTK-m is straightforward. VTK-m has a
 class named \vtkmcont{ArrayHandlePermutation} that takes two arrays: an
 array of values and an array of indices that maps an index in the
 permutation to an index of the original values. The index array is
@@ -796,7 +796,25 @@ memory locations, which can be difficult to debug.
 \index{array~handle!zip|(}
 \index{zipped~array~handles|(}
 
-\fix{Write this documentation.}
+A zip array is a fancy array handle that combines two arrays of the same
+size to pair up the corresponding values. Each element in the zipped array
+is a \vtkm{Pair} containing the values of the two respective arrays. These
+pairs are not stored in their own memory space. Rather, the pairs are
+generated as the array is used.
+
+Specifying a zipped array in VTK-m is straightforward. VTK-m has a class
+named \vtkmcont{ArrayHandleZip} that takes the two arrays providing values
+for the first and second entries in the pairs. The following example is a
+simple demonstration of creating a zip array handle.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleZip}.}{ArrayHandleZip.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleZip.h} header also contains the
+templated convenience function \vtkmcont{make\_ArrayHandleZip} that takes
+instances of the two array handles and returns a zip array. This function
+can sometimes be used to avoid having to declare the full array type.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleZip}.}{MakeArrayHandleZip.cxx}
 
 \index{zipped~array~handles|)}
 \index{array~handle!zip|)}

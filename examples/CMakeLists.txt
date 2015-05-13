@@ -4,6 +4,7 @@ set(example_src
   ArrayHandleAdapt.cxx
   ArrayHandleDerived.cxx
   ArrayHandleImplicit.cxx
+  ArrayHandlePermutation.cxx
   ArrayHandleTransform.cxx
   CoreDataTypes.cxx
   DeviceAdapterTag.cxx

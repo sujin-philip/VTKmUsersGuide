@@ -33,7 +33,7 @@ void VectorOperations()
   vtkm::Vec<vtkm::Float32,3> A(1, 2, 3);
   vtkm::Vec<vtkm::Float32,3> B(4, 5, 6.5);
   vtkm::Vec<vtkm::Float32,3> C = A + B;         // C is (5, 7, 9.5)
-  vtkm::Vec<vtkm::Float32,3> D = 2 * C;         // D is (10, 14, 19)
+  vtkm::Vec<vtkm::Float32,3> D = 2.0f * C;      // D is (10, 14, 19)
   vtkm::Float32 s = vtkm::dot(A, B);            // s is 33.5
   bool b1 = (A == B);                           // b1 is false
   bool b2 = (A == vtkm::make_Vec(1, 2, 3));     // b2 is true

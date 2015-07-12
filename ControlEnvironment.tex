@@ -1034,11 +1034,34 @@ used to load an array whose type is not known until run-time.
 \subsection{Querying and Casting}
 \label{sec:DynamicArrayHandleQueryingAndCasting}
 
+\index{dynamic~array~handle!query}
 Data pointed to by a \textidentifier{DynamicArrayHandle} is not directly
-accessible. Before the data can be accessed, the type and storage of the
-array must be established. This is usually done internally within VTK-m
-when a worklet \fix{or filter?} is invoked. However, it is also possible to
-query the types and cast to a concrete \textidentifier{ArrayHandle}.
+accessible. However, there are a few generic queries you can make without
+directly knowing the data type. The \textcode{GetNumberOfValues} method
+returns the length of the array with respect to its base data type. It is
+also common in VTK-m to use data types, such as \vtkm{Vec}, with multiple
+components per value. The \textcode{GetNumberOfComponents} method returns
+the number of components in a vector-like type (or 1 for scalars).
+
+\vtkmlisting{Non type-specific queries on \textidentifier{DynamicArrayHandle}.}{NonTypeQueriesDynamicArrayHandle.cxx}
+
+\index{dynamic~array~handle!new~instance}
+It is also often desirable to create a new array based on the underlying
+type of a \textidentifier{DynamicArrayHandle}. For example, when executing
+a worklet \fix{or filter?} on one or more fields, it is common to generate
+an output field, and it is furthermore usually desirable for the output
+type to match the input type. To satisfy this use case,
+\textidentifier{DynamicArrayHandle} has a method named
+\textcode{NewInstance} that creates a new empty array with the same
+underlying type as the original array.
+
+\vtkmlisting{Using \textidentifier{DynamicArrayHandle}\textcode{::NewInstance()}.}{DynamicArrayHandleNewInstance.cxx}
+
+Before the data with a \textidentifier{DynamicArrayHandle} can be accessed,
+the type and storage of the array must be established. This is usually done
+internally within VTK-m when a worklet \fix{or filter?} is invoked.
+However, it is also possible to query the types and cast to a concrete
+\textidentifier{ArrayHandle}.
 
 \index{dynamic~array~handle!query}
 You can query the component type and storage type using the

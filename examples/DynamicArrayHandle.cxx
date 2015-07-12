@@ -61,6 +61,67 @@ void TryLoadDynamicArray()
         "Type not right.");
 }
 
+void NonTypeQueriesDynamicArrayHandle()
+{
+  ////
+  //// BEGIN-EXAMPLE NonTypeQueriesDynamicArrayHandle.cxx
+  ////
+  std::vector<vtkm::Float32> scalarBuffer(10);
+  vtkm::cont::DynamicArrayHandle scalarDynamicHandle(
+        vtkm::cont::make_ArrayHandle(scalarBuffer));
+
+  // This returns 10.
+  vtkm::Id scalarArraySize = scalarDynamicHandle.GetNumberOfValues();
+
+  // This returns 1.
+  vtkm::IdComponent scalarComponents =
+      scalarDynamicHandle.GetNumberOfComponents();
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(scalarArraySize == 10, "Got wrong array size.");
+  VTKM_TEST_ASSERT(scalarComponents == 1, "Got wrong vec size.");
+  //// RESUME-EXAMPLE
+
+  std::vector<vtkm::Vec<vtkm::Float32,3> > vectorBuffer(20);
+  vtkm::cont::DynamicArrayHandle vectorDynamicHandle(
+        vtkm::cont::make_ArrayHandle(vectorBuffer));
+
+  // This returns 20.
+  vtkm::Id vectorArraySize = vectorDynamicHandle.GetNumberOfValues();
+
+  // This returns 3.
+  vtkm::IdComponent vectorComponents =
+      vectorDynamicHandle.GetNumberOfComponents();
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(vectorArraySize == 20, "Got wrong array size.");
+  VTKM_TEST_ASSERT(vectorComponents == 3, "Got wrong vec size.");
+  //// RESUME-EXAMPLE
+  ////
+  //// END-EXAMPLE NonTypeQueriesDynamicArrayHandle.cxx
+  ////
+}
+
+void DynamicArrayHandleNewInstance()
+{
+  ////
+  //// BEGIN-EXAMPLE DynamicArrayHandleNewInstance.cxx
+  ////
+  std::vector<vtkm::Float32> scalarBuffer(10);
+  vtkm::cont::DynamicArrayHandle dynamicHandle(
+        vtkm::cont::make_ArrayHandle(scalarBuffer));
+
+  // This creates a new empty array of type Float32.
+  vtkm::cont::DynamicArrayHandle newDynamicArray = dynamicHandle.NewInstance();
+  ////
+  //// END-EXAMPLE DynamicArrayHandleNewInstance.cxx
+  ////
+
+  VTKM_TEST_ASSERT(newDynamicArray.GetNumberOfValues() == 0,
+                   "New array not empty.");
+  VTKM_TEST_ASSERT(newDynamicArray.IsTypeAndStorage(vtkm::Float32(),
+                                                    VTKM_DEFAULT_STORAGE_TAG()),
+                   "New array is wrong type.");
+}
+
 void QueryCastDynamicArrayHandle()
 {
   ////
@@ -201,6 +262,8 @@ void TryPrintArrayContents()
 void Test()
 {
   TryLoadDynamicArray();
+  NonTypeQueriesDynamicArrayHandle();
+  DynamicArrayHandleNewInstance();
   QueryCastDynamicArrayHandle();
   TryPrintArrayContents();
 }

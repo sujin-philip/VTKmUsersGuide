@@ -11,7 +11,6 @@ set(example_src
   DeviceAdapterTag.cxx
   DeviceAdapterAlgorithms.cxx
   DynamicArrayHandle.cxx
-  DynamicPointCoordinates.cxx
   ErrorHandling.cxx
   ExportMacro.cxx
   FunctionInterface.cxx

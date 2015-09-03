@@ -13,7 +13,7 @@ namespace {
 struct Vec2List
     : vtkm::ListTagBase<vtkm::Id2,
                         vtkm::Vec<vtkm::Float32,2>,
-                        vtkm::Vec<vtkm::Float64,3> > {  };
+                        vtkm::Vec<vtkm::Float64,2> > {  };
 
 // An application that uses 2D geometry might commonly encounter this list of
 // types.
@@ -108,8 +108,13 @@ void TestBaseListTags()
 
 void TestCustomTypeLists()
 {
-  TryListTag(Vec2List(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 3 >");
-  TryListTag(MyCommonTypes(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 3 >vtkm::Int32vtkm::Int64vtkm::Float32vtkm::Float64vtkm::Vec< vtkm::Float32, 3 >vtkm::Vec< vtkm::Float64, 3 >");
+#ifdef VTKM_USE_64BIT_IDS
+  TryListTag(Vec2List(), "vtkm::Vec< vtkm::Int64, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 2 >");
+  TryListTag(MyCommonTypes(), "vtkm::Vec< vtkm::Int64, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 2 >vtkm::Int32vtkm::Int64vtkm::Float32vtkm::Float64vtkm::Vec< vtkm::Float32, 3 >vtkm::Vec< vtkm::Float64, 3 >");
+#else
+  TryListTag(Vec2List(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 2 >");
+  TryListTag(MyCommonTypes(), "vtkm::Vec< vtkm::Int32, 2 >vtkm::Vec< vtkm::Float32, 2 >vtkm::Vec< vtkm::Float64, 2 >vtkm::Int32vtkm::Int64vtkm::Float32vtkm::Float64vtkm::Vec< vtkm::Float32, 3 >vtkm::Vec< vtkm::Float64, 3 >");
+#endif
 }
 
 ////

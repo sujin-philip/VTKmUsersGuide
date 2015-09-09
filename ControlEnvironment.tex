@@ -1186,11 +1186,47 @@ chaining these reset calls.
 \index{array~handle!dynamic|)}
 \index{dynamic~array~handle|)}
 
-\section{Grid Structures}
-\label{sec:GridStructures}
+\section{Data Sets}
+\label{sec:DataSets}
 
-\fix{Not implemented yet. These will be based on EAVL data structures. The
-  name of this section might change.}
+\index{data~set|(}
+
+A \keyterm{data set}, implemented with the \vtkmcont{DataSet} class,
+contains and manages the geometric data structures that VTK-m operates on.
+A data set comprises the following 3 data structures.
+
+\begin{description}
+\item[Cell Set] \index{cell~set} A cell set describes topological
+  connections. A cell set defines some number of points in space and how
+  they connect to form cells, filled regions of space. A data set must have
+  at least one cell set, but can have more than one cell set defined. This
+  makes it possible to define groups of cells with different properties.
+  For example, a simulation might model some subset of elements as boundary
+  that contain properties the other elements do not. Another example is the
+  representation of a molecule that requires atoms and bonds, each having
+  very different properties associated with them.
+\item[Field] \index{field} A field describes numerical data associated with
+  the topological elements in a cell set. The field is represented as an
+  array, and each entry in the field array corresponds to a topological
+  element (point, edge, face, or cell). Together the cell set topology and
+  discrete data values in the field provide an interpolated function
+  throughout the volume of space covered by the data set. A cell set can
+  have any number of fields.
+\item[Coordinate System] \index{coordinate~system} A coordinate system is a
+  special field that describes the physical location of the points in a
+  data set. Although it is most common for a data set to contain a single
+  coordinate system, VTK-m supports data sets with no coordinate system
+  such as abstract data structures like graphs that might not have
+  positions in a space. \textidentifier{DataSet} also supports multiple
+  coordinate systems for data that have multiple representations for
+  position. For example, geospatial data could simultaneously have
+  coordinate systems defined by 3D position, latitude-longitude, and any
+  number of 2D projections.
+\end{description}
+
+\fix{This is a work in progress!}
+
+\index{data~set|)}
 
 %% The Dax toolkit provides containers for topologies. The topologies are
 %% built on the previously described data structures (mostly array handles)

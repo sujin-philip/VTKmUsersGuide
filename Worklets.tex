@@ -395,9 +395,30 @@ A field map worklet supports the following tags in its
 Field maps most commonly perform basic calculator arithmetic, as
 demonstrated in the following example.
 
-\fix{When VTK-m math library is available, use it in this example.}
-
 \vtkmlisting{Declaration and use of a field map worklet.}{UseWorkletMapField.cxx}
+
+Although simple, the \textidentifier{WorkletMapField} worklet type can be
+used (and abused) as a general parallel-for/scheduling mechanism. In
+particular, the \sigtag{WorkIndex} execution signature tag can be used to
+get a unique index and the \sigtag{ExecObject} control signature tag can be
+used to pass execution objects directly to the worklet.
+
+The \sigtag{ExecObject} parameter can be used in conjunction with the
+\vtkmexec{ExecutionWholeArray} class to pass an entire array into a
+worklet. \textidentifier{ExecutionWholeArray} takes an
+\textidentifier{ArrayHandle} object in the control environment and converts
+it to an execution environment object that is compatible with the
+\sigtag{ExecObject} tag. This allows you to have random access to the
+array. (You can also use \vtkmexec{ExecutionWholeArrayConst} for read only
+access.) Care should be taken when directly accessing an array like this.
+Be sure to avoid invalid indexing or memory race conditions, which can be
+hard to debug.
+
+The following example uses the random access of
+\textidentifier{ExecutionWholeArray} to make a worklet that copies an array
+in reverse order.
+
+\vtkmlisting{Using \textidentifier{ExecutionWholeArray} for random array access.}{RandomArrayAccess.cxx}
 
 \index{field~map~worklet|)}
 \index{worklet~types!field~map|)}

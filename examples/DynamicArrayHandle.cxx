@@ -128,8 +128,16 @@ void QueryCastDynamicArrayHandle()
   //// BEGIN-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
   std::vector<vtkm::Float32> scalarBuffer(10);
-  vtkm::cont::DynamicArrayHandle dynamicHandle(
-        vtkm::cont::make_ArrayHandle(scalarBuffer));
+  vtkm::cont::ArrayHandle<vtkm::Float32> concreteHandle =
+      vtkm::cont::make_ArrayHandle(scalarBuffer);
+  vtkm::cont::DynamicArrayHandle dynamicHandle(concreteHandle);
+
+  // This returns true
+  bool isFloat32Array = dynamicHandle.IsArrayHandleType(concreteHandle);
+
+  // This returns false
+  bool isIdArray = dynamicHandle.IsArrayHandleType(
+        vtkm::cont::ArrayHandle<vtkm::Id>());
 
   // This returns true
   bool isFloat32 = dynamicHandle.IsTypeAndStorage(vtkm::Float32(),
@@ -147,6 +155,8 @@ void QueryCastDynamicArrayHandle()
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
 
+  VTKM_TEST_ASSERT(isFloat32Array, "Didn't query right.");
+  VTKM_TEST_ASSERT(!isIdArray, "Didn't query right.");
   VTKM_TEST_ASSERT(isFloat32, "Didn't query right.");
   VTKM_TEST_ASSERT(!isId, "Didn't query right.");
   VTKM_TEST_ASSERT(!isErrorStorage, "Didn't query right.");
@@ -154,9 +164,7 @@ void QueryCastDynamicArrayHandle()
   ////
   //// BEGIN-EXAMPLE CastDynamicArrayHandle.cxx
   ////
-  vtkm::cont::ArrayHandle<vtkm::Float32> concreteHandle =
-      dynamicHandle.CastToArrayHandle(vtkm::Float32(),
-                                      VTKM_DEFAULT_STORAGE_TAG());
+  dynamicHandle.CastToArrayHandle(concreteHandle);
   ////
   //// END-EXAMPLE CastDynamicArrayHandle.cxx
   ////

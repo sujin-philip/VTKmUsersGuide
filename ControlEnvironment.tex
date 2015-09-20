@@ -674,13 +674,14 @@ convenience subclass of \vtkmcont{ArrayHandleImplicit} for your array.
 VTK-m comes with some examples of implicit storage.
 \vtkmcont{ArrayHandleConstant} returns the same value for every index in
 the array. The constant array is useful when an algorithm that can work on
-a variable field is used on a constant value.
-\vtkmcont{ArrayHandleCounting} returns the index as the value with a
-possible offset. The counting array is useful for generating fields of
-identifiers or for indexing operations.
-\vtkmcont{ArrayHandleUniformPointCoordinates} generates the position of
-points in axis-aligned uniform rectilinear grids. It is used internally by
-VTK-m to create point coordinates for these types of data structures.
+a variable field is used on a constant value. \vtkmcont{ArrayHandleIndex}
+returns the index as the value. \vtkmcont{ArrayHandleCounting} is an array
+that starts from a given value and then counts with a given step. The index
+and counting arrays are useful for generating fields of identifiers or for
+indexing operations. \vtkmcont{ArrayHandleUniformPointCoordinates}
+generates the position of points in axis-aligned uniform rectilinear grids.
+It is used internally by VTK-m to create point coordinates for these types
+of data structures.
 %% VTK-m also provides \vtkmcont{make\_ArrayHandleConstant} and
 %% \vtkmcont{make\_ArrayHandleCounting} convenience functions to simplify
 %% building these arrays.

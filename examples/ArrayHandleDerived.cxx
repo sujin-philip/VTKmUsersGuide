@@ -340,7 +340,7 @@ public:
 //// END-EXAMPLE DerivedArrayHandle.cxx
 ////
 
-#include <vtkm/cont/ArrayHandleCounting.h>
+#include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/DeviceAdapter.h>
 
 #include <vtkm/cont/testing/Testing.h>
@@ -351,7 +351,7 @@ void Test()
 {
   const vtkm::Id HALF_ARRAY_SIZE = 25;
   const vtkm::Id ARRAY_SIZE = 2*HALF_ARRAY_SIZE;
-  vtkm::cont::ArrayHandleCounting<vtkm::Id> inputArray(0, ARRAY_SIZE);
+  vtkm::cont::ArrayHandleIndex inputArray(ARRAY_SIZE);
 
   typedef vtkm::cont::ArrayHandle<vtkm::Id> BaseArrayType;
   BaseArrayType array1;

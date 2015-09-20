@@ -215,7 +215,7 @@ void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
 
   // In lieu of running something interesting, for now just copy from one array
   // to another in the execution environment.
-  vtkm::cont::ArrayHandleCounting<float> countingArray(1, 50);
+  vtkm::cont::ArrayHandleCounting<vtkm::Float32> countingArray(1.0f, 0.5f, 50);
   vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
         countingArray, pressureHandle);
 
@@ -235,9 +235,11 @@ void Test()
   FooFieldsDeque fields(50);
   GetElevationAirPressure(NULL, &fields);
 
+  vtkm::Float32 value = 1;
   for (vtkm::Id index = 0; index < 50; index++)
   {
-    VTKM_TEST_ASSERT(fields[index].Pressure == index+1, "Bad value.");
+    VTKM_TEST_ASSERT(fields[index].Pressure == value, "Bad value.");
+    value += 0.5f;
   }
 }
 

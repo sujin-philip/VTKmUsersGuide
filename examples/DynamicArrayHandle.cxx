@@ -1,5 +1,5 @@
 #include <vtkm/cont/ArrayHandle.h>
-#include <vtkm/cont/ArrayHandleCounting.h>
+#include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/DynamicArrayHandle.h>
 
@@ -205,7 +205,7 @@ void PrintArrayContents(const DynamicArrayType &array)
 struct MyIdStorageList :
     vtkm::ListTagBase<
         vtkm::cont::StorageTagBasic,
-        vtkm::cont::ArrayHandleCounting<vtkm::Id>::StorageTag>
+        vtkm::cont::ArrayHandleIndex::StorageTag>
 {  };
 
 void PrintIds(vtkm::cont::DynamicArrayHandle array)
@@ -218,7 +218,7 @@ void PrintIds(vtkm::cont::DynamicArrayHandle array)
 
 void TryPrintArrayContents()
 {
-  vtkm::cont::ArrayHandleCounting<vtkm::Id> implicitArray(0, 10);
+  vtkm::cont::ArrayHandleIndex implicitArray(10);
 
   vtkm::cont::ArrayHandle<vtkm::Id> concreteArray;
   vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(

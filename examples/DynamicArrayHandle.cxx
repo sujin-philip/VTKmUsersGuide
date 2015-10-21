@@ -5,6 +5,8 @@
 
 #include <vtkm/cont/internal/StorageError.h>
 
+#include <vtkm/VecTraits.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 namespace {
@@ -192,9 +194,23 @@ private:
   {
     for (vtkm::Id index = 0; index < portal.GetNumberOfValues(); index++)
     {
-      std::cout << " " << portal.Get(index);
+      // All ArrayPortal objects have ValueType for the type of each value.
+      typedef typename PortalType::ValueType ValueType;
+
+      ValueType value = portal.Get(index);
+
+      vtkm::IdComponent numComponents =
+          vtkm::VecTraits<ValueType>::GetNumberOfComponents(value);
+      for (vtkm::IdComponent componentIndex = 0;
+           componentIndex < numComponents;
+           componentIndex++)
+      {
+        std::cout << " "
+                  << vtkm::VecTraits<ValueType>::GetComponent(value,
+                                                              componentIndex);
+      }
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
 };
 

@@ -870,6 +870,11 @@ class. The implementation for a \textidentifier{Storage} for
 a derived storage is usually trivial compared to an adapter storage
 because the majority of the work is deferred to the derived arrays.
 
+\fix{Change the template parameters below to be array handle types instead
+of storage types. This is problematic for checking the value types, but
+should run into less problems with special array handles. See
+ArrayHandleGroupVec.}
+
 \vtkmlisting[ex:DerivedArrayStorage]{\textidentifier{Storage} for derived container of concatenated arrays.}{DerivedArrayStorage.cxx}
 
 One of the responsibilities of an array handle is to copy data between the
@@ -987,6 +992,13 @@ desired arrays. This can be done by creating a trivial subclass of
 \vtkmcont{ArrayHandle} that simply constructs the array handle to the state
 of an existing storage. It uses a protected constructor of
 \vtkmcont{ArrayHandle} that accepts a constructed storage.
+
+\fix{Should also include a constructor that takes a base array handle of the
+appropriate storage.}
+
+\fix{Also need to add a VTK\_CONT\_EXPORT}
+
+\fix{Also should make StorageTag and ValueType public.}
 
 \vtkmlisting{\textidentifier{ArrayHandle} for derived storage of concatenated arrays.}{DerivedArrayHandle.cxx}
 

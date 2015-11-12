@@ -25,13 +25,12 @@ set(example_src
 if (BUILD_EXAMPLES)
   find_package(VTKm REQUIRED)
 
-  # This should later be encapsulated in VTKmUseSerial
-  find_package(BoostHeaders REQUIRED)
-  include_directories(${Boost_INCLUDE_DIRS} ${VTKm_INCLUDE_DIRS})
+  include_directories(${VTKm_INCLUDE_DIRS})
 
   set(test_prog ExampleTests)
   create_test_sourcelist(test_src ${test_prog}.cxx ${example_src})
   add_executable(${test_prog} ${test_src})
+  target_link_libraries(${test_prog} ${VTKm_LIBRARIES})
 
   foreach (test ${example_src})
     get_filename_component(tname ${test} NAME_WE)

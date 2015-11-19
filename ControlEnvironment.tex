@@ -46,13 +46,14 @@ information is given, VTK-m attempts to choose a default device adapter
 that is a best fit for the system it is compiled on. VTK-m currently select
 the default device adapter with the following sequence of conditions.
 
-\fix{This is not currently the case in VTK-m, but should be once these
-  adapters are implemented.}
 \begin{itemize}
 \item \index{CUDA} If the source code is being compiled by CUDA, the CUDA
   device is used.
 \item \index{OpenMP} If the CUDA compiler is not being used and the current
   compiler supports OpenMP, then the OpenMP device is used.
+  \fix{Technically, OpenMP is not yet supported in VTK-m, so this will
+    never actually be picked. But once it is implemented, this will be the
+    chain.}
 \item \index{Intel Threading Building Blocks} \index{TBB} If the compiler
   supports neither CUDA nor OpenMP and VTK-m was configured to use Intel
   Threading Building Blocks, then that device is used.
@@ -65,7 +66,6 @@ You can also set the default device adapter specifically by setting the
 \emph{before} including any VTK-m files. You can set
 \vtkmmacro{VTKM\_DEVICE\_ADAPTER} to any one of the following.
 
-\fix{Most of these are not currently implemented.}
 \begin{description}
 \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_SERIAL}] Performs all computation on
   the same single thread as the control environment. This device is useful
@@ -76,7 +76,8 @@ You can also set the default device adapter specifically by setting the
 \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_OPENMP}] Uses OpenMP compiler
   extensions to run algorithms on multiple threads. For this device to
   work, VTK-m must be configured to use OpenMP and the code must be
-  compiled with a compiler that supports OpenMP pragmas.
+  compiled with a compiler that supports OpenMP pragmas. \fix{Not currently
+    implemented.}
 \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_TBB}] Uses the Intel Threading
   Building Blocks library to run algorithms on multiple threads. For this
   device to work, VTK-m must be configured to use TBB and the executable
@@ -109,31 +110,32 @@ available in VTK-m.
 \index{device~adapter~tag|(}
 \index{tag!device~adapter|(}
 
-\fix{Most of these are not currently implemented. The directories may change.}
 \begin{description}
 \item[\vtkmcont{DeviceAdapterTagSerial}] \index{serial} Performs all
   computation on the same single thread as the control environment. This
   device is useful for debugging. This device is always available. This tag
   is defined in \vtkmheader{vtkm/cont}{DeviceAdapterSerial.h}.
-\item[\vtkmcudacont{DeviceAdapterTagCuda}] \index{CUDA} Uses a CUDA capable
+\item[\vtkmcont{DeviceAdapterTagCuda}] \index{CUDA} Uses a CUDA capable
   GPU device. For this device to work, VTK-m must be configured to use CUDA
   and the code must be compiled by the CUDA \textfilename{nvcc}
   compiler. This tag is defined in
-  \vtkmheader{vtkm/cuda/cont}{DeviceAdapterCuda.h}.
-\item[\vtkmopenmpcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
+  \vtkmheader{vtkm/cont/cuda}{DeviceAdapterCuda.h}.
+\item[\vtkmcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
   compiler extensions to run algorithms on multiple threads. For this
   device to work, VTK-m must be configured to use OpenMP and the code must be
   compiled with a compiler that supports OpenMP pragmas. This tag is
-  defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}.
-\item[\vtkmtbbcont{DeviceAdapterTagTBB}]
+  defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}. \fix{Not
+    currently implemented.}
+\item[\vtkmcont{DeviceAdapterTagTBB}]
   \index{Intel Threading Building Blocks} \index{TBB} Uses the Intel
   Threading Building Blocks library to run algorithms on multiple
   threads. For this device to work, VTK-m must be configured to use TBB and
   the executable must be linked to the TBB library. This tag is defined in
-  \vtkmheader{vtkm/tbb/cont}{DeviceAdapterTBB.h}.
+  \vtkmheader{vtkm/cont/tbb}{DeviceAdapterTBB.h}.
 \end{description}
 
-\fix{Add example. Not enough implemented to make a worthwhile example yet.}
+\fix{Add example. I would like to have a simple example involving a filter,
+but that interface is still in flux.}
 %% The following example invokes the elevation worklet much like shown in
 %% Example~\ref{ex:Elevation} on page~\pageref{ex:Elevation} but also
 %% specifies using the Intel Threading Building blocks device adapter.
@@ -159,14 +161,14 @@ adapter, which checks to make sure the code properly specifies every device
 adapter parameter.
 
 VTK-m also defines a macro named
-\vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_TAG} that can be used in place
+\vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_TAG}, which can be used in place
 of an explicit device adapter tag to use the default tag. This macro is
 used to create new templates that have template parameters for device
 adapters that can use the default. The following example has a (rather
 artificial) declaration of a helper class for executing the elevation
-worklet.
+filter.
 
-\fix{Add example when worklets and dispatchers are implemented.}
+\fix{Add example when filters are settled.}
 
 %% \begin{daxexample}{Declaring a template with a default device adapter.}
 %% template<typename DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
@@ -533,13 +535,40 @@ Example~\ref{ex:ArrayPortalAdapter}.
 
 \vtkmlisting{Storage to adapt a third-party container to VTK-m.}{StorageAdapter.cxx}
 
+\index{array~handle!subclassing}
+
 The final step to make a storage adapter is to make a mechanism to
 construct an \textidentifier{ArrayHandle} that points to a particular
 storage. This can be done by creating a trivial subclass of
 \vtkmcont{ArrayHandle} that simply constructs the array handle to the state
 of an existing container.
 
-\vtkmlisting{Array handle to adapt a third-party container to VTK-m.}{ArrayHandleAdapter.cxx}
+\vtkmlisting[ex:ArrayHandleAdapter]{Array handle to adapt a third-party container to VTK-m.}{ArrayHandleAdapter.cxx}
+
+\label{sec:VTKM_ARRAY_HANDLE_SUBCLASS_NT}
+
+Subclasses of \textidentifier{ArrayHandle} provide constructors that
+establish the state of the array handle. All array handle subclasses must
+also use either the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro or the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. Both of these macros
+define the typedefs \textcode{Superclass}, \textcode{ValueType}, and
+\textcode{StorageTag} as well as a set of constructors and operators
+expected of all \textidentifier{ArrayHandle} classes. The difference
+between these two macros is that \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS}
+is used in templated classes whereas
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} is used in non-templated
+classes.
+
+The \textidentifier{ArrayHandle} subclass in
+Example~\ref{ex:ArrayHandleAdapter} is not templated, so it uses
+the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. (The other macro
+is described in Section~\ref{sec:VTKM_ARRAY_HANDLE_SUBCLASS} on
+page~\pageref{sec:VTKM_ARRAY_HANDLE_SUBCLASS}). This macro takes two
+parameters. The first parameter is the name of the subclass where the macro
+is defined and the second parameter is the immediate superclass including
+the full template specification. The second parameter of the macro must be
+enclosed in parentheses so that the C pre-processor correctly handles
+commas in the template specification.
 
 With this new version of \textidentifier{ArrayHandle}, VTK-m can now read
 to and write from the \textcode{FooFieldsDeque} structure directly. Note,
@@ -548,8 +577,10 @@ however, that when writing to an array handle, it is necessary to call
 data from the execution environment to the control environment. \fix{Should
   probably make this easier.}
 
-\fix{Right now we don't have things that run in the execution environment
-  that do anything useful, so update this example once that exists.}
+\fix{Although this example was originally written with executing worklets
+  in mind, at this level of the user's guide it would probably be better to
+  have an example that uses a filter. Once the filters are settled, that
+  is.}
 
 \vtkmlisting{Using an \textidentifier{ArrayHandle} with custom container.}{UsingArrayHandleAdapter.cxx}
 
@@ -577,56 +608,6 @@ requires no storage in memory at all. Such a functional array is called an
 \keyterm{fancy array handles}, which are array handles that behave like
 regular arrays but do special processing under the covers to provide
 values.
-
-%% \fix{Remove starting here.}
-
-%% \fix{There also exists a special complete array handle that can run a
-%%   functor with a much easier implementation. However, it has not made it
-%%   into the VTK-m source yet. Plus, there are circumstances where it is
-%%   useful to custom-make an implicit array instead. Since I already had this
-%%   description from earlier Dax documentation, I just include it for now.}
-
-%% Specifying a functional or implicit array in VTK-m is straightforward.
-%% VTK-m comes with a generic implicit storage that can be templated to any
-%% function you like. In this section we demonstrate the steps required to
-%% create an implicit storage. For the purposes of the example, let us say
-%% we want an array of even numbers. That is, the array has the values
-%% $[0,2,4,6,\ldots]$ up to some given size. Although we could easily create
-%% this array in memory, we can save space and possibly time by computing
-%% these values on demand.
-
-%% The first step to creating an implicit storage is to build a read-only
-%% array portal that computes the desired value in the \textcode{Get}
-%% method. The portal must work in both the control and execution environments
-%% (although the iterators only need to work in the control environment), and
-%% no \textcode{Set} method is necessary because the array is assumed to be
-%% read-only (since it is functional). The array portal may have a small
-%% amount of state, but the class itself must be copyable as a raw data
-%% structure. That is, using \textcode{memcpy} on the structure should work.
-
-%% \vtkmlisting[ex:ImplicitArrayPortal]{Implicit array portal for an implicit array of even numbers.}{ImplicitArrayPortal.cxx}
-
-%% Note that this array portal uses the template
-%% \vtkmcontinternal{IteratorFromArrayPortal}, which can convert any array
-%% portal to STL-compatible iterators.
-
-%% Once the implicit array portal is built, an implicit array storage is
-%% defined using the \vtkmcont{StorageTagImplicit} tag. This tag
-%% is templated, and the template parameter is the implicit array portal.
-
-%% \vtkmlisting[ex:ImplicitArrayStorage]{Defining the storage tag for an implicit array of even numbers.}{ImplicitArrayStorage.cxx}
-
-%% An array handle can be created directly with this tag as the storage
-%% template parameter to \vtkmcont{ArrayHandle}. However, it is common to
-%% create a trivial subclass of \vtkmcont{ArrayHandle} that simply constructs
-%% the array handle to an implicit array portal of a given state. The
-%% following example, which builds on Examples \ref{ex:ImplicitArrayPortal}
-%% and \ref{ex:ImplicitArrayStorage} demonstrates the convenience
-%% \vtkmcont{ArrayHandle} subclass.
-
-%% \vtkmlisting{Implicit array handle of even numbers.}{ImplicitArrayHandle.cxx}
-
-%% \fix{Remove ending here.}
 
 Specifying a functional or implicit array in VTK-m is straightforward.
 VTK-m has a special class named \vtkmcont{ArrayHandleImplicit} that makes
@@ -665,11 +646,36 @@ in any of the arguments.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleImplicit}.}{MakeArrayHandleImplicit.cxx}
 
+\index{array~handle!subclassing}
+
 If the implicit array you are creating tends to be generally useful and is
 something you use multiple times, it might be worthwhile to make a
 convenience subclass of \vtkmcont{ArrayHandleImplicit} for your array.
 
-\vtkmlisting{Custom implicit array handle for even numbers.}{ImplicitArrayHandle2.cxx}
+\vtkmlisting[ex:ImplicitArrayHandleSubclass]{Custom implicit array handle for even numbers.}{ImplicitArrayHandle2.cxx}
+
+Subclasses of \textidentifier{ArrayHandle} provide constructors that
+establish the state of the array handle. All array handle subclasses must
+also use either the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro or the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. Both of these macros
+define the typedefs \textcode{Superclass}, \textcode{ValueType}, and
+\textcode{StorageTag} as well as a set of constructors and operators
+expected of all \textidentifier{ArrayHandle} classes. The difference
+between these two macros is that \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS}
+is used in templated classes whereas
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} is used in non-templated
+classes.
+
+The \textidentifier{ArrayHandle} subclass in
+Example~\ref{ex:ImplicitArrayHandleSubclass} is not templated, so it uses
+the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. (The other macro
+is described in Section~\ref{sec:VTKM_ARRAY_HANDLE_SUBCLASS} on
+page~\pageref{sec:VTKM_ARRAY_HANDLE_SUBCLASS}). This macro takes two
+parameters. The first parameter is the name of the subclass where the macro
+is defined and the second parameter is the immediate superclass including
+the full template specification. The second parameter of the macro must be
+enclosed in parentheses so that the C pre-processor correctly handles
+commas in the template specification.
 
 VTK-m comes with some examples of implicit storage.
 \vtkmcont{ArrayHandleConstant} returns the same value for every index in
@@ -750,7 +756,33 @@ is something you use multiple times, it might be worthwhile to make a
 convenience subclass of \vtkmcont{ArrayHandleTransform} or convenience
 \textcode{make\_ArrayHandle*} function for your array.
 
-\vtkmlisting{Custom transform array handle for scale and bias.}{TransformArrayHandle.cxx}
+\vtkmlisting[ex:TransformArrayHandleSubclass]{Custom transform array handle for scale and bias.}{TransformArrayHandle.cxx}
+
+\label{sec:VTKM_ARRAY_HANDLE_SUBCLASS}
+
+Subclasses of \textidentifier{ArrayHandle} provide constructors that
+establish the state of the array handle. All array handle subclasses must
+also use either the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro or the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. Both of these macros
+define the typedefs \textcode{Superclass}, \textcode{ValueType}, and
+\textcode{StorageTag} as well as a set of constructors and operators
+expected of all \textidentifier{ArrayHandle} classes. The difference
+between these two macros is that \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS}
+is used in templated classes whereas
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} is used in non-templated
+classes.
+
+The \textidentifier{ArrayHandle} subclass in
+Example~\ref{ex:TransformArrayHandleSubclass} is templated, so it uses the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro. (The other macro is
+described in Section~\ref{sec:VTKM_ARRAY_HANDLE_SUBCLASS_NT} on
+page~\pageref{sec:VTKM_ARRAY_HANDLE_SUBCLASS_NT}). This macro takes three
+parameters. The first parameter is the name of the subclass where the macro
+is defined, the second parameter is the type of the subclass including the
+full template specification, and the third parameter is the immediate
+superclass including the full template specification. The second and third
+parameters of the macro must be enclosed in parentheses so that the C
+pre-processor correctly handles commas in the template specification.
 
 \index{transformed~array|)}
 \index{array~handle!transform|)}
@@ -853,12 +885,6 @@ that will take portals from arrays being derived. The portal must work in
 both the control and execution environment (or have a separate version for
 control and execution).
 
-\fix{Technically there is a problem with this portal in that it calls the
-  derived portals' Get and Set within methods exported in both control and
-  execution. Portals that are not explicit tend to be exported in either
-  one or the other, so these exports will fail under CUDA. In reality you
-  need separate versions for control and execution environments.}
-
 \vtkmlisting[ex:DerivedArrayPortal]{Derived array portal for concatenated arrays.}{DerivedArrayPortal.cxx}
 
 Like in an adapter storage, the next step in creating a derived storage
@@ -869,11 +895,6 @@ specialization of the templated \vtkmcontinternal{Storage}
 class. The implementation for a \textidentifier{Storage} for
 a derived storage is usually trivial compared to an adapter storage
 because the majority of the work is deferred to the derived arrays.
-
-\fix{Change the template parameters below to be array handle types instead
-of storage types. This is problematic for checking the value types, but
-should run into less problems with special array handles. See
-ArrayHandleGroupVec.}
 
 \vtkmlisting[ex:DerivedArrayStorage]{\textidentifier{Storage} for derived container of concatenated arrays.}{DerivedArrayStorage.cxx}
 
@@ -986,6 +1007,8 @@ started in Examples \ref{ex:DerivedArrayPortal} and
 
 \index{array~transfer|)}
 
+\index{array~handle!subclassing}
+
 The final step to make a derived storage is to create a mechanism to
 construct an \textidentifier{ArrayHandle} with a storage derived from the
 desired arrays. This can be done by creating a trivial subclass of
@@ -993,14 +1016,31 @@ desired arrays. This can be done by creating a trivial subclass of
 of an existing storage. It uses a protected constructor of
 \vtkmcont{ArrayHandle} that accepts a constructed storage.
 
-\fix{Should also include a constructor that takes a base array handle of the
-appropriate storage.}
+\vtkmlisting[ex:DerivedArrayHandle]{\textidentifier{ArrayHandle} for derived storage of concatenated arrays.}{DerivedArrayHandle.cxx}
 
-\fix{Also need to add a VTK\_CONT\_EXPORT}
+Subclasses of \textidentifier{ArrayHandle} provide constructors that
+establish the state of the array handle. All array handle subclasses must
+also use either the \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro or the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} macro. Both of these macros
+define the typedefs \textcode{Superclass}, \textcode{ValueType}, and
+\textcode{StorageTag} as well as a set of constructors and operators
+expected of all \textidentifier{ArrayHandle} classes. The difference
+between these two macros is that \vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS}
+is used in templated classes whereas
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS\_NT} is used in non-templated
+classes.
 
-\fix{Also should make StorageTag and ValueType public.}
-
-\vtkmlisting{\textidentifier{ArrayHandle} for derived storage of concatenated arrays.}{DerivedArrayHandle.cxx}
+The \textidentifier{ArrayHandle} subclass in
+Example~\ref{ex:DerivedArrayHandle} is templated, so it uses the
+\vtkmmacro{VTKM\_ARRAY\_HANDLE\_SUBCLASS} macro. (The other macro is
+described in Section~\ref{sec:VTKM_ARRAY_HANDLE_SUBCLASS_NT} on
+page~\pageref{sec:VTKM_ARRAY_HANDLE_SUBCLASS_NT}). This macro takes three
+parameters. The first parameter is the name of the subclass where the macro
+is defined, the second parameter is the type of the subclass including the
+full template specification, and the third parameter is the immediate
+superclass including the full template specification. The second and third
+parameters of the macro must be enclosed in parentheses so that the C
+pre-processor correctly handles commas in the template specification.
 
 \vtkmcont{ArrayHandleCompositeVector} is an example of a derived array
 handle provided by VTK-m. It references some fixed number of other arrays,

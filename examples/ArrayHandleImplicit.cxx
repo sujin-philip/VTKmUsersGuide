@@ -45,13 +45,13 @@ typedef vtkm::cont::StorageTagImplicit<ArrayPortalEvenNumbers>
 //// BEGIN-EXAMPLE ImplicitArrayHandle.cxx
 ////
 class ArrayHandleEvenNumbers
-    : public vtkm::cont::ArrayHandle<
-         vtkm::Id, StorageTagEvenNumbers>
+    : public vtkm::cont::ArrayHandle<vtkm::Id, StorageTagEvenNumbers>
 {
-  typedef vtkm::cont::ArrayHandle<vtkm::Id, StorageTagEvenNumbers>
-      Superclass;
-
 public:
+  VTKM_ARRAY_HANDLE_SUBCLASS_NT(
+      ArrayHandleEvenNumbers,
+      (vtkm::cont::ArrayHandle<vtkm::Id,StorageTagEvenNumbers>));
+
   VTKM_CONT_EXPORT
   ArrayHandleEvenNumbers(vtkm::Id length)
     : Superclass(ArrayPortalEvenNumbers(length)) {  }
@@ -83,9 +83,11 @@ struct DoubleIndexFunctor
 class ArrayHandleDoubleIndex
     : public vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
 {
-  typedef vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
-      Superclass;
 public:
+  VTKM_ARRAY_HANDLE_SUBCLASS_NT(
+      ArrayHandleDoubleIndex,
+      (vtkm::cont::ArrayHandleImplicit<vtkm::Id,DoubleIndexFunctor>));
+
   VTKM_CONT_EXPORT
   ArrayHandleDoubleIndex(vtkm::Id numberOfValues)
     : Superclass(DoubleIndexFunctor(), numberOfValues) {  }

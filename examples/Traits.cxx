@@ -3,13 +3,12 @@
 
 #include <vtkm/testing/Testing.h>
 
-// This should be replaced with VTK-m math when available!!!
-#include <math.h>
-
 ////
 //// BEGIN-EXAMPLE TypeTraits.cxx
 ////
 #include <vtkm/TypeTraits.h>
+
+#include <vtkm/Math.h>
 //// PAUSE-EXAMPLE
 namespace {
 //// RESUME-EXAMPLE
@@ -34,8 +33,9 @@ T RemainderImpl(const T &numerator,
                 vtkm::TypeTraitsRealTag,
                 vtkm::TypeTraitsScalarTag)
 {
-  T quotient = numerator / denominator;
-  return (quotient - floor(quotient))*denominator;
+  // The VTK-m math library contains a Remainder function that operates on
+  // floating point numbers.
+  return vtkm::Remainder(numerator, denominator);
 }
 
 template<typename T, typename NumericTag>

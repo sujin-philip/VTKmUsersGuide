@@ -182,8 +182,9 @@ private:
       StorageType;
 
 public:
-  typedef vtkm::cont::ArrayHandle<float, StorageTagFooPressure>
-      Superclass;
+  VTKM_ARRAY_HANDLE_SUBCLASS_NT(
+      ArrayHandleFooPressure,
+      (vtkm::cont::ArrayHandle<float, StorageTagFooPressure>));
 
   VTKM_CONT_EXPORT
   ArrayHandleFooPressure(FooFieldsDeque *container)

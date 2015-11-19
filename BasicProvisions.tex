@@ -155,8 +155,8 @@ the function is exported to both places.
 The primary function of the export macros is to interject compiler-specific
 keywords that specify what architecture to compile code for. For example,
 when compiling with CUDA\index{CUDA}, the control exports have
-\textcode{\_\_host\_\_} in them and execution exports have
-\textcode{\_\_device\_\_} in them.
+\textcode{\_\_host\_\_}\index{\_\_host\_\_} in them and execution exports
+have \textcode{\_\_device\_\_}\index{\_\_device\_\_} in them.
 
 There is one additional export macro that is not used for functions but
 rather used when declaring a constant data object that is used in the
@@ -166,6 +166,17 @@ and is used to declare a constant lookup table used when executing a
 worklet. Its primary reason for existing is to add a
 \textcode{\_\_constant\_\_} keyword when compiling with CUDA. This export
 currently has no effect on any other compiler.
+
+Finally, it is sometimes the case that a function declared as
+\vtkmexeccontexport has to call a method declared as \vtkmexecexport or
+\vtkmcontexport. Generally functions should not call other functions with
+incompatible control/execution exports, but sometimes a generic
+\vtkmexeccontexport function calls another function determined by the
+template parameters, and the export of this subfunction may be
+inconsistent. For cases like this, you can use the
+\vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS}, to be used before any
+\textcode{template} keyword, to tell the compiler to ignore the
+inconsistency when resolving the template.
 
 
 \section{Core Data Types}
@@ -402,9 +413,6 @@ struct TypeTraits<vtkm::Float32>
 Here is a simple example of using \vtkm{TypeTraits} to implement a generic
 function that behaves like the remainder operator (\textcode{\%}) for all
 types including floating points and vectors.
-
-\fix{The following example uses the POSIX math floor function. It should be
-  replaced with the VTK-m version of floor when available.}
 
 \vtkmlisting[ex:TypeTraits]{Using \textidentifier{TypeTraits} for a generic remainder.}{TypeTraits.cxx}
 

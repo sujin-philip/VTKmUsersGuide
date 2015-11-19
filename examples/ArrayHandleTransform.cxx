@@ -36,13 +36,15 @@ class ArrayHandleScaleBias
           ScaleBiasFunctor<typename ArrayHandleType::ValueType> >
 {
 public:
-  typedef typename ArrayHandleType::ValueType ValueType;
+  VTKM_ARRAY_HANDLE_SUBCLASS(
+      ArrayHandleScaleBias,
+      (ArrayHandleScaleBias<ArrayHandleType>),
+      (vtkm::cont::ArrayHandleTransform<
+         typename ArrayHandleType::ValueType,
+         ArrayHandleType,
+         ScaleBiasFunctor<typename ArrayHandleType::ValueType> >)
+      );
 
-private:
-  typedef vtkm::cont::ArrayHandleTransform<
-      ValueType, ArrayHandleType, ScaleBiasFunctor<ValueType> > Superclass;
-
-public:
   VTKM_CONT_EXPORT
   ArrayHandleScaleBias(const ArrayHandleType &array,
                        ValueType scale,

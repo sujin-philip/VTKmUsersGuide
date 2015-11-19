@@ -13,9 +13,11 @@ public:
   typedef P2 PortalType2;
   typedef typename PortalType1::ValueType ValueType;
 
+  VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT_EXPORT
   ArrayPortalConcatenate() : Portal1(), Portal2() {  }
 
+  VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT_EXPORT
   ArrayPortalConcatenate(const PortalType1 &portal1, const PortalType2 portal2)
     : Portal1(portal1), Portal2(portal2) {  }
@@ -23,17 +25,20 @@ public:
   /// Copy constructor for any other ArrayPortalConcatenate with a portal type
   /// that can be copied to this portal type. This allows us to do any type
   /// casting that the portals do (like the non-const to const cast).
+  VTKM_SUPPRESS_EXEC_WARNINGS
   template<typename OtherP1, typename OtherP2>
   VTKM_EXEC_CONT_EXPORT
   ArrayPortalConcatenate(const ArrayPortalConcatenate<OtherP1,OtherP2> &src)
     : Portal1(src.GetPortal1()), Portal2(src.GetPortal2()) {  }
 
+  VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT_EXPORT
   vtkm::Id GetNumberOfValues() const {
     return
         this->Portal1.GetNumberOfValues() + this->Portal2.GetNumberOfValues();
   }
 
+  VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT_EXPORT
   ValueType Get(vtkm::Id index) const {
     if (index < this->Portal1.GetNumberOfValues())
@@ -46,6 +51,7 @@ public:
     }
   }
 
+  VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT_EXPORT
   void Set(vtkm::Id index, const ValueType &value) const {
     if (index < this->Portal1.GetNumberOfValues())
@@ -81,18 +87,13 @@ namespace vtkm {
 namespace cont {
 namespace internal {
 
-template<typename T, typename Storage1, typename Storage2>
+template<typename ArrayHandleType1, typename ArrayHandleType2>
 class Storage<
-    T,
-    StorageTagConcatenate<
-      vtkm::cont::ArrayHandle<T, Storage1>,
-      vtkm::cont::ArrayHandle<T, Storage2> > >
+    typename ArrayHandleType1::ValueType,
+    StorageTagConcatenate<ArrayHandleType1, ArrayHandleType2> >
 {
-  typedef vtkm::cont::ArrayHandle<T, Storage1> ArrayHandleType1;
-  typedef vtkm::cont::ArrayHandle<T, Storage2> ArrayHandleType2;
-
 public:
-  typedef T ValueType;
+  typedef typename ArrayHandleType1::ValueType ValueType;
 
   typedef ArrayPortalConcatenate<
       typename ArrayHandleType1::PortalControl,
@@ -322,16 +323,19 @@ class ArrayHandleConcatenate
         typename ArrayHandleType1::ValueType,
         StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2> >
 {
-  typedef StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2>
-      StorageTag;
-  typedef vtkm::cont::ArrayHandle<
-        typename ArrayHandleType1::ValueType, StorageTag>
-      Superclass;
-  typedef typename Superclass::ValueType ValueType;
-  typedef vtkm::cont::internal::Storage<ValueType,StorageTag>
-      StorageType;
+public:
+  VTKM_ARRAY_HANDLE_SUBCLASS(
+      ArrayHandleConcatenate,
+      (ArrayHandleConcatenate<ArrayHandleType1,ArrayHandleType2>),
+      (vtkm::cont::ArrayHandle<
+         typename ArrayHandleType1::ValueType,
+         StorageTagConcatenate<ArrayHandleType1,ArrayHandleType2> >));
+
+private:
+  typedef vtkm::cont::internal::Storage<ValueType,StorageTag> StorageType;
 
 public:
+  VTKM_CONT_EXPORT
   ArrayHandleConcatenate(const ArrayHandleType1 &array1,
                          const ArrayHandleType2 &array2)
     : Superclass(StorageType(array1, array2)) {  }
@@ -342,6 +346,7 @@ public:
 
 #include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/DeviceAdapter.h>
+#include <vtkm/cont/DynamicArrayHandle.h>
 
 #include <vtkm/cont/testing/Testing.h>
 
@@ -398,6 +403,15 @@ void Test()
   concatArray.PrepareForInput(VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   concatArray.PrepareForInPlace(VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   concatArray.PrepareForOutput(ARRAY_SIZE+1, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+
+  // Make sure that the array can go into and out of a dynamic array handle.
+  vtkm::cont::DynamicArrayHandle dynamicArray = concatArray;
+
+  ArrayHandleConcatenate<BaseArrayType,BaseArrayType> concatArrayShallowCopy;
+  VTKM_TEST_ASSERT(concatArray != concatArrayShallowCopy, "Huh?");
+  dynamicArray.CastToArrayHandle(concatArrayShallowCopy);
+  VTKM_TEST_ASSERT(concatArray == concatArrayShallowCopy,
+                   "Did not get array out of dynamic.");
 }
 
 } // anonymous namespace

@@ -139,7 +139,7 @@ adapters.
 
 VTK-m provides three export macros, \vtkmcontexport, \vtkmexecexport, and
 \vtkmexeccontexport, which are used to declare functions and methods that
-can run in the control environment, export environment, and both
+can run in the control environment, execution environment, and both
 environments, respectively. These macros get defined by including just
 about any VTK-m header file, but including \vtkmheader{vtkm}{Types.h} will
 ensure they are defined. 
@@ -152,7 +152,7 @@ the function is exported to both places.
 
 \vtkmlisting{Usage of export macro.}{ExportMacro.cxx}
 
-The primary function of the export macros is to interject compiler-specific
+The primary function of the export macros is to inject compiler-specific
 keywords that specify what architecture to compile code for. For example,
 when compiling with CUDA\index{CUDA}, the control exports have
 \textcode{\_\_host\_\_}\index{\_\_host\_\_} in them and execution exports
@@ -174,9 +174,12 @@ incompatible control/execution exports, but sometimes a generic
 \vtkmexeccontexport function calls another function determined by the
 template parameters, and the export of this subfunction may be
 inconsistent. For cases like this, you can use the
-\vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS}, to be used before any
-\textcode{template} keyword, to tell the compiler to ignore the
-inconsistency when resolving the template.
+\vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} to tell the compiler to ignore the
+inconsistency when resolving the template. When applied to a templated
+function or method, \vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} is placed
+before the \textcode{template} keyword. When applied to a non-templated
+method in a templated class, \vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} is
+placed before the export macro.
 
 
 \section{Core Data Types}

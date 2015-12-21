@@ -1,6 +1,6 @@
 # File: UseLATEX.cmake
 # CMAKE commands to actually use the LaTeX compiler
-# Version: 2.0.0
+# Version: 2.2.1
 # Author: Kenneth Moreland <kmorel@sandia.gov>
 #
 # Copyright 2004, 2015 Sandia Corporation.
@@ -47,8 +47,11 @@
 #                    [CONFIGURE] <tex_files>
 #                    [DEPENDS] <tex_files>
 #                    [MULTIBIB_NEWCITES] <suffix_list>
-#                    [USE_INDEX] [USE_GLOSSARY] [USE_NOMENCL]
+#                    [USE_INDEX]
+#                    [INDEX_NAMES <index_names>]
+#                    [USE_GLOSSARY] [USE_NOMENCL]
 #                    [FORCE_PDF] [FORCE_DVI] [FORCE_HTML]
+#                    [TARGET_NAME] <name>
 #                    [EXCLUDE_FROM_ALL]
 #                    [EXCLUDE_FROM_DEFAULTS])
 #       Adds targets that compile <tex_file>.  The latex output is placed
@@ -60,14 +63,17 @@
 #       the BIBFILES option, and any .cls, .bst, and .clo files found in
 #       the current source directory.  Images found in the IMAGE_DIRS
 #       directories or listed by IMAGES are also copied to the output
-#       directory and coverted to an appropriate format if necessary.  Any
+#       directory and converted to an appropriate format if necessary.  Any
 #       tex files also listed with the CONFIGURE option are also processed
 #       with the CMake CONFIGURE_FILE command (with the @ONLY flag).  Any
 #       file listed in CONFIGURE but not the target tex file or listed with
 #       INPUTS has no effect. DEPENDS can be used to specify generated files
 #       that are needed to compile the latex target.
 #
-#       The following targets are made:
+#       The following targets are made. The name prefix is based off of the
+#       base name of the tex file unless TARGET_NAME is specified. If
+#       TARGET_NAME is specified, then that name is used for the targets.
+#
 #               name_dvi: Makes <name>.dvi
 #               name_pdf: Makes <name>.pdf using pdflatex.
 #               name_safepdf: Makes <name>.pdf using ps2pdf.  If using the
@@ -92,13 +98,30 @@
 #       html, and auxclean, respectively.
 #
 #       If the argument USE_INDEX is given, then commands to build an index
-#       are made.  If the argument USE_GLOSSARY is given, then commands to
+#       are made. If the argument INDEX_NAMES is given, an index file is
+#       generated for each name in this list. See the LaTeX package multind
+#       for more information about how to generate multiple indices.
+#
+#       If the argument USE_GLOSSARY is given, then commands to
 #       build a glossary are made.  If the argument MULTIBIB_NEWCITES is
 #       given, then additional bibtex calls are added to the build to
 #       support the extra auxiliary files created with the \newcite command
 #       in the multibib package.
 #
 # History:
+#
+# 2.2.1 Add STRINGS property to LATEX_DEFAULT_BUILD to make it easier to
+#       select the default build in the CMake GUI.
+#
+# 2.2.0 Add TARGET_NAME option.
+#
+# 2.1.1 Support for finding bmp, ppm, and other image files.
+#
+# 2.1.0 Fix an error where the pdf target and others were defined multiple
+#       times if UseLATEX.cmake was included multiple times.
+#
+#       Added INDEX_NAMES option to support multiple indexes in a single
+#       document from the multind package (thanks to Dan Lipsa).
 #
 # 2.0.0 First major revision of UseLATEX.cmake updates to more recent features
 #       of CMake and some non-backward compatible changes.
@@ -401,7 +424,7 @@ function(latex_makeglossaries)
         language
         ${xdylanguage_line}
         )
-      # What crazy person makes a LaTeX index generater that uses different
+      # What crazy person makes a LaTeX index generator that uses different
       # identifiers for language than babel (or at least does not support
       # the old ones)?
       if(${language} STREQUAL "frenchb")
@@ -695,11 +718,14 @@ function(latex_setup_variables)
   if(DEFINED ENV{LATEX_DEFAULT_BUILD})
     set(default_build $ENV{LATEX_DEFAULT_BUILD})
   else()
-    set(default_build Pdf)
+    set(default_build pdf)
   endif()
 
   set(LATEX_DEFAULT_BUILD "${default_build}" CACHE STRING
-    "Choose the default type of LaTeX build. Valid options are Pdf, Dvi, Ps, SafePdf, Html"
+    "Choose the default type of LaTeX build. Valid options are pdf, dvi, ps, safepdf, html"
+    )
+  set_property(CACHE LATEX_DEFAULT_BUILD
+    PROPERTY STRINGS pdf dvi ps safepdf html
     )
 
   option(LATEX_USE_SYNCTEX
@@ -708,7 +734,7 @@ function(latex_setup_variables)
     )
 
   option(LATEX_SMALL_IMAGES
-    "If on, the raster images will be converted to 1/6 the original size.  This is because papers usually require 600 dpi images whereas most monitors only require at most 96 dpi.  Thus, smaller images make smaller files for web distributation and can make it faster to read dvi files."
+    "If on, the raster images will be converted to 1/6 the original size.  This is because papers usually require 600 dpi images whereas most monitors only require at most 96 dpi.  Thus, smaller images make smaller files for web distribution and can make it faster to read dvi files."
     OFF)
   if(LATEX_SMALL_IMAGES)
     set(LATEX_RASTER_SCALE 16 PARENT_SCOPE)
@@ -729,15 +755,17 @@ function(latex_setup_variables)
     )
 
   set(LATEX_PDF_VECTOR_IMAGE_EXTENSIONS .pdf CACHE INTERNAL "")
-  set(LATEX_PDF_RASTER_IMAGE_EXTENSIONS .png .jpeg .jpg CACHE INTERNAL "")
+  set(LATEX_PDF_RASTER_IMAGE_EXTENSIONS .jpeg .jpg .png CACHE INTERNAL "")
   set(LATEX_PDF_IMAGE_EXTENSIONS
     ${LATEX_PDF_VECTOR_IMAGE_EXTENSIONS}
     ${LATEX_PDF_RASTER_IMAGE_EXTENSIONS}
     CACHE INTERNAL ""
     )
 
-  set(LATEX_OTHER_VECTOR_IMAGE_EXTENSIONS .svg CACHE INTERNAL "")
-  set(LATEX_OTHER_RASTER_IMAGE_EXTENSIONS .tif .tiff .gif CACHE INTERNAL "")
+  set(LATEX_OTHER_VECTOR_IMAGE_EXTENSIONS .ai .dot .svg CACHE INTERNAL "")
+  set(LATEX_OTHER_RASTER_IMAGE_EXTENSIONS
+    .bmp .bmp2 .bmp3 .dcm .dcx .ico .gif .pict .ppm .tif .tiff
+    CACHE INTERNAL "")
   set(LATEX_OTHER_IMAGE_EXTENSIONS
     ${LATEX_OTHER_VECTOR_IMAGE_EXTENSIONS}
     ${LATEX_OTHER_RASTER_IMAGE_EXTENSIONS}
@@ -765,12 +793,24 @@ function(latex_setup_variables)
 endfunction(latex_setup_variables)
 
 function(latex_setup_targets)
-  add_custom_target(pdf)
-  add_custom_target(dvi)
-  add_custom_target(ps)
-  add_custom_target(safepdf)
-  add_custom_target(html)
-  add_custom_target(auxclean)
+  if(NOT TARGET pdf)
+    add_custom_target(pdf)
+  endif()
+  if(NOT TARGET dvi)
+    add_custom_target(dvi)
+  endif()
+  if(NOT TARGET ps)
+    add_custom_target(ps)
+  endif()
+  if(NOT TARGET safepdf)
+    add_custom_target(safepdf)
+  endif()
+  if(NOT TARGET html)
+    add_custom_target(html)
+  endif()
+  if(NOT TARGET auxclean)
+    add_custom_target(auxclean)
+  endif()
 endfunction(latex_setup_targets)
 
 function(latex_get_output_path var)
@@ -1012,7 +1052,7 @@ endfunction(latex_copy_input_file)
 
 function(latex_usage command message)
   message(SEND_ERROR
-    "${message}\n  Usage: ${command}(<tex_file>\n           [BIBFILES <bib_file> <bib_file> ...]\n           [INPUTS <tex_file> <tex_file> ...]\n           [IMAGE_DIRS <directory1> <directory2> ...]\n           [IMAGES <image_file1> <image_file2>\n           [CONFIGURE <tex_file> <tex_file> ...]\n           [DEPENDS <tex_file> <tex_file> ...]\n           [MULTIBIB_NEWCITES] <suffix_list>\n           [USE_INDEX] [USE_GLOSSARY] [USE_NOMENCL]\n           [FORCE_PDF] [FORCE_DVI] [FORCE_HTML]\n           [EXCLUDE_FROM_ALL]\n           [EXCLUDE_FROM_DEFAULTS])"
+    "${message}\n  Usage: ${command}(<tex_file>\n           [BIBFILES <bib_file> <bib_file> ...]\n           [INPUTS <tex_file> <tex_file> ...]\n           [IMAGE_DIRS <directory1> <directory2> ...]\n           [IMAGES <image_file1> <image_file2>\n           [CONFIGURE <tex_file> <tex_file> ...]\n           [DEPENDS <tex_file> <tex_file> ...]\n           [MULTIBIB_NEWCITES] <suffix_list>\n           [USE_INDEX] [USE_GLOSSARY] [USE_NOMENCL]\n           [FORCE_PDF] [FORCE_DVI] [FORCE_HTML]\n           [TARGET_NAME] <name>\n           [EXCLUDE_FROM_ALL]\n           [EXCLUDE_FROM_DEFAULTS])"
     )
 endfunction(latex_usage command message)
 
@@ -1038,6 +1078,7 @@ function(parse_add_latex_arguments command latex_main_input)
     MANGLE_TARGET_NAMES
     )
   set(oneValueArgs
+    TARGET_NAME
     )
   set(multiValueArgs
     BIBFILES
@@ -1047,6 +1088,7 @@ function(parse_add_latex_arguments command latex_main_input)
     IMAGES
     CONFIGURE
     DEPENDS
+    INDEX_NAMES
     )
   cmake_parse_arguments(
     LATEX "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -1101,13 +1143,17 @@ function(add_latex_targets_internal)
     ${PDFLATEX_COMPILER} ${PDFLATEX_COMPILER_FLAGS} ${synctex_flags} ${LATEX_MAIN_INPUT}
     )
 
+  if(NOT LATEX_TARGET_NAME)
+    set(LATEX_TARGET_NAME ${LATEX_TARGET})
+  endif()
+
   # Set up target names.
-  set(dvi_target      ${LATEX_TARGET}_dvi)
-  set(pdf_target      ${LATEX_TARGET}_pdf)
-  set(ps_target       ${LATEX_TARGET}_ps)
-  set(safepdf_target  ${LATEX_TARGET}_safepdf)
-  set(html_target     ${LATEX_TARGET}_html)
-  set(auxclean_target ${LATEX_TARGET}_auxclean)
+  set(dvi_target      ${LATEX_TARGET_NAME}_dvi)
+  set(pdf_target      ${LATEX_TARGET_NAME}_pdf)
+  set(ps_target       ${LATEX_TARGET_NAME}_ps)
+  set(safepdf_target  ${LATEX_TARGET_NAME}_safepdf)
+  set(html_target     ${LATEX_TARGET_NAME}_html)
+  set(auxclean_target ${LATEX_TARGET_NAME}_auxclean)
 
   # Probably not all of these will be generated, but they could be.
   # Note that the aux file is added later.
@@ -1268,16 +1314,31 @@ function(add_latex_targets_internal)
   endif()
 
   if(LATEX_USE_INDEX)
-    set(make_dvi_command ${make_dvi_command}
-      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-      ${latex_build_command}
-      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-      ${MAKEINDEX_COMPILER} ${MAKEINDEX_COMPILER_FLAGS} ${LATEX_TARGET}.idx)
-    set(make_pdf_command ${make_pdf_command}
-      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-      ${pdflatex_build_command}
-      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-      ${MAKEINDEX_COMPILER} ${MAKEINDEX_COMPILER_FLAGS} ${LATEX_TARGET}.idx)
+    if(LATEX_INDEX_NAMES)
+      set(INDEX_NAMES ${LATEX_INDEX_NAMES})
+    else()
+      set(INDEX_NAMES ${LATEX_TARGET})
+    endif()
+    foreach(idx_name ${INDEX_NAMES})
+      set(make_dvi_command ${make_dvi_command}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${latex_build_command}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${MAKEINDEX_COMPILER} ${MAKEINDEX_COMPILER_FLAGS} ${idx_name}.idx)
+      set(make_pdf_command ${make_pdf_command}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${pdflatex_build_command}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+        ${MAKEINDEX_COMPILER} ${MAKEINDEX_COMPILER_FLAGS} ${idx_name}.idx)
+      set(auxiliary_clean_files ${auxiliary_clean_files}
+        ${output_dir}/${idx_name}.idx
+        ${output_dir}/${idx_name}.ilg
+        ${output_dir}/${idx_name}.ind)
+    endforeach()
+  else()
+    if(LATEX_INDEX_NAMES)
+      message(WARNING "INDEX_NAMES has no effect without USE_INDEX option.")
+    endif()
   endif()
 
   set(make_dvi_command ${make_dvi_command}
@@ -1410,21 +1471,21 @@ function(add_latex_targets_internal)
 
   # Set default targets.
   if("${default_build}" STREQUAL "pdf")
-    add_custom_target(${LATEX_TARGET} DEPENDS ${pdf_target})
+    add_custom_target(${LATEX_TARGET_NAME} DEPENDS ${pdf_target})
   elseif("${default_build}" STREQUAL "dvi")
-    add_custom_target(${LATEX_TARGET} DEPENDS ${dvi_target})
+    add_custom_target(${LATEX_TARGET_NAME} DEPENDS ${dvi_target})
   elseif("${default_build}" STREQUAL "ps")
-    add_custom_target(${LATEX_TARGET} DEPENDS ${ps_target})
+    add_custom_target(${LATEX_TARGET_NAME} DEPENDS ${ps_target})
   elseif("${default_build}" STREQUAL "safepdf")
-    add_custom_target(${LATEX_TARGET} DEPENDS ${safepdf_target})
+    add_custom_target(${LATEX_TARGET_NAME} DEPENDS ${safepdf_target})
   elseif("${default_build}" STREQUAL "html")
-    add_custom_target(${LATEX_TARGET} DEPENDS ${html_target})
+    add_custom_target(${LATEX_TARGET_NAME} DEPENDS ${html_target})
   else()
     message(SEND_ERROR "LATEX_DEFAULT_BUILD set to an invalid value. See the documentation for that variable.")
   endif()
- 
+
   if(NOT LATEX_EXCLUDE_FROM_ALL)
-    add_custom_target(_${LATEX_TARGET} ALL DEPENDS ${LATEX_TARGET})
+    add_custom_target(_${LATEX_TARGET_NAME} ALL DEPENDS ${LATEX_TARGET_NAME})
   endif()
 
   set_directory_properties(.

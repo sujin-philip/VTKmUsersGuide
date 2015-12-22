@@ -1516,6 +1516,26 @@ set with no cell set.
 \index{field|(}
 \index{data~set!field|see{field}}
 
+A field on a data set provides a value on every point in space on the mesh.
+Fields are often used to describe physical properties such as pressure,
+temperature, mass, velocity, and much more. Fields are represented in a
+VTK-m data set as an array where each value is associated with a particular
+element type of a mesh (such as points or cells). This association of field
+values to mesh elements and the structure of the cell set determines how
+the field is interpolated throughout the space of the mesh.
+
+Fields are manged by the \vtkmcont{Field} class. \textidentifier{Field}
+holds its data with a \textidentifier{DynamicArrayHandle}, which itself is
+a container for an \textidentifier{ArrayHandle}. \textidentifier{Field}
+also maintains the association and, optionally, the name of a cell set for
+which the field is valid.
+
+The data array can be retrieved as a \textidentifier{DynamicArrayHandle}
+using the \textcode{GetData} method of \textidentifier{Field}.
+\textidentifier{Field} also has a convenience method named
+\textcode{GetBounds} that finds the range of values stored in the field
+array.
+
 \index{field|}
 
 \subsection{Coordinate Systems}
@@ -1523,6 +1543,30 @@ set with no cell set.
 
 \index{coordinate~system|(}
 \index{data~set!coordinate~system|see{coordinate~system}}
+
+A coordinate system determines the location of a mesh's elements in space.
+The spatial location is described by providing a 3D vector at each point
+that gives the coordinates there. The point coordinates can then be
+interpolated throughout the mesh.
+
+Coordinate systems are managed by the \vtkmcont{CoordinateSystem} class. In
+actuality, a coordinate system is just a field with a special meaning, and
+so the \textidentifier{CoordinateSystem} class inherits from the
+\textidentifier{Field} class. \textidentifier{CoordinateSystem} constrains
+the field to be associated with points and typically has 3D floating point
+vectors for values.
+
+It is typical for a \textidentifier{DataSet} to have one coordinate system
+defined, but it is possible to define multiple coordinate systems. This is
+helpful when there are multiple ways to express coordinates. For example,
+positions in geographic may be expressed as Cartesian coordinates or as
+latitude-longitude coordinates. Both are valid and useful in different
+ways.
+
+It is also valid to have a \textidentifier{DataSet} with no coordinate
+system. This is useful when the structure is not rooted in physical space.
+For example, if the cell set is representing a graph structure, there might
+not be any physical space that has meaning for the graph.
 
 \index{coordinate~system|)}
 

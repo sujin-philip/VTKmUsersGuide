@@ -8,12 +8,23 @@ set(images
   SANDimages/DOEbwlogo.pdf
   SANDimages/snllineblk.pdf
   SANDimages/SANDbackground.png
+  images/CellConnectionsHexahedron.pdf
+  images/CellConnectionsLine.pdf
+  images/CellConnectionsPolygon.pdf
+  images/CellConnectionsPyramid.pdf
+  images/CellConnectionsQuadrilateral.pdf
+  images/CellConnectionsTetrahedron.pdf
+  images/CellConnectionsTriangle.pdf
+  images/CellConnectionsVertex.pdf
+  images/CellConnectionsWedge.pdf
+  images/ExplicitCellConnections.pdf
   )
 
 set(input_docs
   Introduction.tex
   BasicProvisions.tex
   ControlEnvironment.tex
+  ExecutionEnvironment.tex
   Worklets.tex
   AdvancedWorklets.tex
   CodingConventions.tex

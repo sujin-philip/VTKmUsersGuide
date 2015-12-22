@@ -147,6 +147,15 @@
                    PointCoordinatesArray,PointCoordinatesUniform,
                    PointCoordinatesBase,
                    PointCoordinatesListTagCommon,
+                   DataSet,
+                   CellSet,
+                   CellSetExplicit,
+                   CellSetPermutation,
+                   CellSetSingleType,
+                   CellSetStructured,
+                   DynamicCellSet,
+                   Field,
+                   CoordinateSystem,
                    DeviceAdapterAlgorithm, DeviceAdapterAlgorithmGeneral,
                    IteratorFromArrayPortal,
                    UniformGrid,UnstructuredGrid,
@@ -195,6 +204,27 @@
                    Pi, Sin, SinH, Tan, TanH,
                    Cross, Magnitude, MagnitudeSquared, Lerp, Normal,
                    Normalize, RMagnitude, TriangleNormal,
+                   CellShapeTagEmpty,
+                   CellShapeTagVertex,
+                   CellShapeTagLine,
+                   CellShapeTagTriangle,
+                   CellShapeTagPolygon,
+                   CellShapeTagQuad,
+                   CellShapeTagTetra,
+                   CellShapeTagHexahedron,
+                   CellShapeTagWedge,
+                   CellShapeTagPyramid,
+                   CellShapeTagGeneric,
+                   CELL_SHAPE_EMPTY,
+                   CELL_SHAPE_VERTEX,
+                   CELL_SHAPE_LINE,
+                   CELL_SHAPE_TRIANGLE,
+                   CELL_SHAPE_POLYGON,
+                   CELL_SHAPE_QUAD,
+                   CELL_SHAPE_TETRA,
+                   CELL_SHAPE_HEXAHEDRON,
+                   CELL_SHAPE_WEDGE,
+                   CELL_SHAPE_PYRAMID,
                    ParametricCoordinatesToWorldCoordinates,
                    WorldCoordinatesToParametricCoordinates,
                    ParametricCoordinates,
@@ -492,10 +522,7 @@
 
 \input{ControlEnvironment}
 
-\chapter{Execution Environment}
-\label{chap:ExecutionEnvironment}
-
-\fix{Write this.}
+\input{ExecutionEnvironment}
 
 \input{Worklets}
 

@@ -1280,6 +1280,254 @@ A data set comprises the following 3 data structures.
   number of 2D projections.
 \end{description}
 
+\subsection{Cell Sets}
+\label{sec:DataSets:CellSets}
+
+\index{cell~set|(}
+\index{data~set!cell~set|see{cell~set}}
+
+A cell set determines the topological structure of the data in a data set.
+Fundamentally, any cell set is a collection of cells, which typically (but
+not always) represent some region in space. 3D cells are made up of points,
+edges, and faces. (2D cells have only points and edges, and 1D cells have
+only points.) The arrangement of these points, edges, and faces is defined
+by the \index{shape}\index{cell~set!shape}\index{cell~shape}\keyterm{shape}
+of the cell, which prescribes a specific ordering of each. The basic cell
+shapes provided by VTK-m are discussed in detail in
+Section~\ref{sec:CellShapeTagsIds} starting on
+page~\pageref{sec:CellShapeTagsIds}.
+
+There are multiple ways to express the connections of a cell set, each with
+different benefits and restrictions. These different cell set types are
+managed by different cell set classes in VTK-m. All VTK-m cell set classes
+inherit from \vtkmcont{CellSet}. The two basic types of cell sets are
+structured and explicit, and there are several variations of these types.
+
+\subsubsection{Structured Cell Sets}
+
+\index{cell~set!structured|(}
+\index{structured~cell~set|(}
+
+A \vtkmcont{CellSetStructured} defines a 1-, 2-, or 3-dimensional grid of
+points with lines, quadrilaterals, or hexahedra, respectively, connecting
+them. The topology of a \textidentifier{CellSetStructured} is specified by
+simply providing the dimensions, which is the number of points in the $i$,
+$j$, and $k$ directions of the grid of points. The number of points is
+implicitly $i \times j \times k$ and the number of cells is implicitly
+$(i-1) \times (j-1) \times (k-1)$ (for 3D grids).
+Figure~\ref{fig:CellSetStructured} demonstrates this arrangement.
+
+\begin{figure}
+  \centering
+  \fix{Picture}
+  \caption{The arrangement of points and cells in a 3D structured grid.}
+  \label{fig:CellSetStructured}
+\end{figure}
+
+The big advantage of using \vtkmcont{CellSetStructured} to define a cell
+set is that it is very space efficient because the entire topology can be
+defined by the three integers specifying the dimensions. Also algorithms
+can be optimized for \textidentifier{CellSetStructured}'s regular nature.
+However, \textidentifier{CellSetStructured}'s strictly regular grid
+structure also limits its applicability. A structured cell set can only be
+a dense grid of lines, quadrilaterals, or hexahedra. It cannot represent
+irregular data well.
+
+Many data models in other software packages, such as the one for VTK, make
+a distinction between uniform, rectilinear, and curvilinear grids. VTK-m's
+cell sets do not. All three of these grid types are represented by
+\textidentifier{CellSetStructured}. This is because in a VTK-m data set the
+cell set and the coordinate system are defined independently and used
+interchangeably. A structured cell set with uniform point coordinates makes
+a uniform grid. A structured cell set with point coordinates defined
+irregularly along coordinate axes makes a rectilinear grid. And a
+structured cell set with arbitrary point coordinates makes a curvilinear
+grid. The point coordinates are define by the data set's coordinate system,
+which is discussed in Section~\ref{sec:DataSets:CoordinateSystems} starting
+on page~\pageref{sec:DataSets:CoordinateSystems}.
+
+\index{structured~cell~set|)}
+\index{cell~set!structured|)}
+
+\subsubsection{Explicit Cell Sets}
+
+\index{explicit~cell~set|(}
+\index{cell~set!explicit|(}
+
+A \vtkmcont{CellSetExplicit} defines an irregular collection of cells. The
+cells can be of different types and connected in arbitrary ways. This is
+done by explicitly providing for each cell a sequence of points that
+defines the cell.
+
+An explicit cell set is defined with a minimum of three arrays. The first
+array identifies the shape of each cell. (Cell shapes are discussed in
+detail in Section~\ref{sec:CellShapeTagsIds} starting on
+page~\pageref{sec:CellShapeTagsIds}.) The second array identifies how many
+points are in each cell. The thrid array has a sequence of point indices
+that make up each cell. Figure~\ref{fig:CellSetExplicit} shows a simple
+example of an explicit cell set.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/ExplicitCellConnections}
+  \fix{Change this to demonstrate zoo elements.}
+  \caption{Example of cells in a \textidentifier{CellSetExplict} and the
+    arrays that define them.}
+  \label{fig:CellSetExplicit}
+\end{figure}
+
+\vtkmcont{ExplicitCellSet} is a powerful representation for a cell set
+because it can represent an arbitrary collection of cells. However, because
+all connections must be explicitly defined,
+\textidentifier{ExplicitCellSet} requires a significant amount of memory to
+represent the topology.
+
+\index{cell~set!single~type|(}
+\index{explicit~cell~set!single~type|(}
+\index{single~type~cell~set|(}
+
+An important specialization of an explicit cell set is
+\vtkmcont{CellSetSingleType}. \textidentifier{CellSetSingleType} is an
+explicit cell set constrained to contain cells that all have the same shape
+and all have the same number of points. So for example if you are creating
+a surface that you know will contain only triangles,
+\textidentifier{CellSetSingleType} is a good representation for this data.
+
+Using \textidentifier{CellSetSingleType} saves memory because the array of
+cell shapes and the array of point counts no longer need to be stored.
+\textidentifier{CellSetSingleType} also allows VTK-m to skip some
+processing and other storage required for general explicit cell sets.
+
+\index{single~type~cell~set|)}
+\index{explicit~cell~set!single~type|)}
+\index{cell~set!single~type|)}
+
+\index{cell~set!explicit|)}
+\index{explicit~cell~set|)}
+
+\subsubsection{Cell Set Permutations}
+
+\index{permutation~cell~set|(}
+\index{cell~set!permutation|(}
+
+A \vtkmcont{CellSetPermutation} rearranges the cells of one cell set to
+create another cell set. This restructuring of cells is not done by copying
+data to a new structure. Rather, \textidentifier{CellSetPermutation}
+establishes a lookup from one cell structure to another. Cells are permuted
+on the fly while algorithms are run.
+
+A \textidentifier{CellSetPermutation} is established by providing a mapping
+array that for every cell index provides the equivalent cell index in the
+cell set being permuted. \textidentifier{CellSetPermutation} is most often
+used to mask out cells in a data set so that algorithms will skip over
+those cells when running. Note that although
+\textidentifier{CellSetPermutation} can mask cells, it cannot mask points.
+All points from the original cell set are available in the permuted cell
+set regardless of whether they are used.
+
+The following example uses \vtkmcont{CellSetPermutation} with a counting
+array to expose every tenth cell. This provides a simple way to subsample a
+data set.
+
+\fix{Add example for CellSetPermutation.}
+
+\index{cell~set!permutation|)}
+\index{permutation~cell~set|)}
+
+\subsubsection{Dynamic Cell Sets}
+
+\index{dynamic~cell~set|(}
+\index{cell~set!dynamic|(}
+
+\vtkmcont{DataSet} must hold an arbitrary collection of \vtkmcont{CellSet}
+objects, which it cannot do while knowing their types at compile time. To
+manage storing \textidentifier{CellSet}s without knowing their types,
+\textidentifier{DataSet} actually holds references using
+\vtkmcont{DynamicCellSet}.
+
+\textidentifier{DynamicCellSet} is similar in nature to
+\textidentifier{DynamicArrayHandle} except that it, of course, holds
+\textidentifier{CellSet}s instead of \textidentifier{ArrayHandle}s. The
+interface for the two classes is similar, and you should review the
+documentation for \textidentifier{DynamicArrayHandle} (in
+Section~\ref{sec:DynamicArrayHandle} starting on
+page~\pageref{sec:DynamicArrayHandle}) to understand
+\textidentifier{DynamicCellSet}.
+
+\vtkmcont{DynamicCellSet} has a method named \textcode{GetCellSet} that
+returns a const reference to the held cell set as the abstract
+\textidentifier{CellSet} class. This can be used to easily access the
+virtual methods in the \textidentifier{CellSet} interface. You can also
+create a new instance of a cell set with the same type using the
+\textcode{NewInstance} method.
+
+The \textidentifier{DynamicCellSet}\textcode{::IsType()} method can be used
+to determine whether the cell set held in the dynamic cell set is of a
+given type. If the cell set type is known,
+\textidentifier{DynamicCellSet}\textcode{::CastTo()} can be used to safely
+downcast the cell set object.
+
+When a typed version of the cell set stored in the
+\textidentifier{DynamicCellSet} is needed but the type is not known, which
+happens regularly in the internal workings of VTK-m, the
+\textcode{CastAndCall} method can be used to make this transition.
+\textcode{CastAndCall} works by taking a functor and calls it with the
+appropriately cast cell set object.
+
+The \textcode{CastAndCall} method works by attempting to cast to a known
+set of types. This set of types used is defined by the macro
+\vtkmmacro{VTKM\_DEFAULT\_CELL\_SET\_LIST\_TAG}, which is declared in
+\vtkmheader{vtkm/cont}{CellSetListTag.h}. This list can be overridden
+globally by defining the \vtkmmacro{VTKM\_DEFAULT\_CELL\_SET\_LIST\_TAG}
+macro \emph{before} any VTK-m headers are included.
+
+The set of types used in a \textcode{CastAndCall} can also be changed only
+for a particular instance of a dynamic cell set by calling its
+\textcode{ResetCellSetList}. This method takes a list of cell types and
+returns a new dynamic array handle of a slightly different type that will
+use this new list of cells for dynamic casting.
+
+\index{cell~set!dynamic|)}
+\index{dynamic~cell~set|}
+
+\subsubsection{Blocks and Assemblies}
+
+Rather than just one cell set, a \vtkmcont{DataSet} can hold multiple cell
+sets. This can be used to construct multiblock data structures or
+assemblies of parts. Multiple cell sets can also be used to represent
+subsets of the data with particular properties such as all cells filled
+with a material of a certain type. Or these multiple cells might represent
+particular features in the data, such as the set of faces representing a
+boundary in the simulation.
+
+\subsubsection{Zero Cell Sets}
+
+It is also possible to construct a \vtkmcont{DataSet} that contains no cell
+set objects whatsoever. This can be used to manage data that does not
+contain any topological structure. For example, a collection of series that
+come from columns in a table could be stored as multiple fields in a data
+set with no cell set.
+
+\index{cell~set|)}
+
+\subsection{Fields}
+\label{sec:DataSets:Fields}
+
+\index{field|(}
+\index{data~set!field|see{field}}
+
+\index{field|}
+
+\subsection{Coordinate Systems}
+\label{sec:DataSets:CoordinateSystems}
+
+\index{coordinate~system|(}
+\index{data~set!coordinate~system|see{coordinate~system}}
+
+\index{coordinate~system|)}
+
+\subsection{Building Data Sets}
+
 \fix{This is a work in progress!}
 
 \index{data~set|)}

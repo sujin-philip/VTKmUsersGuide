@@ -1,0 +1,106 @@
+% -*- latex -*-
+
+\chapter{Execution Environment}
+\label{chap:ExecutionEnvironment}
+
+\fix{Write this.}
+
+\section{Math}
+
+
+\section{Working with Topology}
+
+In the control environment, data is defined in mesh structures that
+comprise a set of finite cells. (See Section~\ref{sec:DataSets:CellSets}
+starting on page~\pageref{sec:DataSets:CellSets} for information on
+defining cell sets in the control environment.) When worklets that operate
+on cells are scheduled, these grid structures are broken into their
+independent cells, and that data is handed to the worklet. Thus, cell-based
+operations in the execution environment exclusively operate on independent
+cells.
+
+Unlike some other libraries such as VTK, VTK-m does not have a cell class
+that holds all the information pertaining to a cell of a particular type.
+Instead, VTK-m provides tags or identifiers defining the cell shape, and
+companion data like coordinate and field information are held in separate
+structures. This organization is designed so a worklet may specify exactly
+what information it needs, and only that information will be loaded.
+
+\subsection{Cell Shape Tags and Ids}
+\label{sec:CellShapeTagsIds}
+
+\index{shape|(}
+\index{cell~shape|(}
+\index{tag!cell~shape|(}
+\index{tag!shape|(}
+
+Cell shapes can be specified with either a tag (defined with a struct with
+a name like \textidentifier{CellShapeTag*}) or an enumerated identifier
+(defined with a constant number with a name like
+\textidentifier{CELL\_SHAPE\_*}). These shape tags and identifiers are
+defined in \vtkmheader{vtkm}{CellShape.h} and declared in the \vtkm{}
+namespace (because they can be used in either the control or the execution
+environment). Figure~\ref{fig:CellShapes} gives both the identifier and the
+tag names.
+
+\begin{figure}
+  \centering
+  \small
+  \begin{tabular}{@{}c@{~}c@{~}c@{}}
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsVertex}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsLine}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsTriangle}} \\
+    \vtkm{CELL\_SHAPE\_VERTEX} &
+    \vtkm{CELL\_SHAPE\_LINE} &
+    \vtkm{CELL\_SHAPE\_TRIANGLE} \\
+    \vtkm{CellShapeTagVertex} \index{vertex} &
+    \vtkm{CellShapeTagLine} \index{line} &
+    \vtkm{CellShapeTagTriangle} \index{triangle} \\[2ex]
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsPolygon}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsQuadrilateral}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsTetrahedron}} \\
+    \vtkm{CELL\_SHAPE\_POLYGON} &
+    \vtkm{CELL\_SHAPE\_QUAD} &
+    \vtkm{CELL\_SHAPE\_TETRA} \\
+    \vtkm{CellShapeTagPolygon} \index{polygon} &
+    \vtkm{CellShapeTagQuad} \index{quadrilateral} &
+    \vtkm{CellShapeTagTetra} \index{tetrahedron} \\[2ex]
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsHexahedron}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsWedge}} &
+    \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsPyramid}} \\
+    \vtkm{CELL\_SHAPE\_HEXAHEDRON} &
+    \vtkm{CELL\_SHAPE\_WEDGE} &
+    \vtkm{CELL\_SHAPE\_PYRAMID} \\
+    \vtkm{CellShapeTagHexahedron} \index{hexahedron} &
+    \vtkm{CellShapeTagWedge} \index{wedge} &
+    \vtkm{CellShapeTagPyramid} \index{pyramid}
+  \end{tabular}
+  \caption{Basic Cell Shapes}
+  \label{fig:CellShapes}
+\end{figure}
+
+In addition to the basic cell shapes, there is a special ``empty'' cell
+with the identifier \vtkm{CELL\_SHAPE\_EMPTY} and tag
+\vtkm{CellShapeTagEmpty}. This type of cell has no points, edges, or faces
+and can be thought of as a placeholder for a null or void cell.
+
+There is also a special cell shape ``tag'' named \vtkm{CellShapeTagGeneric}
+that is used when the actual cell shape is not known at compile time.
+\textidentifier{CellShapeTagGeneric} actually has a member variable named
+\textcode{Id} that stores the identifier for the cell shape. There is no
+equivalent identifier for a generic cell; cell shape identifiers can be
+placed in a \vtkm{IdComponent} at runtime.
+
+\fix{Add other basic cell shape features such as traits, converting back
+  and forth, and \vtkmmacro{vtkmGenericCellShapeMacro}.}
+
+\index{tag!shape|)}
+\index{tag!cell~shape|)}
+\index{cell~shape|)}
+\index{shape|)}
+
+\subsection{Parametric and World Coordinates}
+
+\subsection{Interpolation}
+
+\subsection{Derivatives}

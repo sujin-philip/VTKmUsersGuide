@@ -156,6 +156,10 @@
                    DynamicCellSet,
                    Field,
                    CoordinateSystem,
+                   DataSetBuilderExplicit,
+                   DataSetBuilderRectilinear,
+                   DataSetBuilderRegular,
+                   DataSetFieldAdd,
                    DeviceAdapterAlgorithm, DeviceAdapterAlgorithmGeneral,
                    IteratorFromArrayPortal,
                    UniformGrid,UnstructuredGrid,
@@ -370,6 +374,10 @@
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{math}\indexnamespacetwo{vtkm}{math}}%
              {\writeindexidentifiertwo{vtkm}{math}{#1}}}
+\newcommand*{\vtkmio}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacetwo{vtkm}{io}\indexnamespacetwo{vtkm}{io}}%
+             {\writeindexidentifiertwo{vtkm}{io}{#1}}}
 
 \newcommand*{\vtkmcuda}[1]{%
   \ifthenelse{\equal{#1}{}}%
@@ -514,11 +522,21 @@
 
 \input{BasicProvisions}
 
+\chapter{File I/O}
+\label{chap:FileIO}
+
+\fix{Write this.}
+
 \chapter{Provided Filters}
 \label{chap:ProvidedFilters}
 
 \fix{Write this once some filters are provided. Should also make a
   reference to using worklets (Chapter \ref{chap:Worklets}).}
+
+\chapter{Rendering}
+\label{chap:Rendering}
+
+\fix{Write this once the rendering module is implemented.}
 
 \input{ControlEnvironment}
 

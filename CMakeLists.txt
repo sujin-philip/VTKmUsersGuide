@@ -17,6 +17,7 @@ set(images
   images/CellConnectionsTriangle.pdf
   images/CellConnectionsVertex.pdf
   images/CellConnectionsWedge.pdf
+  images/StructuredCellSet.pdf
   images/ExplicitCellConnections.pdf
   )
 

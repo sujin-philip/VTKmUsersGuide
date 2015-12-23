@@ -1280,6 +1280,137 @@ A data set comprises the following 3 data structures.
   number of 2D projections.
 \end{description}
 
+\subsection{Building Data Sets}
+\label{sec:DataSets:Building}
+
+\index{data~set!Building|(}
+
+Before we go into detail on the cell sets, fields, and coordinate systems
+that make up a data set VTK-m, let us first discuss how to build a data
+set. One simple way to build a data set is to load data from a file using
+the \vtkmio{} module. Reading files is discussed in detail in
+Chapter~\ref{chap:FileIO}.
+
+This section describes building data sets of different types using a set of
+classes named \textcode{DataSetBuilder*}, which provide a convenience layer
+on top of \vtkmcont{DataSet} to make it easer to create data sets.
+
+\subsubsection{Creating Uniform Grids}
+
+\fix{I am expecting to change \vtkmcont{DataSetBuilderRegular} to
+  \vtkmcont{DataSetBuilderUniform}. Change this documentation when that
+  happens.}
+
+\index{uniform~grid}
+\index{regular~grid}
+\index{image}
+
+Uniform grids are meshes that have a regular array structure with points
+uniformly spaced parallel to the axes. Uniform grids are also sometimes
+called regular grids or images.
+
+The \vtkmcont{DataSetBuilderRegular} class can be used to easily create 2-
+or 3-dimensional uniform grids. \textidentifier{DataSetBuilderRegular} has
+several versions of a method named \textcode{Create} that takes the number
+of points in each dimension, the origin, and the spacing. The origin is the
+location of the first point of the data (in the lower left corner), and the
+spacing is the distance between points in the x, y, and z directions. The
+\textcode{Create} methods also take an optional name for the coordinate
+system and an optional name for the cell set.
+
+The following example creates a \vtkmcont{DataSet} containing a uniform
+grid of $101 \times 101 \times 26$ points.
+
+\fix{Expecting to change the interface to Create to use Vec. Change this
+  example when that is supported.}
+
+\vtkmlisting{Creating a uniform grid.}{CreateUniformGrid.cxx}
+
+If not specified, the origin will be at the coordinates $(0,0,0)$ and the
+spacing will be $1$ in each direction. Thus, in the previous example the
+width, height, and depth of the mesh will be $100$, $100$, and $25$,
+respectively, and the mesh will be centered at $(50, 50, 12.5)$. Let us say
+we actually want a mesh of the same dimensions, but we want the $z$
+direction to be stretched out so that the mesh will be the same size in
+each direction, and we want the mesh centered at the origin.
+
+\vtkmlisting{Creating a uniform grid with custom origin and spacing.}{CreateUniformGridCustomOriginSpacing.cxx}
+
+\subsubsection{Creating Rectilinear Grids}
+
+\index{rectilinear~grid}
+
+A rectilinear grid is similar to a uniform grid except that a rectilinear
+grid can adjust the spacing between adjacent grid points. This allows the
+rectilinear grid to have tighter sampling in some areas of space, but the
+points are still constrained to aligned with the axes and each other. The
+irregular spacing of a rectilinear grid is specified by providing a
+separate array each for the x, y, and z coordinates.
+
+The \vtkmcont{DataSetBuilderRectilinear} class can be used to easily create
+2- or 3-dimensional rectilinear grids.
+\textidentifier{DataSetBuilderRectilinear} has several versions of a method
+named \textcode{Create} that takes these coordinate arrays and builds a
+\vtkmcont{DataSet} out of them. The arrays can be supplied as either
+standard C arrays or as \textcode{std::vector} objects, in which case the
+data in the arrays are copied into the \textidentifier{DataSet}.
+\fix{Support \textidentifier{ArrayHandle} as well?}
+
+The following example creates a \vtkmcont{DataSet} containing a rectilinear
+grid with $201 \times 201 \times 101$ points with different irregular
+spacing along each axis.
+
+\vtkmlisting{Creating a rectilinear grid.}{CreateRectilinearGrid.cxx}
+
+\subsubsection{Creating Explicit Meshes}
+
+\index{explicit~mesh}
+\index{unstructured~grid}
+
+An explicit mesh is an arbitrary collection of cells with arbitrary
+connections. It can have multiple different types of cells. Explicit meshes
+are also known as unstructured grids.
+
+The cells of an explicit mesh are defined by providing the shape, number of
+indices, and the points that comprise it for each cell. These three things
+are stored in separate arrays. Figure~\ref{fig:ExplicitMesh} shows an
+example of an explicit mesh and the arrays that can be used to define it.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/ExplicitCellConnections}
+  \caption{An example explicit mesh.}
+  \label{fig:ExplicitMesh}
+\end{figure}
+
+The \vtkmcont{DataSetBuilderExplicit} class can be used to create data sets
+with explicit meshes. \textidentifier{DataSetBuilderExplicit} has several
+versions of a method named \textcode{Create}. Generally, these methods take
+the shapes, number of indices, and connectivity arrays as well as an array
+of point coordinates. These arrays can be given in \textcode{std::vector}
+objects, and the data are copied into the \textidentifier{DataSet} created.
+
+The following example creates a mesh like the one shown in
+Figure~\ref{fig:ExplicitMesh}.
+
+\fix{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicit}.}
+
+Often it is awkward to build your own arrays and then pass them to
+\textidentifier{DataSetBuilderExplicit}. There also exist an alternate
+builder class named \vtkmcont{DataSetBuilderExplicitIterative} that allows
+you to specify each cell and point one at a time rather than all at once.
+The next example also builds the mesh shown in
+Figure~\ref{fig:ExplicitMesh} except this time using
+\textidentifier{DataSetBuilderExplicitIterative}.
+
+\fix{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicitIterative}.}
+
+\subsubsection{Add Fields}
+
+\fix{Still need to add this!}
+
+\index{data~set!Building|)}
+
 \subsection{Cell Sets}
 \label{sec:DataSets:CellSets}
 
@@ -1319,7 +1450,7 @@ Figure~\ref{fig:CellSetStructured} demonstrates this arrangement.
 
 \begin{figure}
   \centering
-  \fix{Picture}
+  \includegraphics{images/StructuredCellSet}
   \caption{The arrangement of points and cells in a 3D structured grid.}
   \label{fig:CellSetStructured}
 \end{figure}
@@ -1370,7 +1501,6 @@ example of an explicit cell set.
 \begin{figure}
   \centering
   \includegraphics{images/ExplicitCellConnections}
-  \fix{Change this to demonstrate zoo elements.}
   \caption{Example of cells in a \textidentifier{CellSetExplict} and the
     arrays that define them.}
   \label{fig:CellSetExplicit}
@@ -1569,10 +1699,6 @@ For example, if the cell set is representing a graph structure, there might
 not be any physical space that has meaning for the graph.
 
 \index{coordinate~system|)}
-
-\subsection{Building Data Sets}
-
-\fix{This is a work in progress!}
 
 \index{data~set|)}
 

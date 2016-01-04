@@ -17,7 +17,7 @@ void CreateUniformGrid()
   ////
   vtkm::cont::DataSetBuilderRegular dataSetBuilder;
 
-  vtkm::cont::DataSet dataSet = dataSetBuilder.Create(101, 101, 26);
+  vtkm::cont::DataSet dataSet = dataSetBuilder.Create(vtkm::Id3(101, 101, 26));
   ////
   //// END-EXAMPLE CreateUniformGrid.cxx
   ////
@@ -47,9 +47,11 @@ void CreateUniformGridCustomOriginSpacing()
   ////
   vtkm::cont::DataSetBuilderRegular dataSetBuilder;
 
-  vtkm::cont::DataSet dataSet = dataSetBuilder.Create(101, 101, 26,
-                                                      -50.0, -50.0, -50.0,
-                                                      1.0, 1.0, 4.0);
+  vtkm::cont::DataSet dataSet =
+      dataSetBuilder.Create(
+        vtkm::Id3(101, 101, 26),
+        vtkm::Vec<vtkm::FloatDefault,3>(-50.0, -50.0, -50.0),
+        vtkm::Vec<vtkm::FloatDefault,3>(1.0, 1.0, 4.0));
   ////
   //// END-EXAMPLE CreateUniformGridCustomOriginSpacing.cxx
   ////

@@ -1,3 +1,4 @@
+#include <vtkm/cont/CellSetPermutation.h>
 #include <vtkm/cont/DataSetBuilderExplicit.h>
 #include <vtkm/cont/DataSetBuilderRectilinear.h>
 #include <vtkm/cont/DataSetBuilderRegular.h>
@@ -431,6 +432,43 @@ void AddFieldData()
   ////
 }
 
+void CreateCellSetPermutation()
+{
+  std::cout << "Create a cell set permutation" << std::endl;
+
+  ////
+  //// BEGIN-EXAMPLE CreateCellSetPermutation.cxx
+  ////
+  // Create a simple data set.
+  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSet originalDataSet =
+      dataSetBuilder.Create(vtkm::Id3(33,33,26));
+  vtkm::cont::CellSetStructured<3> originalCellSet =
+      originalDataSet.GetCellSet().CastTo(vtkm::cont::CellSetStructured<3>());
+
+  // Create a permutation array for the cells. Each value in the array refers
+  // to a cell in the original cell set. This particular array selects every
+  // 10th cell.
+  vtkm::cont::ArrayHandleCounting<vtkm::Id> permutationArray(0, 10, 2560);
+
+  // Create a permutation of that cell set containing only every 10th cell.
+  vtkm::cont::CellSetPermutation<
+        vtkm::cont::ArrayHandleCounting<vtkm::Id>,
+        vtkm::cont::CellSetStructured<3> >
+      permutedCellSet(permutationArray, originalCellSet);
+  ////
+  //// END-EXAMPLE CreateCellSetPermutation.cxx
+  ////
+
+  std::cout << "Num points: " << permutedCellSet.GetNumberOfPoints()
+            << std::endl;
+  VTKM_TEST_ASSERT(permutedCellSet.GetNumberOfPoints() == 28314,
+                   "Wrong number of points.");
+  std::cout << "Num cells: " << permutedCellSet.GetNumberOfCells() << std::endl;
+  VTKM_TEST_ASSERT(permutedCellSet.GetNumberOfCells() == 2560,
+                   "Wrong number of cells.");
+}
+
 void Test()
 {
   CreateUniformGrid();
@@ -439,6 +477,7 @@ void Test()
   CreateExplicitGrid();
   CreateExplicitGridIterative();
   AddFieldData();
+  CreateCellSetPermutation();
 }
 
 } // namespace DataSetCreationNamespace

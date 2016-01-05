@@ -1286,14 +1286,14 @@ A data set comprises the following 3 data structures.
 \index{data~set!Building|(}
 
 Before we go into detail on the cell sets, fields, and coordinate systems
-that make up a data set VTK-m, let us first discuss how to build a data
+that make up a data set in VTK-m, let us first discuss how to build a data
 set. One simple way to build a data set is to load data from a file using
 the \vtkmio{} module. Reading files is discussed in detail in
 Chapter~\ref{chap:FileIO}.
 
 This section describes building data sets of different types using a set of
 classes named \textcode{DataSetBuilder*}, which provide a convenience layer
-on top of \vtkmcont{DataSet} to make it easer to create data sets.
+on top of \vtkmcont{DataSet} to make it easier to create data sets.
 
 \subsubsection{Creating Uniform Grids}
 
@@ -1325,11 +1325,11 @@ grid of $101 \times 101 \times 26$ points.
 
 If not specified, the origin will be at the coordinates $(0,0,0)$ and the
 spacing will be $1$ in each direction. Thus, in the previous example the
-width, height, and depth of the mesh will be $100$, $100$, and $25$,
-respectively, and the mesh will be centered at $(50, 50, 12.5)$. Let us say
-we actually want a mesh of the same dimensions, but we want the $z$
-direction to be stretched out so that the mesh will be the same size in
-each direction, and we want the mesh centered at the origin.
+width, height, and depth of the mesh in physical space will be $100$,
+$100$, and $25$, respectively, and the mesh will be centered at $(50, 50,
+12.5)$. Let us say we actually want a mesh of the same dimensions, but we
+want the $z$ direction to be stretched out so that the mesh will be the
+same size in each direction, and we want the mesh centered at the origin.
 
 \vtkmlisting{Creating a uniform grid with custom origin and spacing.}{CreateUniformGridCustomOriginSpacing.cxx}
 
@@ -1340,7 +1340,7 @@ each direction, and we want the mesh centered at the origin.
 A rectilinear grid is similar to a uniform grid except that a rectilinear
 grid can adjust the spacing between adjacent grid points. This allows the
 rectilinear grid to have tighter sampling in some areas of space, but the
-points are still constrained to aligned with the axes and each other. The
+points are still constrained to be aligned with the axes and each other. The
 irregular spacing of a rectilinear grid is specified by providing a
 separate array each for the x, y, and z coordinates.
 
@@ -1393,7 +1393,7 @@ Figure~\ref{fig:ExplicitMesh}.
 \vtkmlisting{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicit}.}{CreateExplicitGrid.cxx}
 
 Often it is awkward to build your own arrays and then pass them to
-\textidentifier{DataSetBuilderExplicit}. There also exist an alternate
+\textidentifier{DataSetBuilderExplicit}. There also exists an alternate
 builder class named \vtkmcont{DataSetBuilderExplicitIterative} that allows
 you to specify each cell and point one at a time rather than all at once.
 This is done by calling one of the versions of \textcode{AddPoint} and one
@@ -1493,7 +1493,7 @@ interchangeably. A structured cell set with uniform point coordinates makes
 a uniform grid. A structured cell set with point coordinates defined
 irregularly along coordinate axes makes a rectilinear grid. And a
 structured cell set with arbitrary point coordinates makes a curvilinear
-grid. The point coordinates are define by the data set's coordinate system,
+grid. The point coordinates are defined by the data set's coordinate system,
 which is discussed in Section~\ref{sec:DataSets:CoordinateSystems} starting
 on page~\pageref{sec:DataSets:CoordinateSystems}.
 
@@ -1514,7 +1514,7 @@ An explicit cell set is defined with a minimum of three arrays. The first
 array identifies the shape of each cell. (Cell shapes are discussed in
 detail in Section~\ref{sec:CellShapeTagsIds} starting on
 page~\pageref{sec:CellShapeTagsIds}.) The second array identifies how many
-points are in each cell. The thrid array has a sequence of point indices
+points are in each cell. The third array has a sequence of point indices
 that make up each cell. Figure~\ref{fig:CellSetExplicit} shows a simple
 example of an explicit cell set.
 
@@ -1525,6 +1525,12 @@ example of an explicit cell set.
     arrays that define them.}
   \label{fig:CellSetExplicit}
 \end{figure}
+
+An explicit cell set may also have other topological arrays such as an
+array of offsets of each cell into the connectivity array or an array of
+cells incident on each point. Although these arrays can be provided, they
+are optional and can be internally derived from the shape, num indices, and
+connectivity arrays.
 
 \vtkmcont{ExplicitCellSet} is a powerful representation for a cell set
 because it can represent an arbitrary collection of cells. However, because
@@ -1541,7 +1547,7 @@ An important specialization of an explicit cell set is
 explicit cell set constrained to contain cells that all have the same shape
 and all have the same number of points. So for example if you are creating
 a surface that you know will contain only triangles,
-\textidentifier{CellSetSingleType} is a good representation for this data.
+\textidentifier{CellSetSingleType} is a good representation for these data.
 
 Using \textidentifier{CellSetSingleType} saves memory because the array of
 cell shapes and the array of point counts no longer need to be stored.
@@ -1563,7 +1569,7 @@ processing and other storage required for general explicit cell sets.
 A \vtkmcont{CellSetPermutation} rearranges the cells of one cell set to
 create another cell set. This restructuring of cells is not done by copying
 data to a new structure. Rather, \textidentifier{CellSetPermutation}
-establishes a lookup from one cell structure to another. Cells are permuted
+establishes a look-up from one cell structure to another. Cells are permuted
 on the fly while algorithms are run.
 
 A \textidentifier{CellSetPermutation} is established by providing a mapping

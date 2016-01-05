@@ -2032,14 +2032,18 @@ errors. The following control errors exist and may be thrown.
   like the POSIX C assert macro except that a
   \textidentifier{ErrorControlAssert} is thrown rather than killing the
   application outright.
+\item[\vtkmcont{ErrorControlBadAllocation}] Thrown when there is a problem
+  accessing or manipulating memory. Often this is thrown when an allocation
+  fails because there is insufficient memory, but other memory access
+  errors can cause this to be thrown as well.
+\item[\vtkmcont{ErrorControlBadType}] Thrown when VTK-m attempts to perform
+  an operation on an object that is of an incompatible type.
 \item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
   method encounters an invalid value that inhibits progress.
 \item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
   internal state that should never be reached. This error usually indicates
   a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
   should have.
-\item[\vtkmcont{ErrorControlOutOfMemory}] Thrown when a VTK-m function or
-  method tries to allocate an array and fails.
 \end{description}
 
 \index{errors|)}

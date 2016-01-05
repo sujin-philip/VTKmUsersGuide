@@ -2086,6 +2086,19 @@ are available.
   \textidentifier{ArrayHandle} of \vtkm{Id}s to find in the first list. The
   results are written back out to the second array. This second
   specialization is useful for inverting index maps.
+\item[\textcode{Reduce}] \index{reduce} The \textcode{Reduce} method takes
+  an input array, initial value, and a binary function and computes a
+  ``total'' of applying the binary function to all entries in the array.
+  The provided binary function must be associative (but it need not be
+  commutative). There is a specialization of \textcode{Reduce} that does
+  not take a binary function and computes the sum.
+\item[\textcode{ReduceByKey}] \index{reduce~by~key} The
+  \textcode{ReduceByKey} method works similarly to the \textcode{Reduce}
+  method except that it takes an additional array of keys, which must be
+  the same length as the values being reduced. The arrays are partitioned
+  into segments that have identical adjacent keys, and a separate reduction
+  is performed on each partition. The unique keys and reduced values are
+  returned in separate arrays.
 \item[\textcode{ScanInclusive}] \index{scan!inclusive} The
   \textcode{ScanInclusive} method takes an input and an output
   \textidentifier{ArrayHandle} and performs a running sum on the input
@@ -2093,7 +2106,9 @@ are available.
   the input. The second value in the output is the sum of the first two
   values in the input. The third value in the output is the sum of the
   first three values of the input, and so on. \textcode{ScanInclusive}
-  returns the sum of all values in the input.
+  returns the sum of all values in the input. There are two forms of
+  \textcode{ScanInclusive}: one performs the sum using addition whereas the
+  other accepts a custom binary function to use as the sum operator.
 \item[\textcode{ScanExclusive}] \index{scan!exclusive} The
   \textcode{ScanExclusive} method takes an input and an output
   \textidentifier{ArrayHandle} and performs a running sum on the input
@@ -2102,7 +2117,10 @@ are available.
   the output is the sum of the first two values in the input. The fourth
   value in the output is the sum of the first three values of the input,
   and so on. \textcode{ScanExclusive} returns the sum of all values in the
-  input.
+  input. There are two forms of \textcode{ScanExclusive}: one performs the
+  sum using addition whereas the other accepts a custom binary function to
+  use as the sum operator and a custom initial value to use in the running
+  sum.
 \item[\textcode{Schedule}] \index{schedule} The \textcode{Schedule} method
   takes a functor as its first argument and invokes it a number of times
   specified by the second argument. It should be assumed that each
@@ -2137,8 +2155,6 @@ are available.
   key. Like \textcode{Sort}, \textcode{SortByKey} has a version that sorts
   by the default less-than operator and a version that accepts a custom
   comparison functor.
-  \fix{This does not seem to be implemented right now, probably because we
-    don't have the zip array handle, but it should be.}
 \item[\textcode{StreamCompact}] \index{stream~compact} The
   \textcode{StreamCompact} method selectively removes values from an
   array. The first argument is an \textidentifier{ArrayHandle} to be

@@ -1390,21 +1390,44 @@ objects, and the data are copied into the \textidentifier{DataSet} created.
 The following example creates a mesh like the one shown in
 Figure~\ref{fig:ExplicitMesh}.
 
-\fix{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicit}.}
+\vtkmlisting{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicit}.}{CreateExplicitGrid.cxx}
 
 Often it is awkward to build your own arrays and then pass them to
 \textidentifier{DataSetBuilderExplicit}. There also exist an alternate
 builder class named \vtkmcont{DataSetBuilderExplicitIterative} that allows
 you to specify each cell and point one at a time rather than all at once.
-The next example also builds the mesh shown in
+This is done by calling one of the versions of \textcode{AddPoint} and one
+of the versions of \textcode{AddCell} for each point and cell,
+respectively. The next example also builds the mesh shown in
 Figure~\ref{fig:ExplicitMesh} except this time using
 \textidentifier{DataSetBuilderExplicitIterative}.
 
-\fix{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicitIterative}.}
+\vtkmlisting{Creating an explicit mesh with \textidentifier{DataSetBuilderExplicitIterative}.}{CreateExplicitGridIterative.cxx}
 
 \subsubsection{Add Fields}
 
-\fix{Still need to add this!}
+In addition to creating the geometric structure of a data set, it is
+usually important to add fields to the data. Fields describe numerical data
+associated with the topological elements in a cell. They often represent a
+physical quantity (such as temperature, mass, or volume fraction) but can
+also represent other information (such as indices or classifications).
+
+The easiest way to define fields in a data set is to use the
+\vtkmcont{DataSetFieldAdd} class. This class works on
+\textidentifier{DataSet}s of any type. It has methods named
+\textcode{AddPointField} and \textcode{AddCellField} that define a field
+for either points or cells. Every field must have an associated field name.
+
+Both \textcode{AddPointField} and \textcode{AddCellField} are overloaded to
+accept arrays of data in different structures. Field arrays can be passed
+as standard C arrays or as \textcode{std::vector}s, in which case the data
+are copied. Field arrays can also be passed in a
+\textidentifier{ArrayHandle}, in which case the data are not copied.
+
+The following (somewhat contrived) example defines fields for a uniform
+grid that identify which points and cells are on the boundary of the mesh.
+
+\vtkmlisting{Adding fields to a \textidentifier{DataSet}.}{AddFieldData.cxx}
 
 \index{data~set!Building|)}
 

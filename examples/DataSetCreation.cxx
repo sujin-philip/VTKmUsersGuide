@@ -1,6 +1,7 @@
 #include <vtkm/cont/DataSetBuilderExplicit.h>
 #include <vtkm/cont/DataSetBuilderRectilinear.h>
 #include <vtkm/cont/DataSetBuilderRegular.h>
+#include <vtkm/cont/DataSetFieldAdd.h>
 
 #include <vtkm/Math.h>
 
@@ -362,6 +363,74 @@ void CreateExplicitGridIterative()
                    "Wrong number of cells on point 7");
 }
 
+void AddFieldData()
+{
+  std::cout << "Add field data." << std::endl;
+
+  ////
+  //// BEGIN-EXAMPLE AddFieldData.cxx
+  ////
+  // Make a simple structured data set.
+  const vtkm::Id3 pointDimensions(20, 20, 10);
+  const vtkm::Id3 cellDimensions = pointDimensions - vtkm::Id3(1, 1, 1);
+  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSet dataSet = dataSetBuilder.Create(pointDimensions);
+
+  // This is the helper object to add fields to a data set.
+  vtkm::cont::DataSetFieldAdd dataSetFieldAdd;
+
+  // Create a field that identifies points on the boundary.
+  std::vector<vtkm::UInt8> boundaryPoints;
+  for (vtkm::Id zIndex = 0; zIndex < pointDimensions[2]; zIndex++)
+  {
+    for (vtkm::Id yIndex = 0; yIndex < pointDimensions[1]; yIndex++)
+    {
+      for (vtkm::Id xIndex = 0; xIndex < pointDimensions[0]; xIndex++)
+      {
+        if ( (xIndex == 0) || (xIndex == pointDimensions[0]-1) ||
+             (yIndex == 0) || (yIndex == pointDimensions[1]-1) ||
+             (zIndex == 0) || (zIndex == pointDimensions[2]-1) )
+        {
+          boundaryPoints.push_back(1);
+        }
+        else
+        {
+          boundaryPoints.push_back(0);
+        }
+      }
+    }
+  }
+
+  dataSetFieldAdd.AddPointField(dataSet, "boundary_points", boundaryPoints);
+
+  // Create a field that identifies cells on the boundary.
+  std::vector<vtkm::UInt8> boundaryCells;
+  for (vtkm::Id zIndex = 0; zIndex < cellDimensions[2]; zIndex++)
+  {
+    for (vtkm::Id yIndex = 0; yIndex < cellDimensions[1]; yIndex++)
+    {
+      for (vtkm::Id xIndex = 0; xIndex < cellDimensions[0]; xIndex++)
+      {
+        if ( (xIndex == 0) || (xIndex == cellDimensions[0]-1) ||
+             (yIndex == 0) || (yIndex == cellDimensions[1]-1) ||
+             (zIndex == 0) || (zIndex == cellDimensions[2]-1) )
+        {
+          boundaryCells.push_back(1);
+        }
+        else
+        {
+          boundaryCells.push_back(0);
+        }
+      }
+    }
+  }
+
+  dataSetFieldAdd.AddCellField(dataSet, "boundary_cells", boundaryCells);
+  ////
+  //// END-EXAMPLE AddFieldData.cxx
+  ////
+}
+
 void Test()
 {
   CreateUniformGrid();
@@ -369,6 +438,7 @@ void Test()
   CreateRectilinearGrid();
   CreateExplicitGrid();
   CreateExplicitGridIterative();
+  AddFieldData();
 }
 
 } // namespace DataSetCreationNamespace

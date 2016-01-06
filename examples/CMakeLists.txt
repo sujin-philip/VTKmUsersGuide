@@ -8,6 +8,7 @@ set(example_src
   ArrayHandleTransform.cxx
   ArrayHandleZip.cxx
   CoreDataTypes.cxx
+  CustomDeviceAdapter.cxx
   DataSetCreation.cxx
   DeviceAdapterTag.cxx
   DeviceAdapterAlgorithms.cxx

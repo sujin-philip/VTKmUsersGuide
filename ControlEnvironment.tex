@@ -2195,89 +2195,36 @@ header file.
 \index{algorithm|)}
 \index{device~adapter!algorithm|)}
 
-%% \subsection{Timer Implementation}
+\subsection{Timer Implementation}
 
-%% The Dax timer, described in Section~\ref{sec:Timers}, delegates to an
-%% internal class named \daxcont{DeviceAdapterTimerImplementation}. The
-%% interface for this class is the same as that for \daxcont{Timer}. A default
-%% implementation of this templated class uses the system timer and the
-%% \textcode{Synchronize} method in the device adapter algorithms.
+\index{timer|(}
+\index{device~adapter!timer|(}
 
-%% However, some devices might provide alternate or better methods for
-%% implementing timers. For example, the TBB library comes with a high
-%% resolution timer that has better accuracy than the standard system
-%% timers. Thus, the device adapter can optionally provide a specialization of
-%% \textidentifier{DeviceAdapterTimerImplementation}, which is typically
-%% placed in the same header file as the device adapter algorithms.
+The VTK-m timer, described in Section~\ref{sec:Timers}, delegates to an
+internal class named \vtkmcont{DeviceAdapterTimerImplementation}. The
+interface for this class is the same as that for \vtkmcont{Timer}. A default
+implementation of this templated class uses the system timer and the
+\textcode{Synchronize} method in the device adapter algorithms.
 
-%% The following example is the implementation of the TBB timer
-%% implementation.
+However, some devices might provide alternate or better methods for
+implementing timers. For example, the TBB and CUDA libraries come with high
+resolution timers that have better accuracy than the standard system
+timers. Thus, the device adapter can optionally provide a specialization of
+\textidentifier{DeviceAdapterTimerImplementation}, which is typically
+placed in the same header file as the device adapter algorithms.
 
-%% \begin{daxexample}{Implementation of \textidentifier{DeviceAdapterTimerImplementation} for TBB.}
-%% #include <dax/cont/DeviceAdapter.h>
-%% #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+Continuing our example of a custom device adapter using C++11's
+\textcode{std::thread} class, we could use the default timer and it would
+work fine. But C++11 also comes with a \textcode{std::chrono} package that
+contains some portable time functions. The following code demonstrates
+creating a custom timer for our device adapter using this package. By
+convention, \textidentifier{DeviceAdapterTimerImplementation} is placed in
+the same header file as \textidentifier{DeviceAdapterAlgorithm}.
 
-%% #include <tbb/tick_count.h>
+\vtkmlisting{Specialization of \textidentifier{DeviceAdapterTimerImplementation}.}{DeviceAdapterTimerImplementationCxx11Thread.h}
 
-%% namespace dax {
-%% namespace cont {
-
-%% template<>
-%% class DeviceAdapterTimerImplementation<dax::tbb::cont::DeviceAdapterTagTBB>
-%% {
-%% public:
-%%   DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
-%%   {
-%%     this->Reset();
-%%   }
-%%   DAX_CONT_EXPORT void Reset()
-%%   {
-%%     dax::cont::DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
-%%     this->StartTime = ::tbb::tick_count::now();
-%%   }
-%%   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
-%%   {
-%%     dax::cont::DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
-%%     ::tbb::tick_count currentTime = ::tbb::tick_count::now();
-%%     ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
-%%     return static_cast<dax::Scalar>(elapsedTime.seconds());
-%%   }
-
-%% private:
-%%   ::tbb::tick_count StartTime;
-%% };
-
-%% }
-%% } // namespace dax::cont
-%% \end{daxexample}
-
-%% A word of warning about implementing timers. Although
-%% \textcode{GetElapsedTime} returns a \dax{Scalar}, it is advisable to store
-%% the internal timing in its native data format until the elapsed time is
-%% recorded. This is because the times may be biased by a large value, and the
-%% floating point number might not hold enough precision to get a precise
-%% measurement between the start and end of the timer.
-
-%% \subsection{Testing}
-
-%% The implementation of a device adapter contains many components. To ensure
-%% that all of its device adapters are working properly, the Dax toolkit
-%% contains a complete test of all the components in
-%% \daxheader{dax/cont/testing}{TestingDeviceAdapter.h}. Here is the
-%% implementation for the TBB device adapter test, which plugs into the CMake
-%% testing framework.
-
-%% \begin{daxexample}{Test code for the TBB device adapter.}
-%% #include <dax/tbb/cont/DeviceAdapterTBB.h>
-
-%% #include <dax/cont/testing/TestingDeviceAdapter.h>
-
-%% int UnitTestDeviceAdapterTBB(int, char *[])
-%% {
-%%   return dax::cont::testing::TestingDeviceAdapter
-%%       <dax::tbb::cont::DeviceAdapterTagTBB>::Run();
-%% }
-%% \end{daxexample}
+\index{device~adapter!timer|)}
+\index{timer|)}
 
 \index{device~adapter|)}
 

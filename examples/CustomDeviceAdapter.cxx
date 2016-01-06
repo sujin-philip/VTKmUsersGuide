@@ -255,6 +255,58 @@ public:
 ////
 
 ////
+//// BEGIN-EXAMPLE DeviceAdapterTimerImplementationCxx11Thread.h
+////
+#include <chrono>
+
+namespace vtkm {
+namespace cont {
+
+template<>
+class DeviceAdapterTimerImplementation<vtkm::cont::DeviceAdapterTagCxx11Thread>
+{
+public:
+  VTKM_CONT_EXPORT
+  DeviceAdapterTimerImplementation()
+  {
+    this->Reset();
+  }
+
+  VTKM_CONT_EXPORT
+  void Reset()
+  {
+    vtkm::cont::DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCxx11Thread>
+        ::Synchronize();
+    this->StartTime = std::chrono::high_resolution_clock::now();
+  }
+
+  VTKM_CONT_EXPORT
+  vtkm::Float64 GetElapsedTime()
+  {
+    vtkm::cont::DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCxx11Thread>
+        ::Synchronize();
+    std::chrono::high_resolution_clock::time_point endTime =
+        std::chrono::high_resolution_clock::now();
+
+    std::chrono::high_resolution_clock::duration elapsedTicks =
+        endTime - this->StartTime;
+
+    std::chrono::duration<vtkm::Float64> elapsedSeconds(elapsedTicks);
+
+    return elapsedSeconds.count();
+  }
+
+private:
+  std::chrono::high_resolution_clock::time_point StartTime;
+};
+
+}
+} // namespace vtkm::cont
+////
+//// END-EXAMPLE DeviceAdapterTimerImplementationCxx11Thread.h
+////
+
+////
 //// BEGIN-EXAMPLE UnitTestDeviceAdapterCxx11Thread.cxx
 ////
 //// PAUSE-EXAMPLE

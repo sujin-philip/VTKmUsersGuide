@@ -114,33 +114,25 @@ void CreateRectilinearGrid()
   std::cout << "Num points: " << numPoints << std::endl;
   VTKM_TEST_ASSERT(numPoints == 4080501, "Got wrong number of points.");
 
-  typedef vtkm::cont::ArrayHandleCartesianProduct<
-      vtkm::cont::ArrayHandle<vtkm::Float64>,
-      vtkm::cont::ArrayHandle<vtkm::Float64>,
-      vtkm::cont::ArrayHandle<vtkm::Float64> > PointCoordinateArrayType;
+  // Disabling this test for now. Some things in the source need to change.
+  // First, CoordinateSystem should have a version of GetBounds that allows
+  // you to specify a new storage tag list. Second, there are currently some
+  // errors in ArrayHandleCartesianProduct that need to be fixed. Since I'm
+  // currently working off Dave P.'s branch, I don't want to go through and
+  // fix those right now.
+  vtkm::Float64 bounds[6];
+  dataSet.GetCoordinateSystem().GetBounds(bounds,
+                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds[0] << " " << bounds[1] << std::endl
+            << bounds[2] << " " << bounds[3] << std::endl
+            << bounds[4] << " " << bounds[5] << std::endl;
 
-//  // Disabling this test for now. Some things in the source need to change.
-//  // First, CoordinateSystem should have a version of GetBounds that allows
-//  // you to specify a new storage tag list. Second, there are currently some
-//  // errors in ArrayHandleCartesianProduct that need to be fixed. Since I'm
-//  // currently working off Dave P.'s branch, I don't want to go through and
-//  // fix those right now.
-//  vtkm::Float64 bounds[6];
-//  dataSet.GetCoordinateSystem().GetBounds(
-//        bounds,
-//        VTKM_DEFAULT_DEVICE_ADAPTER_TAG(),
-//        VTKM_DEFAULT_COORDINATE_SYSTEM_TYPE_LIST_TAG(),
-//        vtkm::ListTagBase<PointCoordinateArrayType::StorageTag>());
-//  std::cout << bounds[0] << " " << bounds[1] << std::endl
-//            << bounds[2] << " " << bounds[3] << std::endl
-//            << bounds[4] << " " << bounds[5] << std::endl;
-
-//  VTKM_TEST_ASSERT(test_equal(bounds[0], -4), "Bad bounds");
-//  VTKM_TEST_ASSERT(test_equal(bounds[1],  4), "Bad bounds");
-//  VTKM_TEST_ASSERT(test_equal(bounds[2],  0), "Bad bounds");
-//  VTKM_TEST_ASSERT(test_equal(bounds[3],  2), "Bad bounds");
-//  VTKM_TEST_ASSERT(test_equal(bounds[4], -1), "Bad bounds");
-//  VTKM_TEST_ASSERT(test_equal(bounds[5],  1), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[0], -4), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[1],  4), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[2],  0), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[3],  2), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[4], -1), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds[5],  1), "Bad bounds");
 }
 
 void CreateExplicitGrid()

@@ -17,8 +17,9 @@ set(images
   images/CellConnectionsTriangle.pdf
   images/CellConnectionsVertex.pdf
   images/CellConnectionsWedge.pdf
-  images/StructuredCellSet.pdf
   images/ExplicitCellConnections.pdf
+  images/StructuredCellSet.pdf
+  images/WorkletExampleAnnotated.pdf
   )
 
 set(input_docs

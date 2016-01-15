@@ -43,6 +43,26 @@ Chapter~\ref{chap:AdvancedWorklets}.
   variable over a mesh, a \textidentifier{WorkletMapField} may actually be
   applied to any array. Thus, a field map can be used as a basic
   \index{map}map operation.
+
+\item[Topology Map] \index{worklet~types!topology~map}
+  \index{topology~map~worklet} A worklet deriving
+  \vtkmworklet{WorkletMapTopology} or one of its sibling classes performs a
+  mapping operation that applies a function (the operator in the worklet)
+  on all elements of a particular type (such as points or cells) and
+  creates a new field for those elements. The basic operation is similar to
+  a field map except that in addition to access fields being mapped on, the
+  worklet operation also has access to incident fields.
+
+  There are multiple convenience classes available for the most common
+  types of topology mapping. \index{worklet~types!point~to~cell}
+  \index{point~to~cell~worklet} \vtkmworklet{WorkletMapPointToCell} calls
+  the worklet operation for each cell and makes every incident point
+  available. This type of map also has access to cell structures and can
+  interpolate point fields.
+  %% \index{worklet~types!cell~to~point}
+  %% \index{cell~to~point~worklet} \vtkmworklet{WorkletMapCellToPoint} calls
+  %% the worklet operation for each point and makes every incident cell
+  %% available.
 \end{description}
 
 \index{worklet~types|)}
@@ -86,9 +106,14 @@ are provided in Section~\ref{sec:ProvidedWorklets}.
 
 \begin{description}
 \item[\vtkmworklet{DispatcherMapField}] The dispatcher used in conjunction
-  with a worklet that subclasses \vtkmworklet{WorkletMapField}. The class
-  has two template arguments: the worklet type and the device adapter
-  (optional).
+  with a worklet that subclasses \vtkmworklet{WorkletMapField}. The
+  dispatcher class has two template arguments: the worklet type and the
+  device adapter (optional).
+\item[\vtkmworklet{DispatcherMapTopology}] The dispatcher used in
+  conjunction with a worklet that subclasses
+  \vtkmworklet{WorkletMapTopology} or one of its sibling classes (such as
+  \vtkmworklet{WorkletMapPointToCell}). The dispatcher class has two
+  template arguments: the worklet type and the device adapter (optional).
 %% \item[\daxcont{DispatcherMapCell}] The dispatcher used in conjunction with
 %%   a worklet that subclasses \dax{WorkletMapCell}. The class has two
 %%   template arguments: the worklet type and the device adapter (optional).
@@ -141,6 +166,8 @@ are provided in Section~\ref{sec:ProvidedWorklets}.
 \section{Creating Worklets}
 \label{sec:CreatingWorklets}
 
+\index{worklet!creating|(}
+
 A worklet is created by implementing a \textcode{class} or
 \textcode{struct} with the following features.
 
@@ -153,20 +180,61 @@ A worklet is created by implementing a \textcode{class} or
   control environment to the worklet running in the execution environment.
 \item The class must contain an \inputdomain \textcode{typedef}, which
   identifies which input parameter defines the input domain of the data.
+\item The class may define a scatter operation to override a 1:1 mapping
+  from input to output.
 \item The class must contain an overload of the parenthesis operator, which
   is the method that is executed in the execution environment.
 \item The class must publicly inherit from a base worklet class that
   specifies the type of operation being performed.
 \end{enumerate}
 
-\fix{Perhaps have an annotated example of a worklet declaration like the
-  one in Figure~3.3 of the Dax report.}
+Figure~\ref{fig:WorkletExampleAnnotated} demonstrates all of the required
+components of a worklet.
+
+%% \pagebreak
+%% \begin{vtkmexample}{Example Code for Cutting/Pasting.}
+%% class TriangulateCell : public vtkm::worklet::WorkletMapPointToCell
+%% {
+%% public:
+%%   typedef void ControlSignature(TopologyIn topology,
+%%                                 ExecObject tables,
+%%                                 FieldOutCell<> connectivityOut);
+%%   typedef void ExecutionSignature(CellShape, PointIndices, _2, _3, VisitIndex);
+%%   typedef _1 InputDomain;
+
+%%   typedef vtkm::worklet::ScatterCounting ScatterType;
+%%   VTKM_CONT_EXPORT
+%%   ScatterType GetScatter() const
+%%   {
+%%     return this->Scatter;
+%%   }
+
+%%   template<typename CellShapeTag,
+%%            typename ConnectivityInVec,
+%%            typename ConnectivityOutVec>
+%%   VTKM_EXEC_EXPORT
+%%   void operator()(
+%%       CellShapeTag shape,
+%%       const ConnectivityInVec &connectivityIn,
+%%       const internal::TriangulateTablesExecutionObject<DeviceAdapter> &tables,
+%%       ConnectivityOutVec &connectivityOut,
+%%       vtkm::IdComponent visitIndex) const
+%%   {
+%% \end{vtkmexample}
+%% \pagebreak
+
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{images/WorkletExampleAnnotated}
+  \caption{Annotated example of a worklet declaration.}
+  \label{fig:WorkletExampleAnnotated}
+\end{figure}
 
 \subsection{Control Signature}
 \label{sec:ControlSignature}
 
 \index{control~signature|(}
 \index{signature!control|(}
+\index{worklet!control~signature|(}
 
 The control signature of a worklet is the \textcode{typedef} of a function
 prototype named \controlsignature. The function prototype matches the
@@ -189,6 +257,12 @@ domain (e.g. \textsignature{Point} or \textsignature{Cell}) followed by
 mesh that are used as input (read only). Although they should be there in
 most cases, some tag names might leave out the domain or in/out parts if
 they are obvious or ambiguous.
+
+\subsubsection{Type List Tags}
+\label{sec:TypeListTags}
+
+\index{type~list~tags|(}
+\index{control~signature!type~list~tags|(}
 
 Some tags are templated to have modifiers. For example,
 \textsignature{Field} tags have a template argument that is set to a type
@@ -239,9 +313,10 @@ with \textsignature{Field} tags are defined for all worklet types.
   64-bit floats. The same as \vtkm{TypeListTagVecCommon}.
 \end{description}
 
-The signature tags and their modifiers are described in greater detail in
-the following section on worklet types.
+\index{control~signature!type~list~tags|)}
+\index{type~list~tags|)}
 
+\index{worklet!control~signature|)}
 \index{signature!control|)}
 \index{control~signature|)}
 
@@ -250,6 +325,7 @@ the following section on worklet types.
 
 \index{execution~signature|(}
 \index{signature!execution|(}
+\index{worklet!execution~signature|(}
 
 Like the control signature, the execution signature of a worklet is the
 \textcode{typedef} of a function prototype named \executionsignature. The
@@ -281,6 +357,7 @@ identifies the instance of the worklet invocation. Each call to the worklet
 function will have a unique \sigtag{WorkIndex}. Other such tags exist and
 are described in the following section on worklet types where appropriate.
 
+\index{worklet!execution~signature|)}
 \index{signature!execution|)}
 \index{execution~signature|)}
 
@@ -288,6 +365,7 @@ are described in the following section on worklet types where appropriate.
 \label{sec:InputDomain}
 
 \index{input domain|(}
+\index{worklet!input~domain|(}
 
 All worklets represent data parallel operations that are executed over
 independent elements in some domain. The type of domain is inherent from
@@ -304,7 +382,17 @@ any argument.
 
 \vtkmlisting{An \protect\inputdomain declaration.}{InputDomain.cxx}
 
+Different types of worklets can have different types of domain. For example
+a simple field map worklet has a \sigtag{FieldIn} argument as its input
+domain, and the size of the input domain is taken from the size of the
+associated field array. Likewise, a worklet that maps topology has a
+\sigtag{TopologyIn} argument as its input domain, and the size of the input
+domain is taken from the cell set.
 
+Specifying the \inputdomain is optional. If it is not specified, the first
+argument is assumed to be the input domain.
+
+\index{worklet!input~domain|)}
 \index{input domain|)}
 
 \subsection{Worklet Operator}
@@ -313,9 +401,6 @@ any argument.
 A worklet is fundamentally a functor that operates on an element of data.
 Thus, the algorithm that the worklet represents is contained in or called
 from the parenthesis operator method.
-
-\fix{It might be better to have an example with a more straightforward
-  template.}
 
 \vtkmlisting{An overloaded parenthesis operator of a worklet.}{WorkletOperator.cxx}
 
@@ -337,11 +422,62 @@ the worklet types, identify the generic superclass that a worklet instance
 should derive, identify the signature tags and their meanings, and give an
 example of the worklet in use.
 
+\newcommand{\commoncontrolsignaturetags}{
+\item[\sigtag{WholeArrayIn}] This tag represents an array where all entries
+  can be read by every worklet invocation. A \sigtag{WholeArrayIn} argument
+  expects an \textidentifier{ArrayHandle} in the associated parameter of
+  the dispatcher's \textcode{Invoke}. An array portal capable of reading
+  from any place in the array is given to the worklet. Whole arrays are
+  discussed in detail in Section~\ref{sec:WholeArrays} starting on
+  page~\pageref{sec:WholeArrays}.
+
+\item[\sigtag{WholeArrayOut}] This tag represents an array where any entry
+  can be written by any worklet invocation. A \sigtag{WholeArrayOut}
+  argument expects an \textidentifier{ArrayHandle} in the associated
+  parameter of the dispatcher's \textcode{Invoke}. An array portal capable
+  of writing to any place in the array is given to the worklet. Developers
+  should take care when using writable whole arrays as introducing race
+  conditions is possible. Whole arrays are discussed in detail in
+  Section~\ref{sec:WholeArrays} starting on page~\pageref{sec:WholeArrays}.
+
+\item[\sigtag{WholeArrayInOut}] This tag represents an array where any
+  entry can be read or written by any worklet invocation. A
+  \sigtag{WholeArrayInOut} argument expects an \textidentifier{ArrayHandle}
+  in the associated parameter of the dispatcher's \textcode{Invoke}. An
+  array portal capable of reading from or writing to any place in the array
+  is given to the worklet. Developers should take care when using writable
+  whole arrays as introducing race conditions is possible. Whole arrays are
+  discussed in detail in Section~\ref{sec:WholeArrays} starting on
+  page~\pageref{sec:WholeArrays}.
+
+\item[\sigtag{ExecObject}] This tag represents an execution object that is
+  passed directly from the control environment to the worklet. A
+  \sigtag{ExecObject} argument expects a subclass of
+  \vtkmexec{ExecutionObjectBase}, and this same object is given to the
+  worklet. Execution objects are discussed in detail in
+  Section~\ref{sec:ExecutionObjects} starting on
+  page~\pageref{sec:ExecutionObjects}.
+}
+
+\newcommand{\numericexecutionsignaturetags}{
+\item[\sigtagnum{1}, \sigtagnum{2},$\ldots$] These reference the
+  corresponding parameter in the \controlsignature.
+}
+
+\newcommand{\commonexecutionsignaturetags}{
+\item[\sigtag{WorkIndex}] This tag produces a \vtkm{Id} that uniquely
+  identifies the invocation of the worklet.
+\item[\sigtag{VisitIndex}] This tag produces a \vtkm{IdComponent} that
+  uniquely identifies when multiple worklet invocations operate on the same
+  input item, which can happen when defining a worklet with scatter (as
+  described in Section~\ref{sec:WorkletScatter}).
+}
+
 \subsubsection{Field Map}
 
 \index{worklet~types!field~map|(}
 \index{field~map~worklet|(}
-\index{map~field|see{field map worklet}}
+\index{map~field|(}
 
 A worklet deriving \vtkmworklet{WorkletMapField} performs a basic mapping
 operation that applies a function (the operator in the worklet) on all the
@@ -355,41 +491,61 @@ A \textidentifier{WorkletMapField} subclass is invoked with a
 arguments. The first argument is the type of the worklet subclass. The
 second argument, which is optional, is a device adapter tag.
 
-A field map worklet supports the following tags in its \controlsignature:
+A field map worklet supports the following tags in the parameters of its
+\controlsignature.
 
 \begin{description}
-\item[\sigtag{FieldIn}] An input field. This tag corresponds to a
-  \vtkmcont{ArrayHandle} passed to \textcode{Invoke}, and each invocation
-  of the worklet gets a single value in this array. Dynamic classes like
-  \vtkmcont{DynamicArrayHandle} and \vtkmcont{DynamicPointCoordinates} that
-  are implicitly cast to \textidentifier{ArrayHandle}s are also supported.
-  \sigtag{FieldIn} is templated with a single argument that specifies the
-  types that can be in an array. Any type list tag can be used for this
-  argument, but the most common entries are described in
-  Section~\ref{TypeTagList} starting on page~\pageref{TypeTagList}.
-\item[\sigtag{FieldOut}] An output field. This tag corresponds to a
-  \vtkmcont{ArrayHandle} or \vtkmcont{DynamicArrayHandle} passed to
-  \textcode{Invoke}. The array is resized appropriately, and each
-  invocation of the worklet sets a single value in this
-  array. \sigtag{FieldOut} is templated with a single argument that
-  specifies the types that can be in an array. Any type list tag can be
-  used for this argument, but the most common entries are described in
-  Section~\ref{TypeTagList} starting on page~\pageref{TypeTagList}.
-\item[\sigtag{ExecObject}] An execution object, which is passed directly
-  from the control environment to the execution environment and then passed
-  to each invocation of the worklet. The execution object must derive
-  \vtkmexec{ExecutionObjectBase}.
+\item[\sigtag{FieldIn}] This tag represents an input field. A
+  \sigtag{FieldIn} argument expects an \textidentifier{ArrayHandle} or a
+  \textidentifier{DynamicArrayHandle} in the associated parameter of the
+  dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
+  single value out of this array.
+
+  \sigtag{FieldIn} has a single template parameter that specifies what data
+  types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on
+  page~\pageref{TypeTagList}.
+
+  The worklet's \inputdomain can be set to a \sigtag{FieldIn} argument. In
+  this case, the input domain will be the size of the array.
+
+\item[\sigtag{FieldOut}] This tag represents an output field. A
+  \sigtag{FieldOut} argument expects an \textidentifier{ArrayHandle} or a
+  \textidentifier{DynamicArrayHandle} in the associated parameter of the
+  dispatcher's \textcode{Invoke}. The array is resized before scheduling
+  begins, and each invocation of the worklet sets a single value in the
+  array.
+
+  \sigtag{FieldOut} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on
+  page~\pageref{TypeTagList}.
+
+\item[\sigtag{FieldInOut}] This tag represents field that is both an input
+  and an output. A \sigtag{FieldInOut} argument expects an
+  \textidentifier{ArrayHandle} or a \textidentifier{DynamicArrayHandle} in
+  the associated parameter of the dispatcher's \textcode{Invoke}. Each
+  invocation of the worklet gets a single value out of this array, which is
+  replaced by the resulting value after the worklet completes.
+
+  \sigtag{FieldInOut} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on
+  page~\pageref{TypeTagList}.
+
+  The worklet's \inputdomain can be set to a \sigtag{FieldInOut} argument. In
+  this case, the input domain will be the size of the array.
+
+  \commoncontrolsignaturetags
 \end{description}
 
-A field map worklet supports the following tags in its
+A field map worklet supports the following tags in the parameters of its
 \executionsignature.
 
 \begin{description}
-\item[\sigtagnum{1}, \sigtagnum{2}, \sigtagnum{3},...] The numeric tags
-  point to arguments in the \controlsignature. The data passed to the
-  worklet come from this identified argument.
-\item[\sigtag{WorkIndex}] A unique identifier for the invocation instance
-  of the worklet. The work index corresponds to the index of the domain.
+  \numericexecutionsignaturetags
+
+  \commonexecutionsignaturetags
 \end{description}
 
 Field maps most commonly perform basic calculator arithmetic, as
@@ -400,8 +556,13 @@ demonstrated in the following example.
 Although simple, the \textidentifier{WorkletMapField} worklet type can be
 used (and abused) as a general parallel-for/scheduling mechanism. In
 particular, the \sigtag{WorkIndex} execution signature tag can be used to
-get a unique index and the \sigtag{ExecObject} control signature tag can be
-used to pass execution objects directly to the worklet.
+get a unique index, the \textsignature{WholeArray}* tags can be used to get
+random access to arrays, and the \sigtag{ExecObject} control signature tag
+can be used to pass execution objects directly to the worklet.
+
+\fix{This discussion needs to be updated to use \sigtag{WholeArrayOut}. It
+  also needs to reference sections \ref{sec:WholeArrays} and
+  \ref{sec:ExecutionObjects}.}
 
 The \sigtag{ExecObject} parameter can be used in conjunction with the
 \vtkmexec{ExecutionWholeArray} class to pass an entire array into a
@@ -420,8 +581,45 @@ in reverse order.
 
 \vtkmlisting{Using \textidentifier{ExecutionWholeArray} for random array access.}{RandomArrayAccess.cxx}
 
+\index{map~field|)}
 \index{field~map~worklet|)}
 \index{worklet~types!field~map|)}
+
+\subsubsection{Topology Map}
+\label{sec:WorkletMapTopology}
+
+\index{worklet~types!topology~map|(}
+\index{topology~map~worklet|(}
+\index{map~topology|(}
+
+\index{map~topology|)}
+\index{topology~map~worklet|)}
+\index{worklet~types!topology~map|)}
+
+\subsubsection{Point to Cell Map}
+\label{sec:WorkletMapPointToCell}
+
+\index{worklet~types!point~to~cell~map|(}
+\index{point~to~cell~map~worklet|(}
+\index{map~point~to~cell|(}
+
+\index{map~point~to~cell|)}
+\index{point~to~cell~map~worklet|)}
+\index{worklet~types!point~to~cell~map|)}
+
+\fix{When is cell to point map going to be implemented?}
+
+%% \subsubsection{Cell to Point Map}
+%% \label{sec:WorkletMapCellToPoint}
+
+%% \index{worklet~types!cell~to~point~map|(}
+%% \index{cell~to~point~map~worklet|(}
+%% \index{map~cell~to~point|(}
+
+%% \index{map~cell~to~point|)}
+%% \index{cell~to~point~map~worklet|)}
+%% \index{worklet~types!cell~to~point~map|)}
+
 
 %% \subsubsection{Cell Map}
 
@@ -1200,5 +1398,44 @@ in reverse order.
 
 
 \index{worklet~types|)}
+
+
+\subsection{Whole Arrays}
+\label{sec:WholeArrays}
+
+\index{whole~array|(}
+\index{worklet!whole~array|(}
+\index{control~signature!whole~array|(}
+
+\index{control~signature!whole~array|)}
+\index{worklet!whole~array|)}
+\index{whole~array|)}
+
+\subsection{Execution Objects}
+\label{sec:ExecutionObjects}
+
+\index{execution~object|(}
+\index{worklet!execution~object|(}
+\index{control~signature!execution~object|(}
+
+\index{control~signature!execution~object|)}
+\index{worklet!execution~object|)}
+\index{execution~object|)}
+
+\subsection{Scatter}
+\label{sec:WorkletScatter}
+
+\index{scatter|(}
+\index{worklet!scatter|(}
+
+\fix{Don't forget scatters.}
+
+\index{worklet!scatter|)}
+\index{scatter|)}
+
+\index{worklet!creating|)}
+\index{worklet|)}
+
+\index{worklet!creating|)}
 
 \index{worklet|)}

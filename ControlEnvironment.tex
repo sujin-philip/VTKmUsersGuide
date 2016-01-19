@@ -1300,10 +1300,6 @@ on top of \vtkmcont{DataSet} to make it easier to create data sets.
 
 \subsubsection{Creating Uniform Grids}
 
-\fix{I am expecting to change \vtkmcont{DataSetBuilderRegular} to
-  \vtkmcont{DataSetBuilderUniform}. Change this documentation when that
-  happens.}
-
 \index{uniform~grid}
 \index{regular~grid}
 \index{image}
@@ -1312,8 +1308,8 @@ Uniform grids are meshes that have a regular array structure with points
 uniformly spaced parallel to the axes. Uniform grids are also sometimes
 called regular grids or images.
 
-The \vtkmcont{DataSetBuilderRegular} class can be used to easily create 2-
-or 3-dimensional uniform grids. \textidentifier{DataSetBuilderRegular} has
+The \vtkmcont{DataSetBuilderUniform} class can be used to easily create 2-
+or 3-dimensional uniform grids. \textidentifier{DataSetBuilderUniform} has
 several versions of a method named \textcode{Create} that takes the number
 of points in each dimension, the origin, and the spacing. The origin is the
 location of the first point of the data (in the lower left corner), and the

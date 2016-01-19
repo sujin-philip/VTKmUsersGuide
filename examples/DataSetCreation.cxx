@@ -1,7 +1,7 @@
 #include <vtkm/cont/CellSetPermutation.h>
 #include <vtkm/cont/DataSetBuilderExplicit.h>
 #include <vtkm/cont/DataSetBuilderRectilinear.h>
-#include <vtkm/cont/DataSetBuilderRegular.h>
+#include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/DataSetFieldAdd.h>
 
 #include <vtkm/Math.h>
@@ -17,7 +17,7 @@ void CreateUniformGrid()
   ////
   //// BEGIN-EXAMPLE CreateUniformGrid.cxx
   ////
-  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSetBuilderUniform dataSetBuilder;
 
   vtkm::cont::DataSet dataSet = dataSetBuilder.Create(vtkm::Id3(101, 101, 26));
   ////
@@ -47,7 +47,7 @@ void CreateUniformGridCustomOriginSpacing()
   ////
   //// BEGIN-EXAMPLE CreateUniformGridCustomOriginSpacing.cxx
   ////
-  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSetBuilderUniform dataSetBuilder;
 
   vtkm::cont::DataSet dataSet =
       dataSetBuilder.Create(
@@ -366,7 +366,7 @@ void AddFieldData()
   // Make a simple structured data set.
   const vtkm::Id3 pointDimensions(20, 20, 10);
   const vtkm::Id3 cellDimensions = pointDimensions - vtkm::Id3(1, 1, 1);
-  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSetBuilderUniform dataSetBuilder;
   vtkm::cont::DataSet dataSet = dataSetBuilder.Create(pointDimensions);
 
   // This is the helper object to add fields to a data set.
@@ -432,7 +432,7 @@ void CreateCellSetPermutation()
   //// BEGIN-EXAMPLE CreateCellSetPermutation.cxx
   ////
   // Create a simple data set.
-  vtkm::cont::DataSetBuilderRegular dataSetBuilder;
+  vtkm::cont::DataSetBuilderUniform dataSetBuilder;
   vtkm::cont::DataSet originalDataSet =
       dataSetBuilder.Create(vtkm::Id3(33,33,26));
   vtkm::cont::CellSetStructured<3> originalCellSet;

@@ -431,6 +431,10 @@ example of the worklet in use.
   discussed in detail in Section~\ref{sec:WholeArrays} starting on
   page~\pageref{sec:WholeArrays}.
 
+  \sigtag{WholeArrayIn} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
 \item[\sigtag{WholeArrayOut}] This tag represents an array where any entry
   can be written by any worklet invocation. A \sigtag{WholeArrayOut}
   argument expects an \textidentifier{ArrayHandle} in the associated
@@ -439,6 +443,10 @@ example of the worklet in use.
   should take care when using writable whole arrays as introducing race
   conditions is possible. Whole arrays are discussed in detail in
   Section~\ref{sec:WholeArrays} starting on page~\pageref{sec:WholeArrays}.
+
+  \sigtag{WholeArrayOut} has a single template parameter that specifies
+  what data types are acceptable for the array. The type tags are described
+  in Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
 
 \item[\sigtag{WholeArrayInOut}] This tag represents an array where any
   entry can be read or written by any worklet invocation. A
@@ -449,6 +457,10 @@ example of the worklet in use.
   whole arrays as introducing race conditions is possible. Whole arrays are
   discussed in detail in Section~\ref{sec:WholeArrays} starting on
   page~\pageref{sec:WholeArrays}.
+
+  \sigtag{WholeArrayInOut} has a single template parameter that specifies
+  what data types are acceptable for the array. The type tags are described
+  in Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
 
 \item[\sigtag{ExecObject}] This tag represents an execution object that is
   passed directly from the control environment to the worklet. A
@@ -558,25 +570,11 @@ used (and abused) as a general parallel-for/scheduling mechanism. In
 particular, the \sigtag{WorkIndex} execution signature tag can be used to
 get a unique index, the \textsignature{WholeArray}* tags can be used to get
 random access to arrays, and the \sigtag{ExecObject} control signature tag
-can be used to pass execution objects directly to the worklet.
-
-\fix{This discussion needs to be updated to use \sigtag{WholeArrayOut}. It
-  also needs to reference sections \ref{sec:WholeArrays} and
-  \ref{sec:ExecutionObjects}.}
-
-The \sigtag{ExecObject} parameter can be used in conjunction with the
-\vtkmexec{ExecutionWholeArray} class to pass an entire array into a
-worklet. \textidentifier{ExecutionWholeArray} takes an
-\textidentifier{ArrayHandle} object in the control environment and converts
-it to an execution environment object that is compatible with the
-\sigtag{ExecObject} tag. This allows you to have random access to the
-array. (You can also use \vtkmexec{ExecutionWholeArrayConst} for read only
-access.) Care should be taken when directly accessing an array like this.
-Be sure to avoid invalid indexing or memory race conditions, which can be
-hard to debug.
-
-The following example uses the random access of
-\textidentifier{ExecutionWholeArray} to make a worklet that copies an array
+can be used to pass execution objects directly to the worklet. Whole arrays
+and execution objects are talked about in more detail in Sections
+\ref{sec:WholeArrays} and \ref{sec:ExecutionObjects}, respectively, in more
+detail, but here is a simple example that uses the random access of
+\sigtag{WholeArrayOut} to make a worklet that copies an array
 in reverse order.
 
 \vtkmlisting{Using \textidentifier{ExecutionWholeArray} for random array access.}{RandomArrayAccess.cxx}

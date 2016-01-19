@@ -1,5 +1,3 @@
-#include <vtkm/exec/ExecutionWholeArray.h>
-
 ////
 //// BEGIN-EXAMPLE UseWorkletMapField.cxx
 ////
@@ -61,7 +59,7 @@ InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 struct ReverseArrayCopy : vtkm::worklet::WorkletMapField
 {
   typedef void ControlSignature(FieldIn<> inputArray,
-                                ExecObject outputArray);
+                                WholeArrayOut<> outputArray);
   typedef void ExecutionSignature(_1, _2, WorkIndex);
   typedef _1 InputDomain;
 
@@ -89,11 +87,10 @@ vtkm::cont::ArrayHandle<T>
 InvokeReverseArrayCopy(const vtkm::cont::ArrayHandle<T,Storage> &inArray)
 {
   vtkm::cont::ArrayHandle<T> outArray;
-  vtkm::exec::ExecutionWholeArray<T>
-      outArrayExecObject(outArray, inArray.GetNumberOfValues());
+  outArray.Allocate(inArray.GetNumberOfValues());
 
   vtkm::worklet::DispatcherMapField<ReverseArrayCopy> dispatcher;
-  dispatcher.Invoke(inArray, outArrayExecObject);
+  dispatcher.Invoke(inArray, outArray);
 
   return outArray;
 }

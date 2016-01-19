@@ -201,8 +201,8 @@ void CreateExplicitGrid()
   //// END-EXAMPLE CreateExplicitGrid.cxx
   ////
 
-  vtkm::cont::CellSetExplicit<> cellSet =
-      dataSet.GetCellSet().CastTo(vtkm::cont::CellSetExplicit<>());
+  vtkm::cont::CellSetExplicit<> cellSet;
+  dataSet.GetCellSet().CopyTo(cellSet);
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfPoints(), 8),
                    "Data set has wrong number of points.");
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
@@ -304,8 +304,8 @@ void CreateExplicitGridIterative()
   //// END-EXAMPLE CreateExplicitGridIterative.cxx
   ////
 
-  vtkm::cont::CellSetExplicit<> cellSet =
-      dataSet.GetCellSet().CastTo(vtkm::cont::CellSetExplicit<>());
+  vtkm::cont::CellSetExplicit<> cellSet;
+  dataSet.GetCellSet().CopyTo(cellSet);
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfPoints(), 8),
                    "Data set has wrong number of points.");
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
@@ -435,8 +435,8 @@ void CreateCellSetPermutation()
   vtkm::cont::DataSetBuilderRegular dataSetBuilder;
   vtkm::cont::DataSet originalDataSet =
       dataSetBuilder.Create(vtkm::Id3(33,33,26));
-  vtkm::cont::CellSetStructured<3> originalCellSet =
-      originalDataSet.GetCellSet().CastTo(vtkm::cont::CellSetStructured<3>());
+  vtkm::cont::CellSetStructured<3> originalCellSet;
+  originalDataSet.GetCellSet().CopyTo(originalCellSet);
 
   // Create a permutation array for the cells. Each value in the array refers
   // to a cell in the original cell set. This particular array selects every

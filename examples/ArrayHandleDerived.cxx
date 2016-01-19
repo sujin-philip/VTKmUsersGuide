@@ -409,7 +409,7 @@ void Test()
 
   ArrayHandleConcatenate<BaseArrayType,BaseArrayType> concatArrayShallowCopy;
   VTKM_TEST_ASSERT(concatArray != concatArrayShallowCopy, "Huh?");
-  dynamicArray.CastToArrayHandle(concatArrayShallowCopy);
+  dynamicArray.CopyTo(concatArrayShallowCopy);
   VTKM_TEST_ASSERT(concatArray == concatArrayShallowCopy,
                    "Did not get array out of dynamic.");
 }

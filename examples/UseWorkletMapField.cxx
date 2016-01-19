@@ -123,9 +123,8 @@ void Test()
 
   vtkm::cont::DynamicArrayHandle outputDynamicArray =
       InvokeMagnitude(inputArray);
-  vtkm::cont::ArrayHandle<vtkm::Float64> outputArray =
-      outputDynamicArray.CastToArrayHandle(vtkm::Float64(),
-                                           VTKM_DEFAULT_STORAGE_TAG());
+  vtkm::cont::ArrayHandle<vtkm::Float64> outputArray;
+  outputDynamicArray.CopyTo(outputArray);
 
   VTKM_TEST_ASSERT(outputArray.GetNumberOfValues() == ARRAY_SIZE,
                    "Bad output array size.");

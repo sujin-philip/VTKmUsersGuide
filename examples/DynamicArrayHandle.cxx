@@ -43,23 +43,19 @@ void TryLoadDynamicArray()
   vtkm::cont::DynamicArrayHandle handle =
       LoadDynamicArray(scalarBuffer, 10, "float");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndStorage(vtkm::Float32(),
-                                VTKM_DEFAULT_STORAGE_TAG()),
+        (handle.IsTypeAndStorage<vtkm::Float32, VTKM_DEFAULT_STORAGE_TAG>()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndStorage(vtkm::Int32(),
-                                 VTKM_DEFAULT_STORAGE_TAG()),
+        !(handle.IsTypeAndStorage<vtkm::Int32, VTKM_DEFAULT_STORAGE_TAG>()),
         "Type not right.");
 
   vtkm::Int32 idBuffer[10];
   handle = LoadDynamicArray(idBuffer, 10, "int");
   VTKM_TEST_ASSERT(
-        handle.IsTypeAndStorage(vtkm::Int32(),
-                                VTKM_DEFAULT_STORAGE_TAG()),
+        (handle.IsTypeAndStorage<vtkm::Int32, VTKM_DEFAULT_STORAGE_TAG>()),
         "Type not right.");
   VTKM_TEST_ASSERT(
-        !handle.IsTypeAndStorage(vtkm::Float32(),
-                                 VTKM_DEFAULT_STORAGE_TAG()),
+        !(handle.IsTypeAndStorage<vtkm::Float32, VTKM_DEFAULT_STORAGE_TAG>()),
         "Type not right.");
 }
 
@@ -119,8 +115,8 @@ void DynamicArrayHandleNewInstance()
 
   VTKM_TEST_ASSERT(newDynamicArray.GetNumberOfValues() == 0,
                    "New array not empty.");
-  VTKM_TEST_ASSERT(newDynamicArray.IsTypeAndStorage(vtkm::Float32(),
-                                                    VTKM_DEFAULT_STORAGE_TAG()),
+  VTKM_TEST_ASSERT((newDynamicArray.IsTypeAndStorage<
+                      vtkm::Float32,VTKM_DEFAULT_STORAGE_TAG>()),
                    "New array is wrong type.");
 }
 
@@ -135,24 +131,24 @@ void QueryCastDynamicArrayHandle()
   vtkm::cont::DynamicArrayHandle dynamicHandle(concreteHandle);
 
   // This returns true
-  bool isFloat32Array = dynamicHandle.IsArrayHandleType(concreteHandle);
+  bool isFloat32Array = dynamicHandle.IsSameType(concreteHandle);
 
   // This returns false
-  bool isIdArray = dynamicHandle.IsArrayHandleType(
-        vtkm::cont::ArrayHandle<vtkm::Id>());
+  bool isIdArray =
+      dynamicHandle.IsArrayHandleType<vtkm::cont::ArrayHandle<vtkm::Id> >();
 
   // This returns true
-  bool isFloat32 = dynamicHandle.IsTypeAndStorage(vtkm::Float32(),
-                                                  VTKM_DEFAULT_STORAGE_TAG());
+  bool isFloat32 =
+      dynamicHandle.IsTypeAndStorage<vtkm::Float32,VTKM_DEFAULT_STORAGE_TAG>();
 
   // This returns false
-  bool isId = dynamicHandle.IsTypeAndStorage(vtkm::Id(),
-                                             VTKM_DEFAULT_STORAGE_TAG());
+  bool isId =
+      dynamicHandle.IsTypeAndStorage<vtkm::Id,VTKM_DEFAULT_STORAGE_TAG>();
 
   // This returns false
-  bool isErrorStorage = dynamicHandle.IsTypeAndStorage(
-                            vtkm::Float32(),
-                            vtkm::cont::internal::StorageTagError());
+  bool isErrorStorage = dynamicHandle.IsTypeAndStorage<
+                            vtkm::Float32,
+                            vtkm::cont::internal::StorageTagError>();
   ////
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////
@@ -166,7 +162,7 @@ void QueryCastDynamicArrayHandle()
   ////
   //// BEGIN-EXAMPLE CastDynamicArrayHandle.cxx
   ////
-  dynamicHandle.CastToArrayHandle(concreteHandle);
+  dynamicHandle.CopyTo(concreteHandle);
   ////
   //// END-EXAMPLE CastDynamicArrayHandle.cxx
   ////

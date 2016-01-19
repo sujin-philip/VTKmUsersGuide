@@ -1118,20 +1118,23 @@ However, it is also possible to query the types and cast to a concrete
 
 \index{dynamic~array~handle!query}
 You can query the component type and storage type using the
-\textcode{IsArrayHandleType} and \textcode{IsTypeAndStorage} method.
-\textcode{IsArrayHandleType} takes an example array handle type and returns
-whether the underlying array matches the given static array.
-\textcode{IsTypeAndStorage} takes an example component type and an example
-storage type as arguments and returns whether the underlying array matches
-both types.
+\textcode{IsArrayHandleType}, \textcode{IsSameType}, and
+\textcode{IsTypeAndStorage} methods. \textcode{IsArrayHandleType} takes an
+example array handle type and returns whether the underlying array matches
+the given static array type. \textcode{IsSameType} behaves the same as
+\textcode{IsArrayHandleType} but accepts an instances of an
+\textidentifier{ArrayHandle} object to automatically resolve the template
+parameters. \textcode{IsTypeAndStorage} takes an example
+component type and an example storage type as arguments and returns whether
+the underlying array matches both types.
 
 \vtkmlisting{Querying the component and storage types of a \textidentifier{DynamicArrayHandle}.}{QueryDynamicArrayHandle.cxx}
 
 \index{dynamic~array~handle!cast}
 Once the type of the \textidentifier{DynamicArrayHandle} is known, it can
 be cast to a concrete \textidentifier{ArrayHandle}, which has access to the
-data as described in Section~\ref{sec:ArrayHandle}. This is done with the
-\textcode{CastToArrayHandle} method. This templated method takes a
+data as described in Section~\ref{sec:ArrayHandle}. The easiest way to do
+this is to use the \textcode{CopyTo} method. This templated method takes a
 reference to an \textidentifier{ArrayHandle} as an argument and sets that
 array handle to point to the array in \textidentifier{DynamicArrayHandle}.
 If the given types are incorrect, then \textcode{CastToArrayHandle} throws

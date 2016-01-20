@@ -35,7 +35,7 @@ void BasicFunctionInterface()
   ////
   const char *s = "Hello World";
   static const size_t BUFFER_SIZE = 100;
-  char buffer[BUFFER_SIZE];
+  char *buffer = (char *)malloc(BUFFER_SIZE);
 
   strlenInterface =
       vtkm::internal::make_FunctionInterface<size_t>(s);
@@ -68,13 +68,15 @@ void BasicFunctionInterface()
   ////
 
   VTKM_TEST_ASSERT(arity == 3, "Unexpected arity.");
+
+  free(buffer);
 }
 
 ////
 //// BEGIN-EXAMPLE FunctionInterfaceGetParameter.cxx
 ////
 void GetFirstParameterResolved(
-    const vtkm::internal::FunctionInterface<void(const char *)> &interface)
+    const vtkm::internal::FunctionInterface<void(std::string)> &interface)
 {
   // The following two uses of GetParameter are equivalent
   std::cout << interface.GetParameter<1>() << std::endl;
@@ -99,16 +101,18 @@ void TryGetParameter()
 {
   std::cout << "Getting parameters." << std::endl;
 
-  GetFirstParameterResolved(vtkm::internal::make_FunctionInterface<void>("foo"));
-  GetFirstParameterTemplated(vtkm::internal::make_FunctionInterface<void>("bar"));
+  GetFirstParameterResolved(
+        vtkm::internal::make_FunctionInterface<void>(std::string("foo")));
+  GetFirstParameterTemplated(
+        vtkm::internal::make_FunctionInterface<void>(std::string("bar")));
 }
 
 ////
 //// BEGIN-EXAMPLE FunctionInterfaceSetParameter.cxx
 ////
 void SetFirstParameterResolved(
-    vtkm::internal::FunctionInterface<void(const char *)> &interface,
-    const char *newFirstParameter)
+    vtkm::internal::FunctionInterface<void(std::string)> &interface,
+    const std::string &newFirstParameter)
 {
   // The following two uses of SetParameter are equivalent
   interface.SetParameter<1>(newFirstParameter);
@@ -132,14 +136,14 @@ void TrySetParameter()
 {
   std::cout << "Setting parameters." << std::endl;
 
-  vtkm::internal::FunctionInterface<void(const char *)> functionInterface;
+  vtkm::internal::FunctionInterface<void(std::string)> functionInterface;
 
-  SetFirstParameterResolved(functionInterface, "foo");
-  VTKM_TEST_ASSERT(functionInterface.GetParameter<1>() == std::string("foo"),
+  SetFirstParameterResolved(functionInterface, std::string("foo"));
+  VTKM_TEST_ASSERT(functionInterface.GetParameter<1>() == "foo",
                    "Did not set string.");
 
-  SetFirstParameterTemplated(functionInterface, "bar");
-  VTKM_TEST_ASSERT(functionInterface.GetParameter<1>() == std::string("bar"),
+  SetFirstParameterTemplated(functionInterface, std::string("bar"));
+  VTKM_TEST_ASSERT(functionInterface.GetParameter<1>() == "bar",
                    "Did not set string.");
 }
 
@@ -148,8 +152,8 @@ void BasicInvoke()
   ////
   //// BEGIN-EXAMPLE FunctionInterfaceBasicInvoke.cxx
   ////
-  vtkm::internal::FunctionInterface<size_t(const char *)> strlenInterface =
-      vtkm::internal::make_FunctionInterface<size_t>("Hello world");
+  vtkm::internal::FunctionInterface<size_t(const char *)> strlenInterface;
+  strlenInterface.SetParameter<1>("Hello world");
 
   strlenInterface.InvokeCont(strlen);
 
@@ -197,7 +201,9 @@ struct IsSameFunctor
 void TryTransformedInvoke()
 {
   vtkm::internal::FunctionInterface<bool(const char *, vtkm::Int32)>
-      functionInterface = vtkm::internal::make_FunctionInterface<bool>("42",42);
+      functionInterface =
+        vtkm::internal::make_FunctionInterface<bool>((const char *)"42",
+                                                     (vtkm::Int32)42);
 
   functionInterface.InvokeCont(IsSameFunctor(), TransformFunctor());
 
@@ -267,13 +273,14 @@ void PrintReturn(const FunctionInterfaceType &functionInterface)
 
 void TryPrintReturn()
 {
-  vtkm::internal::FunctionInterface<size_t(const char *)> strlenInterface =
-      vtkm::internal::make_FunctionInterface<size_t>("Hello world");
+  vtkm::internal::FunctionInterface<size_t(const char *)> strlenInterface;
+  strlenInterface.SetParameter<1>("Hello world");
   strlenInterface.InvokeCont(strlen);
   ReturnContainerNamespace::PrintReturn(strlenInterface);
 
   ReturnContainerNamespace::PrintReturn(
-        vtkm::internal::make_FunctionInterface<void>("Hello world"));
+        vtkm::internal::make_FunctionInterface<void>(
+          (const char *)"Hello world"));
 }
 
 void Append()
@@ -284,15 +291,15 @@ void Append()
   using vtkm::internal::FunctionInterface;
   using vtkm::internal::make_FunctionInterface;
 
-  typedef FunctionInterface<void(const char *, vtkm::Id)>
+  typedef FunctionInterface<void(std::string, vtkm::Id)>
       InitialFunctionInterfaceType;
   InitialFunctionInterfaceType initialFunctionInterface =
-      make_FunctionInterface<void>("Hello World", vtkm::Id(42));
+      make_FunctionInterface<void>(std::string("Hello World"), vtkm::Id(42));
 
-  typedef FunctionInterface<void(const char *, vtkm::Id, const char *)>
+  typedef FunctionInterface<void(std::string, vtkm::Id, std::string)>
       AppendedFunctionInterfaceType1;
   AppendedFunctionInterfaceType1 appendedFunctionInterface1 =
-      initialFunctionInterface.Append("foobar");
+      initialFunctionInterface.Append(std::string("foobar"));
   // appendedFunctionInterface1 has parameters ("Hello World", 42, "foobar")
 
   typedef InitialFunctionInterfaceType::AppendType<vtkm::Float32>::type
@@ -329,10 +336,10 @@ void Replace()
   using vtkm::internal::FunctionInterface;
   using vtkm::internal::make_FunctionInterface;
 
-  typedef FunctionInterface<void(const char *, vtkm::Id)>
+  typedef FunctionInterface<void(std::string, vtkm::Id)>
       InitialFunctionInterfaceType;
   InitialFunctionInterfaceType initialFunctionInterface =
-      make_FunctionInterface<void>("Hello World", vtkm::Id(42));
+      make_FunctionInterface<void>(std::string("Hello World"), vtkm::Id(42));
 
   typedef FunctionInterface<void(vtkm::Float32, vtkm::Id)>
       ReplacedFunctionInterfaceType1;
@@ -340,10 +347,10 @@ void Replace()
       initialFunctionInterface.Replace<1>(vtkm::Float32(3.141));
   // replacedFunctionInterface1 has parameters (3.141, 42)
 
-  typedef InitialFunctionInterfaceType::ReplaceType<2, const char *>::type
+  typedef InitialFunctionInterfaceType::ReplaceType<2, std::string>::type
       ReplacedFunctionInterfaceType2;
   ReplacedFunctionInterfaceType2 replacedFunctionInterface2 =
-      initialFunctionInterface.Replace<2>("foobar");
+      initialFunctionInterface.Replace<2>(std::string("foobar"));
   // replacedFunctionInterface2 has parameters ("Hello World", "foobar")
   ////
   //// END-EXAMPLE FunctionInterfaceReplace.cxx
@@ -356,9 +363,9 @@ void Replace()
                    "Bad value in interface.");
 
   std::cout << "Checking replaced interface 2." << std::endl;
-  VTKM_TEST_ASSERT(replacedFunctionInterface2.GetParameter<1>() == std::string("Hello World"),
+  VTKM_TEST_ASSERT(replacedFunctionInterface2.GetParameter<1>() == "Hello World",
                    "Bad value in interface.");
-  VTKM_TEST_ASSERT(replacedFunctionInterface2.GetParameter<2>() == std::string("foobar"),
+  VTKM_TEST_ASSERT(replacedFunctionInterface2.GetParameter<2>() == "foobar",
                    "Bad value in interface.");
 }
 
@@ -673,7 +680,10 @@ using namespace ForEachNamespace;
 void TryPrintArguments()
 {
   PrintArguments(
-        vtkm::internal::make_FunctionInterface<void>("Hello", 42, "World", 3.14));
+        vtkm::internal::make_FunctionInterface<void>(std::string("Hello"),
+                                                     42,
+                                                     std::string("World"),
+                                                     3.14));
 }
 
 void Test()

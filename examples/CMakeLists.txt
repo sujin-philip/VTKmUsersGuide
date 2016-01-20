@@ -21,6 +21,7 @@ set(example_src
   Traits.cxx
   TransferringArguments.cxx
   UseWorkletMapField.cxx
+  UseWorkletMapPointToCell.cxx
   )
 
 # Set up compiling and testing of examples.

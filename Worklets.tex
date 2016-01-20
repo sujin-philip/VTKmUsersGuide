@@ -563,7 +563,7 @@ A field map worklet supports the following tags in the parameters of its
 Field maps most commonly perform basic calculator arithmetic, as
 demonstrated in the following example.
 
-\vtkmlisting{Declaration and use of a field map worklet.}{UseWorkletMapField.cxx}
+\vtkmlisting{Implementation and use of a field map worklet.}{UseWorkletMapField.cxx}
 
 Although simple, the \textidentifier{WorkletMapField} worklet type can be
 used (and abused) as a general parallel-for/scheduling mechanism. In
@@ -600,6 +600,13 @@ in reverse order.
 \index{worklet~types!point~to~cell~map|(}
 \index{point~to~cell~map~worklet|(}
 \index{map~point~to~cell|(}
+
+\fix{Write the documentation to go along with the example.}
+
+\fix{Should implement \textcode{GetCellDimensions} in
+  \textidentifier{CellSetStructured} and updated this example.}
+
+\vtkmlisting{Implementation and use of a map point to cell worklet.}{UseWorkletMapPointToCell.cxx}
 
 \index{map~point~to~cell|)}
 \index{point~to~cell~map~worklet|)}

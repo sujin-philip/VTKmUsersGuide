@@ -87,8 +87,7 @@ void Test()
         cellSet.GetNumberOfCells() == cellCentersArray.GetNumberOfValues(),
         "Cell centers array has wrong number of values.");
 
-  // TODO: Add a GetCellDimensions method to CellSetStructured.
-  vtkm::Id3 cellDimensions = cellSet.GetPointDimensions() - vtkm::Id3(1);
+  vtkm::Id3 cellDimensions = cellSet.GetCellDimensions() - vtkm::Id3(1);
 
   vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,3> >::PortalConstControl
       cellCentersPortal = cellCentersArray.GetPortalConstControl();

@@ -741,6 +741,118 @@ centers.
 \index{cell~to~point~map~worklet|(}
 \index{map~cell~to~point|(}
 
+A worklet deriving \vtkmworklet{WorkletMapCellToPoint} performs a mapping
+operation that applies a function (the operator in the worklet) on all the
+points of a \textidentifier{DataSet}. While operating on the point, the
+worklet has access to fields associated both with the point and with all
+incident cells.
+
+A \textidentifier{WorkletMapCellToPoint} subclass is invoked with a
+\vtkmworklet{DispatcherMapTopology}. This dispatcher has two template
+arguments. The first argument is the type of the worklet subclass. The
+second argument, which is optional, is a device adapter tag.
+
+A cell to point map worklet supports the following tags in the parameters
+of its \controlsignature.
+
+\begin{description}
+\item[\sigtag{TopologyIn}] This tag represents the cell set that defines
+  the collection of points the map will operate on. A \sigtag{TopologyIn}
+  argument expects a \textidentifier{CellSet} subclass or a
+  \textidentifier{DynamicCellSet} in the associated parameter of the
+  dispatcher's \textcode{Invoke}.
+
+  There must be exactly one \sigtag{TopologyIn} argument, and the worklet's
+  \inputdomain must be set to this argument.
+
+\item[\sigtag{FieldInCell}] This tag represents an input field that is
+  associated with the cells. A \sigtag{FieldInCell} argument expects an
+  \textidentifier{ArrayHandle} or a \textidentifier{DynamicArrayHandle} in
+  the associated parameter of the dispatcher's \textcode{Invoke}. The size
+  of the array must be exactly the number of cells.
+
+  Each invocation of the worklet gets a Vec-like object containing the
+  field values for all the cells incident with the point being visited. The
+  order of the entries is arbitrary but will be consistent with the values
+  of all other \sigtag{FieldInCell} arguments for the same worklet
+  invocation. If the field is a vector field, then the provided object is a
+  Vec of Vecs.
+
+  \sigtag{FieldInCell} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+\item[\sigtag{FieldInPoint}] This tag represents an input field that is
+  associated with the points. A \sigtag{FieldInPoint} argument expects an
+  \textidentifier{ArrayHandle} or a \textidentifier{DynamicArrayHandle} in
+  the associated parameter of the dispatcher's \textcode{Invoke}. The size
+  of the array must be exactly the number of points. Each invocation of the
+  worklet gets a single value out of this array.
+
+  \sigtag{FieldInPoint} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+\item[\sigtag{FieldOutPoint}] This tag represents an output field, which is
+  necessarily associated with points. A \sigtag{FieldOutPoint} argument
+  expects an \textidentifier{ArrayHandle} or a
+  \textidentifier{DynamicArrayHandle} in the associated parameter of the
+  dispatcher's \textcode{Invoke}. The array is resized before scheduling
+  begins, and each invocation of the worklet sets a single value in the
+  array.
+
+  \sigtag{FieldOutPoint} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+  \sigtag{FieldOut} is an alias for \sigtag{FieldOutPoint} (since output
+  arrays can only be defined on points).
+
+\item[\sigtag{FieldInOutPoint}] This tag represents field that is both an
+  input and an output, which is necessarily associated with points. A
+  \sigtag{FieldInOutPoint} argument expects an \textidentifier{ArrayHandle}
+  or a \textidentifier{DynamicArrayHandle} in the associated parameter of
+  the dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
+  single value out of this array, which is replaced by the resulting value
+  after the worklet completes.
+
+  \sigtag{FieldInOutPoint} has a single template parameter that specifies
+  what data types are acceptable for the array. The type tags are described
+  in Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+  \sigtag{FieldInOut} is an alias for \sigtag{FieldInOutPoint} (since output
+  arrays can only be defined on points).
+
+  \commoncontrolsignaturetags
+\end{description}
+
+A field map worklet supports the following tags in the parameters of its
+\executionsignature.
+
+\begin{description}
+  \numericexecutionsignaturetags
+
+\item[\sigtag{CellCount}] This tag produces a \vtkm{IdComponent} equal to
+  the number of cells incident on the point being visited. The Vecs
+  provided from a \textsignature{FieldInCell} parameter will be the same
+  size as \sigtag{CellCount}.
+
+\item[\sigtag{CellIndices}] This tag produces a Vec-like object of
+  \vtkm{Id}s giving the indices for all incident cells. The
+  order of the entries is arbitrary but will be consistent with the values
+  of all other \textsignature{FieldInCell} arguments for the same worklet
+  invocation.
+
+  \commonexecutionsignaturetags
+\end{description}
+
+Cell to point field maps are typically used for converting fields
+associated with cells to points so that they can be interpolated. The
+following example does a simple averaging, but you can also implement other
+strategies such as a volume weighted average.
+
+\vtkmlisting{Implementation and use of a map cell to point worklet.}{UseWorkletMapCellToPoint.cxx}
+
 \index{map~cell~to~point|)}
 \index{cell~to~point~map~worklet|)}
 \index{worklet~types!cell~to~point~map|)}

@@ -20,6 +20,7 @@ set(example_src
   Timer.cxx
   Traits.cxx
   TransferringArguments.cxx
+  UseWorkletMapCellToPoint.cxx
   UseWorkletMapField.cxx
   UseWorkletMapPointToCell.cxx
   )

@@ -237,7 +237,11 @@
                    ParametricCoordinatesToWorldCoordinates,
                    WorldCoordinatesToParametricCoordinates,
                    ParametricCoordinates,
-                   TransferToOpenGL
+                   TransferToOpenGL,
+                   TopologyElementTagCell,
+                   TopologyElementTagPoint,
+                   TopologyElementTagEdge,
+                   TopologyElementTagFace
                    },
   morekeywords={[3]VTKM_CONT_EXPORT,VTKM_EXEC_EXPORT,VTKM_EXEC_CONT_EXPORT,
                    VTKM_EXEC_CONSTANT_EXPORT,
@@ -275,8 +279,8 @@
                    WorkIndex,VisitIndex,
                    ThreadIndices,
                    CellShape,
-                   FromCount,PointCount,
-                   FromIndices,PointIndices,
+                   FromCount,PointCount,CellCount,
+                   FromIndices,PointIndices,CellIndices,
                    IdType,Id2Type,Id3Type,IdComponentType,Index,
                    Scalar,ScalarAll,
                    Vec2,Vec3,Vec4,VecAll,

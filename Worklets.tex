@@ -30,7 +30,7 @@ Each worklet type has a generic superclass that worklets of that particular
 type must inherit. This makes the type of the worklet easy to identify. The
 following list describes each worklet type provided by VTK-m and the
 superclass that supports it. Details on how to create worklets of each type
-are given in Section~\ref{sec:CreatingWorkletsOfType}. It is also possible
+are given in Section~\ref{sec:WorkletTypeReference}. It is also possible
 to create new worklet types in VTK-m. This is an advanced topic covered in
 Chapter~\ref{chap:AdvancedWorklets}.
 
@@ -247,7 +247,7 @@ the dispatcher \textcode{Invoke} functions do not return values. The
 parameters of the function prototype are \index{signature tags}\keyterm{tags}
 that identify the type of data that is expected to be passed to invoke.
 \controlsignature tags are defined by the worklet type and the various tags
-are documented more fully in Section~\ref{sec:CreatingWorkletsOfType}.
+are documented more fully in Section~\ref{sec:WorkletTypeReference}.
 
 By convention, \controlsignature tag names start with the base concept
 (e.g. \textsignature{Field} or \textsignature{Topology}) followed by the
@@ -411,16 +411,18 @@ environment, it must be declared with the \vtkmexecexport (or
 \vtkmexeccontexport) modifier. Third, the method must be declared
 \textcode{const} to help preserve thread safety.
 
-\subsection{Worklet Types}
-\label{sec:CreatingWorkletsOfType}
+\section{Worklet Type Reference}
+\label{sec:WorkletTypeReference}
 
 \index{worklet~types|(}
 
 There are multiple worklet types provided by VTK-m, each designed to
-support a particular type of operation. This section will define each of
-the worklet types, identify the generic superclass that a worklet instance
-should derive, identify the signature tags and their meanings, and give an
-example of the worklet in use.
+support a particular type of operation. Section~\ref{sec:WorkletTypes} gave
+a brief overview of each type of worklet. This section gives a much more
+detailed reference for each of the worklet types including identifying the
+generic superclass that a worklet instance should derive, listing the
+signature tags and their meanings, and giving an example of the worklet in
+use.
 
 \newcommand{\commoncontrolsignaturetags}{
 \item[\sigtag{WholeArrayIn}] This tag represents an array where all entries
@@ -485,7 +487,7 @@ example of the worklet in use.
   described in Section~\ref{sec:WorkletScatter}).
 }
 
-\subsubsection{Field Map}
+\subsection{Field Map}
 
 \index{worklet~types!field~map|(}
 \index{field~map~worklet|(}
@@ -583,7 +585,167 @@ in reverse order.
 \index{field~map~worklet|)}
 \index{worklet~types!field~map|)}
 
-\subsubsection{Topology Map}
+\subsection{Topology Map}
+\label{sec:TopologyMaps}
+
+A topology map performs a mapping that it applies a function (the
+operator in the worklet) on all the elements of a \textidentifier{DataSet}
+of a particular type (i.e. point, edge, face, or cell). While operating on
+the element, the worklet has access to data from all incident elements of
+another type.
+
+There are several versions of topology maps that differ in what type of
+element being mapped from and what type of element being mapped to. The
+subsequent sections describe these different variations of the topology
+maps. Regardless of their names, they are all defined in
+\vtkmheader{vtkm/worklet}{WorkletMapTopology.h} and are all invoked with
+\vtkmworklet{DispatcherMapTopology}.
+
+\subsubsection{Point to Cell Map}
+\label{sec:WorkletMapPointToCell}
+
+\index{worklet~types!point~to~cell~map|(}
+\index{point~to~cell~map~worklet|(}
+\index{map~point~to~cell|(}
+
+A worklet deriving \vtkmworklet{WorkletMapPointToCell} performs a mapping
+operation that applies a function (the operator in the worklet) on all the
+cells of a \textidentifier{DataSet}. While operating on the cell, the
+worklet has access to fields associated both with the cell and with all
+incident points. Additionally, the worklet can get information about the
+structure of the cell and can perform operations like interpolation on it.
+
+A \textidentifier{WorkletMapPointToCell} subclass is invoked with a
+\vtkmworklet{DispatcherMapTopology}. This dispatcher has two template
+arguments. The first argument is the type of the worklet subclass. The
+second argument, which is optional, is a device adapter tag.
+
+A point to cell map worklet supports the following tags in the parameters
+of its \controlsignature.
+
+\begin{description}
+\item[\sigtag{TopologyIn}] This tag represents the cell set that defines
+  the collection of cells the map will operate on. A \sigtag{TopologyIn}
+  argument expects a \textidentifier{CellSet} subclass or a
+  \textidentifier{DynamicCellSet} in the associated parameter of the
+  dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
+  cell shape tag. (Cell shapes and the operations you can do with cells are
+  discussed in Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.)
+
+  There must be exactly one \sigtag{TopologyIn} argument, and the worklet's
+  \inputdomain must be set to this argument.
+
+\item[\sigtag{FieldInPoint}] This tag represents an input field that is
+  associated with the points. A \sigtag{FieldInPoint} argument expects an
+  \textidentifier{ArrayHandle} or a \textidentifier{DynamicArrayHandle} in
+  the associated parameter of the dispatcher's \textcode{Invoke}. The size
+  of the array must be exactly the number of points.
+
+  Each invocation of the worklet gets a Vec-like object containing the
+  field values for all the points incident with the cell being visited. The
+  order of the entries is consistent with the defined order of the vertices
+  for the visited cell's shape. If the field is a vector field, then the
+  provided object is a Vec of Vecs.
+
+  \sigtag{FieldInPoint} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+\item[\sigtag{FieldInCell}] This tag represents an input field that is
+  associated with the cells. A \sigtag{FieldInCell} argument expects an
+  \textidentifier{ArrayHandle} or a \textidentifier{DynamicArrayHandle} in
+  the associated parameter of the dispatcher's \textcode{Invoke}. The size
+  of the array must be exactly the number of cells. Each invocation of the
+  worklet gets a single value out of this array.
+
+  \sigtag{FieldInCell} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+\item[\sigtag{FieldOutCell}] This tag represents an output field, which is
+  necessarily associated with cells. A \sigtag{FieldOutCell} argument
+  expects an \textidentifier{ArrayHandle} or a
+  \textidentifier{DynamicArrayHandle} in the associated parameter of the
+  dispatcher's \textcode{Invoke}. The array is resized before scheduling
+  begins, and each invocation of the worklet sets a single value in the
+  array.
+
+  \sigtag{FieldOutCell} has a single template parameter that specifies what
+  data types are acceptable for the array. The type tags are described in
+  Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+  \sigtag{FieldOut} is an alias for \sigtag{FieldOutCell} (since output
+  arrays can only be defined on cells).
+
+\item[\sigtag{FieldInOutCell}] This tag represents field that is both an
+  input and an output, which is necessarily associated with cells. A
+  \sigtag{FieldInOutCell} argument expects an \textidentifier{ArrayHandle}
+  or a \textidentifier{DynamicArrayHandle} in the associated parameter of
+  the dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
+  single value out of this array, which is replaced by the resulting value
+  after the worklet completes.
+
+  \sigtag{FieldInOutCell} has a single template parameter that specifies
+  what data types are acceptable for the array. The type tags are described
+  in Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
+
+  \sigtag{FieldInOut} is an alias for \sigtag{FieldInOutCell} (since output
+  arrays can only be defined on cells).
+
+  \commoncontrolsignaturetags
+\end{description}
+
+A field map worklet supports the following tags in the parameters of its
+\executionsignature.
+
+\begin{description}
+  \numericexecutionsignaturetags
+
+\item[\sigtag{CellShape}] This tag produces a shape tag corresponding to
+  the shape of the visited cell. (Cell shapes and the operations you can do
+  with cells are discussed in
+  Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.) This is the
+  same value that gets provided if you reference the
+  \textsignature{TopologyIn} parameter.
+
+\item[\sigtag{PointCount}] This tag produces a \vtkm{IdComponent} equal to
+  the number of points incident on the cell being visited. The Vecs
+  provided from a \textsignature{FieldInPoint} parameter will be the same
+  size as \sigtag{PointCount}.
+
+\item[\sigtag{PointIndices}] This tag produces a Vec-like object of
+  \vtkm{Id}s giving the indices for all incident points. Like values from a
+  \textsignature{FieldInPoint} parameter, the order of the entries is
+  consistent with the defined order of the vertices for the visited cell's
+  shape.
+
+  \commonexecutionsignaturetags
+\end{description}
+
+Point to cell field maps are a powerful construct that allow you to
+interpolate point fields throughout the space of the data set. The
+following example provides a simple demonstration that finds the geometric
+center of each cell by interpolating the point coordinates to the cell
+centers.
+
+\vtkmlisting{Implementation and use of a map point to cell worklet.}{UseWorkletMapPointToCell.cxx}
+
+\index{map~point~to~cell|)}
+\index{point~to~cell~map~worklet|)}
+\index{worklet~types!point~to~cell~map|)}
+
+\subsubsection{Cell To Point Map}
+\label{sec:WorkletMapCellToPoint}
+
+\index{worklet~types!cell~to~point~map|(}
+\index{cell~to~point~map~worklet|(}
+\index{map~cell~to~point|(}
+
+\index{map~cell~to~point|)}
+\index{cell~to~point~map~worklet|)}
+\index{worklet~types!cell~to~point~map|)}
+
+\subsubsection{General Topology Maps}
 \label{sec:WorkletMapTopology}
 
 \index{worklet~types!topology~map|(}
@@ -593,23 +755,6 @@ in reverse order.
 \index{map~topology|)}
 \index{topology~map~worklet|)}
 \index{worklet~types!topology~map|)}
-
-\subsubsection{Point to Cell Map}
-\label{sec:WorkletMapPointToCell}
-
-\index{worklet~types!point~to~cell~map|(}
-\index{point~to~cell~map~worklet|(}
-\index{map~point~to~cell|(}
-
-\fix{Write the documentation to go along with the example.}
-
-\vtkmlisting{Implementation and use of a map point to cell worklet.}{UseWorkletMapPointToCell.cxx}
-
-\index{map~point~to~cell|)}
-\index{point~to~cell~map~worklet|)}
-\index{worklet~types!point~to~cell~map|)}
-
-\fix{When is cell to point map going to be implemented?}
 
 %% \subsubsection{Cell to Point Map}
 %% \label{sec:WorkletMapCellToPoint}
@@ -1402,7 +1547,7 @@ in reverse order.
 \index{worklet~types|)}
 
 
-\subsection{Whole Arrays}
+\section{Whole Arrays}
 \label{sec:WholeArrays}
 
 \index{whole~array|(}
@@ -1413,7 +1558,7 @@ in reverse order.
 \index{worklet!whole~array|)}
 \index{whole~array|)}
 
-\subsection{Execution Objects}
+\section{Execution Objects}
 \label{sec:ExecutionObjects}
 
 \index{execution~object|(}
@@ -1424,7 +1569,7 @@ in reverse order.
 \index{worklet!execution~object|)}
 \index{execution~object|)}
 
-\subsection{Scatter}
+\section{Scatter}
 \label{sec:WorkletScatter}
 
 \index{scatter|(}

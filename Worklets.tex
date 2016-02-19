@@ -579,7 +579,7 @@ detail, but here is a simple example that uses the random access of
 \sigtag{WholeArrayOut} to make a worklet that copies an array
 in reverse order.
 
-\vtkmlisting{Using \textidentifier{ExecutionWholeArray} for random array access.}{RandomArrayAccess.cxx}
+\vtkmlisting[ex:WholeArray]{Leveraging field maps and field maps for general processing.}{RandomArrayAccess.cxx}
 
 \index{map~field|)}
 \index{field~map~worklet|)}
@@ -1658,6 +1658,44 @@ parameters of its \executionsignature.
 \index{worklet!whole~array|(}
 \index{control~signature!whole~array|(}
 
+As documented in Section~\ref{sec:WorkletTypeReference}, each worklet type
+has a set of parameter types that can be used to pass data to and from the
+worklet invocation. But what happens if you want to pass data that cannot
+be expressed in these predefined mechanisms.
+Chapter~\ref{chap:AdvancedWorklets} describes how to create completely new
+worklet types and parameter tags. However, designing such a system for a
+one-time use is overkill.
+
+Instead, all VTK-m worklets provide a couple of mechanisms that allow you
+to pass arbitrary data to a worklet. In this section, we will explore a
+\keyterm{whole array} argument that provides random access to an entire
+array. In the following section we describe an even more general mechanism
+to describe any execution object.
+
+We have already seen a demonstration of using a whole array in
+Example~\ref{ex:WholeArray} to perform a simple array copy. Here we will
+construct a more thorough example of building functionality that requires
+random array access.
+
+Let's say we want to measure the quality of triangles in a mesh. A
+common method for doing this is using the equation
+\begin{equation*}
+  q = \frac{4a\sqrt{3}}{h_1^2 + h_2^2 + h_3^2}
+\end{equation*}
+where $a$ is the area of the triangle and $h_1$, $h_2$, and $h_3$ are the
+lengths of the sides. We can easily compute this in a cell to point map,
+but what if we want to speed up the computations by reducing precision?
+After all, we probably only care if the triangle is good, reasonable, or
+bad. So instead, let's build a lookup table and then retrieve the triangle
+quality from that lookup table based on its sides.
+
+The following example demonstrates creating such a table lookup in an array
+and using a worklet argument tagged with \sigtag{WholeArrayIn} to make it
+accessible.
+
+\vtkmlisting[ex:TriQualityWholeArray]{Using \protect\sigtag{WholeArrayIn} to access a lookup table in a worklet.}{TriangleQualityWholeArray.cxx}
+
+
 \index{control~signature!whole~array|)}
 \index{worklet!whole~array|)}
 \index{whole~array|)}
@@ -1668,6 +1706,44 @@ parameters of its \executionsignature.
 \index{execution~object|(}
 \index{worklet!execution~object|(}
 \index{control~signature!execution~object|(}
+
+Although passing whole arrays into a worklet is a convenient way to provide
+data to a worklet that is not divided by the input or output domain, it is
+sometimes not the best structure to represent data. Thus, all worklets
+support a second type of argument called an \keyterm{execution object}, or
+exec object for short, that passes the given object directly to each
+invocation of the worklet. This is defined by an \sigtag{ExecObject} tag in
+the \controlsignature.
+
+The execution object must be a subclass of \vtkmexec{ExecutionObjectBase}.
+Also, it must be possible to copy the object from the control environment
+to the execution environment and be usable in the execution environment,
+and any method of the execution object used within the worklet must be
+declared with \vtkmexecexport or \vtkmexeccontexport.
+
+An execution object can refer to an array, but the array reference must be
+through an array portal for the execution environment. This can be
+retrieved from the \textcode{PrepareForInput} method in
+\vtkmcont{ArrayHandle} as described in
+Section~\ref{sec:ArrayHandleInterfaceToExecutionEnvironment}. Other VTK-m
+data objects, such as the subclasses of \vtkmcont{CellSet}, have similar
+methods.
+
+Returning to the example we have in Section~\ref{sec:WholeArrays}, we are
+computing triangle quality quickly by looking up the value in a table. In
+Example~\ref{ex:TriQualityWholeArray} the table is passed directly to the
+worklet as a whole array. However, there is some additional code involved
+to get the appropriate index into the table for a given triangle. Let us
+say that we want to have the ability to compute triangle quality in many
+different worklets. Rather than pass in a raw array, it would be better to
+encapsulate the functionality in an object.
+
+We can do that by creating an execution object that has the table stored
+inside and methods to compute the triangle quality. The following example
+uses the table built in Example~\ref{ex:TriQualityWholeArray} to create
+such an object.
+
+\vtkmlisting[ex:TriQualityExecObject]{Using \protect\sigtag{ExecObject} to access a lookup table in a worklet.}{TriangleQualityExecObject.cxx}
 
 \index{control~signature!execution~object|)}
 \index{worklet!execution~object|)}

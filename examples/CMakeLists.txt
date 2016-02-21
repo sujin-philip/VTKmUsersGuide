@@ -17,6 +17,8 @@ set(example_src
   ExportMacro.cxx
   FunctionInterface.cxx
   ListTags.cxx
+  Matrix.cxx
+  NewtonsMethod.cxx
   ScatterCounting.cxx
   ScatterUniform.cxx
   Timer.cxx

@@ -7,6 +7,7 @@ set(example_src
   ArrayHandlePermutation.cxx
   ArrayHandleTransform.cxx
   ArrayHandleZip.cxx
+  CellOperations.cxx
   CellShapes.cxx
   CoreDataTypes.cxx
   CustomDeviceAdapter.cxx

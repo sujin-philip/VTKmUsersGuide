@@ -606,14 +606,20 @@ following functions for working with parametric coordinates.
 
 \begin{description}
 \item[\vtkmexec{ParametricCoordinatesCenter}] Returns the parametric
-  coordinates for the center of a given shape. It takes four arguments: the
+  coordinates for the center of a given shape. It takes 4 arguments: the
   number of points in the cell, a \vtkm{Vec} of size 3 to store the
-  results, a shape tag, and a worklet object (for raising errors).
+  results, a shape tag, and a worklet object (for raising errors). A second
+  form of this method takes 3 arguments and returns the result as a
+  \vtkm{Vec}\textcode{<}\vtkm{FloatDefault}\textcode{,3>} instead of
+  passing it as a parameter.
 \item[\vtkmexec{ParametricCoordinatesPoint}] Returns the parametric
-  coordinates for a given point of a given shape. It takes five arguments:
-  the number of points in the cell, the index of the point to query, a
+  coordinates for a given point of a given shape. It takes 5 arguments: the
+  number of points in the cell, the index of the point to query, a
   \vtkm{Vec} of size 3 to store the results, a shape tag, and a worklet
-  object (for raising errors).
+  object (for raising errors). A second form of this method takes 3
+  arguments and returns the result as a
+  \vtkm{Vec}\textcode{<}\vtkm{FloatDefault}\textcode{,3>} instead of
+  passing it as a parameter.
 \item[\vtkmexec{ParametricCoordinatesToWorldCoordinates}] Given a vector of
   point coordinates (usually given by a \sigtag{FieldPointIn} worklet
   argument), a \vtkm{Vec} of size 3 containing parametric coordinates, a
@@ -648,7 +654,7 @@ of size 3 containing parametric coordinates, a shape tag, and a worklet
 object (for raising errors). It returns the field interpolated to the
 location represented by the given parametric coordinates.
 
-\fix{Example: Interpolating field values to a cell's center.}
+\vtkmlisting{Interpolating field values to a cell's center.}{CellCenters.cxx}
 
 \index{interpolation|)}
 \index{cell!interpolation|)}
@@ -672,7 +678,7 @@ return in a \vtkm{Vec} of size 3 corresponding to the partial derivatives
 in the $x$, $y$, and $z$ directions. This derivative is equivalent to the
 gradient of the field.
 
-\fix{Example: Computing the derivative of the field at cell centers.}
+\vtkmlisting{Computing the derivative of the field at cell centers.}{CellDerivatives.cxx}
 
 \index{gradient|)}
 \index{derivative|)}

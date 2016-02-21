@@ -510,11 +510,83 @@ that is used when the actual cell shape is not known at compile time.
 equivalent identifier for a generic cell; cell shape identifiers can be
 placed in a \vtkm{IdComponent} at runtime.
 
-\fix{Add other basic cell shape features such as traits, converting back
-  and forth, and \vtkmmacro{vtkmGenericCellShapeMacro}.}
+When using cell shapes in templated classes and functions, you can use the
+\vtkmmacro{VTKM\_IS\_CELL\_SHAPE\_TAG} to ensure a type is a valid cell
+shape tag. This macro takes one argument and will produce a compile error
+if the argument is not a cell shape tag type.
+
+\subsubsection{Converting Between Tags and Identifiers}
+
+Every cell shape tag has a member variable named \textcode{Id} that
+contains the identifier for the cell shape. This provides a convenient
+mechanism for converting a cell shape tag to an identifier. Most cell shape
+tags have their \textcode{Id} member as a compile-time constant, but
+\textidentifier{CellShapeTagGeneric} is set at run time.
+
+\vtkmheader{vtkm}{CellShape.h} also declares a templated class named
+\vtkm{CellShapeIdToTag} that converts a cell shape identifier to a cell
+shape tag. \textidentifier{CellShapeIdToTag} as a single template argument
+that is the identifier. Inside the class is a type named \textcode{Tag}
+that is the type of the correct tag.
+
+\fix{Example: Using \textidentifier{CellShapeIdToTag}.}
+
+However, \textidentifier{CellShapeIdToTag} is only viable if the identifier
+can be resolved at compile time. In the case where a cell identifier is
+stored in a variable or an array or the code is using a
+\textidentifier{CellShapeTagGeneric}, the correct cell shape is not known
+at run time. In this case, \vtkmmacro{vtkmGenericCellShapeMacro} can be
+used to check all possible conditions. This macro is embedded in a switch
+statement where the condition is the cell shape identifier.
+\vtkmmacro{vtkmGenericCellShapeMacro} has a single argument, which is an
+expression to be executed. Before the expression is executed, a type named
+\textcode{CellShapeTag} is defined as the type of the appropriate cell
+shape tag. Often this method is used to implement the condition for a
+\textidentifier{CellShapeTagGeneric} in a function overloaded for cell
+types.
+
+\fix{Example: Using \protect\vtkmmacro{vtkmGenericCellShapeMacro} to
+  implement a function overloaded on cell shape. Alternatively, just point
+  to the traits example.}
 
 \index{tag!shape|)}
 \index{tag!cell~shape|)}
+
+\subsubsection{Cell Traits}
+
+\index{cell~traits|(}
+
+The \vtkmheader{vtkm}{CellTraits.h} header file contains a traits class
+named \vtkm{CellTraits} that provides information about a cell. Each
+specialization of \textidentifier{CellTraits} contains the following
+members.
+
+\begin{description}
+\item[\textcode{TOPOLOGICAL\_DIMENSIONS}] Defines the topological
+  dimensions of the cell type. This is 3 for polyhedra, 2 for polygons, 1
+  for lines, and 0 for points.
+\item[\textcode{TopologicalDimensionsTag}] A type set to either
+  \vtkm{CellTopologicalDimensionsTag}\textcode{<3>},
+  \textidentifier{CellTopologicalDimensionsTag}\textcode{<2>},
+  \textidentifier{CellTopologicalDimensionsTag}\textcode{<1>}, or
+  \textidentifier{CellTopologicalDimensionsTag}\textcode{<0>}. The number
+  is consistent with \textcode{TOPOLOGICAL\_DIMENSIONS}. This tag is
+  provided for convenience when specializing functions.
+\item[\textcode{IsSizeFixed}] Set to either \vtkm{CellTraitsTagSizeFixed}
+  for cell types with a fixed number of points (for example, triangle) or
+  \vtkm{CellTraitsTagSizeVariable} for cell types with a variable number of
+  points (for example, polygon).
+\item[\textcode{NUM\_POINTS}] A \vtkm{IdComponent} set to the number of
+  points in the cell. This member is only defined when there is a constant
+  number of points (i.e. \textcode{IsSizeFixed} is set to
+  \vtkm{CellTraitsTagSizeFixed}).
+\end{description}
+
+\fix{Example: Using \textidentifier{CellTraits} to implement a polygon
+  normal estimator.}
+
+\index{cell~traits|)}
+
 \index{cell~shape|)}
 \index{shape|)}
 

@@ -529,7 +529,7 @@ shape tag. \textidentifier{CellShapeIdToTag} as a single template argument
 that is the identifier. Inside the class is a type named \textcode{Tag}
 that is the type of the correct tag.
 
-\fix{Example: Using \textidentifier{CellShapeIdToTag}.}
+\vtkmlisting{Using \textidentifier{CellShapeIdToTag}.}{CellShapeIdToTag.cxx}
 
 However, \textidentifier{CellShapeIdToTag} is only viable if the identifier
 can be resolved at compile time. In the case where a cell identifier is
@@ -543,11 +543,8 @@ expression to be executed. Before the expression is executed, a type named
 \textcode{CellShapeTag} is defined as the type of the appropriate cell
 shape tag. Often this method is used to implement the condition for a
 \textidentifier{CellShapeTagGeneric} in a function overloaded for cell
-types.
-
-\fix{Example: Using \protect\vtkmmacro{vtkmGenericCellShapeMacro} to
-  implement a function overloaded on cell shape. Alternatively, just point
-  to the traits example.}
+types. A demonstration of \vtkmmacro{vtkmGenericCellShapeMacro} is given in
+Example~\ref{ex:GenericCellNormal}.
 
 \index{tag!shape|)}
 \index{tag!cell~shape|)}
@@ -582,8 +579,7 @@ members.
   \vtkm{CellTraitsTagSizeFixed}).
 \end{description}
 
-\fix{Example: Using \textidentifier{CellTraits} to implement a polygon
-  normal estimator.}
+\vtkmlisting[ex:GenericCellNormal]{Using \textidentifier{CellTraits} to implement a polygon normal estimator.}{GenericCellNormal.cxx}
 
 \index{cell~traits|)}
 

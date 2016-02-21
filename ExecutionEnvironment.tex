@@ -588,6 +588,93 @@ members.
 
 \subsection{Parametric and World Coordinates}
 
+\index{parametric~coordinates|(}
+\index{world~coordinates|(}
+\index{cell!parametric~coordinates|(}
+\index{cell!world~coordinates|(}
+
+Each cell type supports a one-to-one mapping between a set of parametric
+coordinates in the unit cube (or some subset of it) and the points in 3D
+space that are the locus contained in the cell. Parametric coordinates are
+useful because certain features of the cell, such as vertex location and
+center, are at a consistent location in parametric space irrespective of
+the location and distortion of the cell in world space. Also, many field
+operations are much easier with parametric coordinates.
+
+The \vtkmheader{vtkm/exec}{ParametricCoordinates.h} header file contains the
+following functions for working with parametric coordinates.
+
+\begin{description}
+\item[\vtkmexec{ParametricCoordinatesCenter}] Returns the parametric
+  coordinates for the center of a given shape. It takes four arguments: the
+  number of points in the cell, a \vtkm{Vec} of size 3 to store the
+  results, a shape tag, and a worklet object (for raising errors).
+\item[\vtkmexec{ParametricCoordinatesPoint}] Returns the parametric
+  coordinates for a given point of a given shape. It takes five arguments:
+  the number of points in the cell, the index of the point to query, a
+  \vtkm{Vec} of size 3 to store the results, a shape tag, and a worklet
+  object (for raising errors).
+\item[\vtkmexec{ParametricCoordinatesToWorldCoordinates}] Given a vector of
+  point coordinates (usually given by a \sigtag{FieldPointIn} worklet
+  argument), a \vtkm{Vec} of size 3 containing parametric coordinates, a
+  shape tag, and a worklet object (for raising errors), returns the world
+  coordinates.
+\item[\vtkmexec{WorldCoordinatesToParametricCoordinates}] Given a vector of
+  point coordinates (usually given by a \sigtag{FieldPointIn} worklet
+  argument), a \vtkm{Vec} of size 3 containing world coordinates, a shape
+  tag, and a worklet object (for raising errors), returns the parametric
+  coordinates. This function can be slow for cell types with nonlinear
+  interpolation (which is anything that is not a simplex).
+\end{description}
+
+\index{cell!world~coordinates|)}
+\index{cell!parametric~coordinates|)}
+\index{world~coordinates|)}
+\index{parametric~coordinates|)}
+
 \subsection{Interpolation}
 
+\index{cell!interpolation|(}
+\index{interpolation|(}
+
+The shape of every cell is defined by the connections of some finite set of
+points. Field values defined on those points can be interpolated to any
+point within the cell to estimate a continuous field.
+
+The \vtkmheader{vtkm/exec}{CellInterpolate.h} header contains the function
+\vtkmexec{CellInterpolate} that takes a vector of point field values
+(usually given by a \sigtag{FieldPointIn} worklet argument), a \vtkm{Vec}
+of size 3 containing parametric coordinates, a shape tag, and a worklet
+object (for raising errors). It returns the field interpolated to the
+location represented by the given parametric coordinates.
+
+\fix{Example: Interpolating field values to a cell's center.}
+
+\index{interpolation|)}
+\index{cell!interpolation|)}
+
 \subsection{Derivatives}
+
+\index{cell!derivative|(}
+\index{cell!gradient|(}
+\index{derivative|(}
+\index{gradient|(}
+
+Since interpolations provide a continuous field function over a cell, it is
+reasonable to consider the derivative of this function. The
+\vtkmheader{vtkm/exec}{CellDerivative.h} header contains the function
+\vtkmexec{CellDerivative} that takes a vector of scalar point field values
+(usually given by a \sigtag{FieldPointIn} worklet argument), a \vtkm{Vec}
+of size 3 containing parametric coordinates, a shape tag, and a worklet
+object (for raising errors). It returns the field derivative at the
+location represented by the given parametric coordinates. The derivative is
+return in a \vtkm{Vec} of size 3 corresponding to the partial derivatives
+in the $x$, $y$, and $z$ directions. This derivative is equivalent to the
+gradient of the field.
+
+\fix{Example: Computing the derivative of the field at cell centers.}
+
+\index{gradient|)}
+\index{derivative|)}
+\index{cell!gradient|)}
+\index{cell!derivative|)}

@@ -5,9 +5,10 @@ project(VTKmUsersGuide CXX C)
 include(UseLATEX.cmake)
 
 set(images
-  SANDimages/DOEbwlogo.pdf
-  SANDimages/snllineblk.pdf
-  SANDimages/SANDbackground.png
+  images/TitleImage.png
+  images/SandiaLogo.pdf
+  images/DOELogo.pdf
+  images/KitwareLogo.png
   images/CellConnectionsHexahedron.pdf
   images/CellConnectionsLine.pdf
   images/CellConnectionsPolygon.pdf
@@ -23,6 +24,10 @@ set(images
   )
 
 set(input_docs
+  Macros.tex
+  LanguageDefinitions.tex
+  TitlePage.tex
+  Contributors.tex
   Introduction.tex
   BasicProvisions.tex
   ControlEnvironment.tex

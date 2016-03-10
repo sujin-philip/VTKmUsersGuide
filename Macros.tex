@@ -1,0 +1,41 @@
+% Collection of macros and stuff to use in the user-guide.
+
+%-------------------------------------------------------------------------------
+% stuff for "boxed text" used for didyouknow and common error boxes.
+%-------------------------------------------------------------------------------
+\usepackage[tikz]{bclogo}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{ifthen}
+
+\definecolor{bgblue}{RGB}{245,243,253}
+\definecolor{ttblue}{RGB}{91,194,224}
+\definecolor{bgyellow}{RGB}{255,255,204}
+
+
+% change title color.
+\renewcommand\bcStyleTitre[1]{\large\textcolor{ttblue}{#1}}
+%\begin{bclogo}[couleur=bgblue, arrondi =0 , logo=\bcbombe, barre=none,noborder=true]{Commom Programming Error}
+%\itshape\lipsum[4]
+%\end{bclogo}
+
+\newenvironment{commonerrors}%
+{\vspace{1em}\begin{bclogo}[couleur=bgblue, arrondi =0 , logo=\bcbombe, barre=snake,noborder=true]{Common Errors}\itshape}%
+{\end{bclogo}\vspace{1em}}
+
+\newenvironment{didyouknow}%
+{\vspace{1em}\begin{bclogo}[couleur=bgblue, arrondi =0 , logo=\bcinfo, barre=snake,noborder=true]{Did you know?}\itshape}%
+{\end{bclogo}\vspace{1em}}
+
+
+% Cite commands I use to abstract away the different ways to reference an
+% entry in the bibliography (superscripts, numbers, dates, or author
+% abbreviations).  \scite is a short cite that is used immediately after
+% when the authors are mentioned.  \lcite is a full citation that is used
+% anywhere.  Both should be used right next to the text being cited without
+% any spacing.
+\newcommand*{\lcite}[1]{~\cite{#1}}
+\newcommand*{\scite}[1]{~\cite{#1}}
+
+\newcommand{\etal}{et al.}
+
+\newcommand*{\keyterm}[1]{\emph{#1}}

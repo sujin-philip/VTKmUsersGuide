@@ -1,0 +1,193 @@
+% -*- latex -*-
+\documentclass{InsightSoftwareGuide}
+\usepackage[
+  paper=letterpaper,
+  paperwidth=8in,
+  paperheight=10in,
+  lmargin=0.75in,
+  rmargin=0.5in,
+  tmargin=0.75in,
+  bmargin=0.75in]{geometry}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Uncomment for draft mode.
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
+\newcommand{\fix}[1]{{\color{red}\textsc{[#1]}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Uncomment to hid fix markup for final mode.
+%\newcommand{\fix}[1]{}
+
+
+%% \title{VTK-m Users' Guide \\
+%%   \relsize{-2}Version 0.0
+%% }
+%% \author{Kenneth~Moreland \\
+%%   \relsize{-2} Scalable Analysis and Visualization \\[-1ex]
+%%   \relsize{-2} Sandia National Laboratories \\[-1ex]
+%%   \relsize{-2} P.O. Box 5800 MS 1323 \\[-1ex]
+%%   \relsize{-2} Albuquerque, NM 87185-1323 \\[-1ex]
+%%   \relsize{-2} kmorel@sandia.gov
+%% }
+%% \SANDauthor{Kenneth~Moreland}
+%% \date{} % Leave empty
+
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{isomath}
+\usepackage{varioref}
+\usepackage{fancyvrb}
+\usepackage{ifthen}
+\usepackage{longtable}
+\usepackage{cite}
+\usepackage{relsize}
+\usepackage{subfig}
+\usepackage{url}
+\usepackage{xspace}
+
+% to minimize item separation in lists.
+\usepackage{enumitem}
+
+% This wonderful package allows hyphenation in tt fonts and hyphenation of
+% words with underscores in them.
+\usepackage[htt]{hyphenat}
+
+% This package defines a tt font that supports boldface (albeit not very
+% distinctly). The default package has no boldface for tt fonts.
+\usepackage{lmodern}
+
+\usepackage{makeidx}
+\makeindex
+
+%% \usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage[colorlinks=true,urlcolor=blue,citecolor=black,linkcolor=black,final=true]{hyperref}
+\usepackage{verbatim}
+
+\usepackage{color}
+\definecolor{yellow}{rgb}{1,1,0}
+\definecolor{black}{rgb}{0,0,0}
+\definecolor{ltcyan}{rgb}{.75,1,1}
+\definecolor{red}{rgb}{1,0,0}
+\definecolor{gray}{rgb}{.6,.6,.6}
+\definecolor{darkred}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+
+\input{Macros}
+\input{LanguageDefinitions}
+
+% Make fancy headers and everything...
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[LE,RO]{\small \nouppercase{\rightmark}}
+\fancyfoot{}
+\fancyfoot[LE,RO]{\small \thepage}
+\fancyfoot[RE,LO]{\small \nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+%\setlength{\headheight}{14pt}
+
+\fancypagestyle{plain}{%
+  \fancyhead{} % get rid of headers on plain pages
+  \fancyfoot{} % get rid of the footer on plain pages
+  \renewcommand{\headrulewidth}{0pt} % and the top line
+  \renewcommand{\footrulewidth}{0pt} % and the bottom line
+}
+
+% Avoid putting figures on their own page.
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+
+% Make sure this is big enough so that only big figures end up on their own
+% page but small enough so that if a figure does have to be on its own
+% page, it won't push everything to the bottom because it's not big enough
+% to have its own page.
+\renewcommand{\floatpagefraction}{.75}
+
+\setcounter{tocdepth}{4}
+\input{TitlePage}
+
+\begin{document}
+
+\sloppy
+
+\frontmatter
+\pagestyle{empty}
+\titleGM
+
+\clearpage
+\include{Contributors}
+
+\pagestyle{fancy}
+{\small
+\tableofcontents
+\listoffigures
+%\listoftables
+\lstlistoflistings
+}
+
+\mainmatter
+
+\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{GettingStarted}}{
+
+  \part{Getting Started}
+
+  \input{Introduction}
+
+  \chapter{File I/O}
+  \label{chap:FileIO}
+
+  \fix{Write this.}
+
+  \chapter{Provided Filters}
+  \label{chap:ProvidedFilters}
+
+  \fix{Write this once some filters are provided. Should also make a
+    reference to using worklets (Chapter \ref{chap:Worklets}).}
+
+  \chapter{Rendering}
+  \label{chap:Rendering}
+
+  \fix{Write this once the rendering module is implemented.}
+
+}{}
+
+\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Developing}}{
+
+  \part{Developing with VTK-m}
+
+  \input{BasicProvisions}
+
+  \input{ControlEnvironment}
+
+  \input{Worklets}
+
+  \input{ExecutionEnvironment}
+
+  \chapter{OpenGL Interoperability}
+  \label{chap:OpenGLInteroperability}
+
+}{}
+
+\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Advanced}}{
+
+  \part{Advanced Customization}
+
+  \input{AdvancedWorklets}
+
+  \input{CodingConventions}
+
+}{}
+
+\backmatter
+\chapter{Index}
+{\small
+\printindex
+}
+\end{document}

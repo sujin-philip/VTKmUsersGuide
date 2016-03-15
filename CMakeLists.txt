@@ -24,6 +24,7 @@ set(images
   )
 
 set(input_docs
+  Body.tex
   Macros.tex
   LanguageDefinitions.tex
   TitlePage.tex
@@ -35,7 +36,6 @@ set(input_docs
   Worklets.tex
   AdvancedWorklets.tex
   CodingConventions.tex
-  Distribution.tex
   )
 
 option(BUILD_EXAMPLES
@@ -50,9 +50,28 @@ endif ()
 
 add_subdirectory(examples)
 
-add_latex_document(VTKmUsersGuide.tex
+set(add_latex_document_args
   INPUTS ${input_docs}
   IMAGES ${images}
   DEPENDS example-listings
   USE_INDEX
+  )
+
+add_latex_document(VTKmUsersGuide.tex
+  ${add_latex_document_args}
+  )
+
+add_latex_document(GettingStarted.tex
+  ${add_latex_document_args}
+  EXCLUDE_FROM_ALL
+  )
+
+add_latex_document(Developing.tex
+  ${add_latex_document_args}
+  EXCLUDE_FROM_ALL
+  )
+
+add_latex_document(Advanced.tex
+  ${add_latex_document_args}
+  EXCLUDE_FROM_ALL
   )

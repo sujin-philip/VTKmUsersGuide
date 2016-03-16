@@ -1,0 +1,84 @@
+\chapter{File I/O}
+\label{chap:FileIO}
+
+\index{I/O|(}
+\index{file~I/O|(}
+
+Before VTK-m can be used to process data, data need to be loaded into the
+system. VTK-m comes with a basic file I/O package to get started developing
+very quickly. All the file I/O classes are declared under the \vtkmio{}
+namespace.
+
+\begin{didyouknow}
+  Files are just one of many ways to get data in and out of VTK-m. In
+  Part~\ref{part:Developing} we explore efficient ways to define VTK-m data
+  structures. In particular, Section~\ref{sec:DataSets:Building} describes
+  how to build VTK-m data set objects and
+  Section~\ref{sec:ArrayHandle:Adapting} documents how to adapt data
+  structures defined in other libraries to be used directly in VTK-m.
+\end{didyouknow}
+
+\section{Readers}
+
+\index{file~I/O!read|(}
+\index{read~file|(}
+
+All reader classes provided by VTK-m are located in the \vtkmioreader{}
+namespace. The general interface for each reader class is to accept a
+filename in the constructor and to provide a \textcode{ReadDataSet} method
+to load the data from disk.
+
+The data in the file are returned in a \vtkmcont{DataSet} object.
+Section~\ref{sec:DataSets} provides much more details about the contents of
+a data set object, but for now we treat \textidentifier{DataSet} as an
+opaque object that can be passed around readers, writers, filters, and
+rendering units.
+
+\subsection{Legacy VTK File Reader}
+
+Legacy VTK files are a simple open format for storing visualization data.
+These files typically have a \textfilename{.vtk} extension. Legacy VTK
+files are popular because they are simple to create and read and are
+consequently supported by a large number of tools. The format of legacy VTK
+files is well documented in \textit{The VTK User's Guide}\footnote{A free
+  excerpt describing the file format is available at
+  \url{http://www.vtk.org/Wiki/File:VTK-File-Formats.pdf}.}. Legacy VTK
+files can also be read and written with tools like ParaView and VisIt.
+
+Legacy VTK files can be read using the \vtkmioreader{VTKDataSetReader}
+class. The constructor for this class takes a string containing the
+filename. The \textcode{ReadDataSet} method reads the data from the
+previously indicated file and returns a \vtkmcont{DataSet} object, which
+can be used with filters and rendering.
+
+\vtkmlisting{Reading a legacy VTK file.}{VTKDataSetReader.cxx}
+
+\index{read~file|)}
+\index{file~I/O!read|)}
+
+\section{Writers}
+
+\index{file~I/O!write|(}
+\index{write~file|(}
+
+All writer classes provided by VTK-m are located in the \vtkmiowriter{}
+namespace. The general interface for each writer class is to accept a
+filename in the constructor and to provide a \textcode{WriteDataSet} method
+to save data to the disk. The \textcode{WriteDataSet} method takes a
+\vtkmcont{DataSet} object as an argument, which contains the data to write
+to the file.
+
+\subsection{Legacy VTK File Writer}
+
+\index{write~file|)}
+\index{file~I/O!write|)}
+
+Legacy VTK files can be written using the \vtkmiowriter{VTKDataSetWriter}
+class. The constructor for this class takes a string containing the
+filename. The \textcode{WriteDataSet} method takes a \vtkmcont{DataSet}
+object and writes its data to the previously indicated file.
+
+\vtkmlisting{Writing a legacy VTK file.}{VTKDataSetWriter.cxx}
+
+\index{file~I/O|)}
+\index{I/O|)}

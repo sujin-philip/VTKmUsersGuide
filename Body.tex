@@ -137,13 +137,11 @@
 \ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{GettingStarted}}{
 
   \part{Getting Started}
+  \label{part:GettingStarted}
 
   \input{Introduction}
 
-  \chapter{File I/O}
-  \label{chap:FileIO}
-
-  \fix{Write this.}
+  \input{IO}
 
   \chapter{Provided Filters}
   \label{chap:ProvidedFilters}
@@ -161,6 +159,7 @@
 \ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Developing}}{
 
   \part{Developing with VTK-m}
+  \label{part:Developing}
 
   \input{BasicProvisions}
 
@@ -178,6 +177,7 @@
 \ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Advanced}}{
 
   \part{Advanced Customization}
+  \label{part:Advanced}
 
   \input{AdvancedWorklets}
 

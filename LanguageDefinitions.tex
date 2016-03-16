@@ -13,6 +13,7 @@
 \lstset{fontadjust=false,basicstyle=\footnotesize\ttfamily,
         xleftmargin=3em, xrightmargin=3em,
         numbers=left, numberstyle=\footnotesize, numbersep=1em,
+        belowcaptionskip=0pt,  %Prevents caption from being on different page.
         frame=l, backgroundcolor=\color{codebackground}}
 \lstdefinelanguage{VTKm}{
   morekeywords={struct,class,public,typedef,void,template,return,operator,const,for,int},
@@ -191,7 +192,8 @@
                    TopologyElementTagCell,
                    TopologyElementTagPoint,
                    TopologyElementTagEdge,
-                   TopologyElementTagFace
+                   TopologyElementTagFace,
+                   VTKDataSetReader,VTKDataSetWriter
                    },
   morekeywords={[3]VTKM_CONT_EXPORT,VTKM_EXEC_EXPORT,VTKM_EXEC_CONT_EXPORT,
                    VTKM_EXEC_CONSTANT_EXPORT,
@@ -216,6 +218,7 @@
                    VTKM_INVALID_DEVICE_ADAPTER
                    },
   morekeywords={[4]vtkm,exec,cont,worklet,math,arg,internal,detail,
+                   io,reader,writer,
                    cuda,openmp,tbb},
   morekeywords={[5]ControlSignature,ExecutionSignature,
                    InputDomain,
@@ -348,6 +351,14 @@
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{io}\indexnamespacetwo{vtkm}{io}}%
              {\writeindexidentifiertwo{vtkm}{io}{#1}}}
+\newcommand*{\vtkmioreader}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{io}{reader}\indexnamespacethree{vtkm}{io}{reader}}%
+             {\writeindexidentifierthree{vtkm}{io}{reader}{#1}}}
+\newcommand*{\vtkmiowriter}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{io}{writer}\indexnamespacethree{vtkm}{io}{writer}}%
+             {\writeindexidentifierthree{vtkm}{io}{writer}{#1}}}
 
 \newcommand*{\vtkmcuda}[1]{%
   \ifthenelse{\equal{#1}{}}%

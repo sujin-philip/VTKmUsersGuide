@@ -453,6 +453,7 @@ default tag. This macro is used to create new templates that have template
 parameters for storage that can use the default.
 
 \subsection{Adapting Data Structures}
+\label{sec:ArrayHandle:Adapting}
 
 \index{array~handle!adapting|(}
 \index{storage!adapting|(}
@@ -1772,23 +1773,10 @@ string reported by the \textcode{GetMessage} method.
 
 \vtkmlisting{Simple error reporting.}{CatchingErrors.cxx}
 
-There are two subclasses to \vtkmcont{Error}. These are
-\vtkmcont{ErrorExecution} and \vtkmcont{ErrorControl}, and they represent
-errors that happen in the respective execution and control environments.
-
-\index{errors!execution~environment}
-Readers familiar with parallel programming will probably note the
-difficulty in raising errors in multi-threaded execution like what happens
-in the execution environment. In fact some devices, like CUDA devices, do
-not support exceptions at all. VTK-m handles the error reporting in the
-execution environment by flagging an error when it occurs and then throwing
-an error in the control environment after all threads have terminated. This
-means that the amount of execution that happens after an error is flagged
-is indeterminate and any output values should be considered incorrect.
-
-The \vtkmcont{ErrorControl} class is also broken down into several
-subclasses that can be independently caught to handle different types of
-errors. The following control errors exist and may be thrown.
+There are several subclasses to \vtkmcont{Error}. The specific subclass
+gives an indication of the type of error that occured when the exception
+was thrown. Catching one of these subclasses may help a program better
+recover from errors.
 \begin{description}
 \item[\vtkmcont{ErrorControlAssert}] \index{assert} \index{errors!assert}
   Thrown when an assertion fails, meaning a VTK-m operation reached an
@@ -1805,10 +1793,15 @@ errors. The following control errors exist and may be thrown.
   an operation on an object that is of an incompatible type.
 \item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
   method encounters an invalid value that inhibits progress.
+\item[\vtkmcont{ErrorExecution}] \index{errors!execution~environment} Throw
+  when an error is signaled in the execution environment for example when a
+  worklet is being executed.
 \item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
   internal state that should never be reached. This error usually indicates
   a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
   should have.
+\item[\vtkmio{ErrorIO}] Thrown by a reader or writer when a file error is
+  encountered.
 \end{description}
 
 \index{errors|)}

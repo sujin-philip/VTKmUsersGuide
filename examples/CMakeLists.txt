@@ -18,6 +18,7 @@ set(example_src
   ErrorHandling.cxx
   ExportMacro.cxx
   FunctionInterface.cxx
+  IO.cxx
   ListTags.cxx
   Matrix.cxx
   NewtonsMethod.cxx

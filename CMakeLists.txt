@@ -19,6 +19,9 @@ set(images
   images/CellConnectionsVertex.pdf
   images/CellConnectionsWedge.pdf
   images/ExplicitCellConnections.pdf
+  images/MCCompareCuda.png
+  images/MCComparePiston.png
+  images/MCCompareVTKm.png
   images/StructuredCellSet.pdf
   images/WorkletExampleAnnotated.pdf
   )

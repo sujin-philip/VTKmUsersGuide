@@ -16,7 +16,7 @@ interaction with VTK.
   license.
 \item Copyright notices should appear at the top of all source,
   configuration, and text files. The statement should have the following
-  form:
+  form (with the year replaced with the year the file was created):
 \small\begin{verbatim}
 //============================================================================
 //  Copyright (c) Kitware, Inc.
@@ -144,6 +144,12 @@ if (test)
   previously established conventions in other library. (For example,
   \textcode{make\_ArrayHandle} corresponds to \textcode{make\_pair} in the
   standard template library.)
+\item All class, function, and member names that have multiple words in
+  their descriptions should be listed from general to specific. For
+  example, if a class is a k-d tree that is used to locate points, the
+  preferred name would be \textcode{LocatorPointKDTree}. This naming
+  convention makes it easier to find both known and unknown classes in
+  alphabetic lists.
 \item Always spell out words in names; do not use abbreviations except in
   cases where the shortened form is widely understood and a name in its own
   right (e.g. OpenMP).

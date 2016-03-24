@@ -22,7 +22,9 @@ set(images
   images/MCCompareCuda.png
   images/MCComparePiston.png
   images/MCCompareVTKm.png
+  images/PackageHierarchy.pdf
   images/StructuredCellSet.pdf
+  images/VTKmEnvironments.pdf
   images/WorkletExampleAnnotated.pdf
   )
 

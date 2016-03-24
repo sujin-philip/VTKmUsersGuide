@@ -98,85 +98,6 @@ void EquilateralTriangle()
                    "Bad edge length.");
 }
 
-} // anonymous namespace
-
-////
-//// BEGIN-EXAMPLE Extent3.cxx
-////
-#include <vtkm/Extent.h>
-#include <vtkm/Types.h>
-//// PAUSE-EXAMPLE
-namespace {
-//// RESUME-EXAMPLE
-
-void ExtentExample()
-{
-  // Make an extent that defines a grid that has 5x5x3 points and "centered"
-  // at index (0,0,0).
-  vtkm::Extent3 extent(vtkm::Id3(-2,-2,-1), vtkm::Id3(2,2,1));
-
-  vtkm::Id3 minIndices = extent.Min; // Is (-2,-2,-1)
-  vtkm::Id3 maxIndices = extent.Max; // Is (2,2,1)
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(
-      (minIndices[0] == -2) && (minIndices[1] == -2) && (minIndices[2] == -1),
-      "Bad min index.");
-  VTKM_TEST_ASSERT(
-      (maxIndices[0] == 2) && (maxIndices[1] == 2) && (maxIndices[2] == 1),
-      "Bad min index.");
-  //// RESUME-EXAMPLE
-
-  vtkm::Id3 pointDims = vtkm::ExtentPointDimensions(extent); // Returns (5,5,3)
-  vtkm::Id3 cellDims = vtkm::ExtentCellDimensions(extent);   // Returns (4,4,2)
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(pointDims == vtkm::Id3(5,5,3), "Wrong point dimensions");
-  VTKM_TEST_ASSERT(cellDims == vtkm::Id3(4,4,2), "Wrong cell dimensions");
-  //// RESUME-EXAMPLE
-
-  vtkm::Id numPoints = vtkm::ExtentNumberOfPoints(extent); // Returns 75
-  vtkm::Id numCells = vtkm::ExtentNumberOfCells(extent);   // Returns 32
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(numPoints == 75, "Wrong number of points");
-  VTKM_TEST_ASSERT(numCells == 32, "Wrong number of cells");
-  //// RESUME-EXAMPLE
-
-  // Returns (-1,-1,0)
-  vtkm::Id3 pointIndexA = vtkm::ExtentPointFlatIndexToTopologyIndex(31, extent);
-
-  // Returns (1,1,0)
-  vtkm::Id3 cellIndexA = vtkm::ExtentCellFlatIndexToTopologyIndex(31, extent);
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(pointIndexA == vtkm::Id3(-1,-1,0), "Bad conversion.");
-  VTKM_TEST_ASSERT(cellIndexA == vtkm::Id3(1,1,0), "Bad conversion.");
-  //// RESUME-EXAMPLE
-
-  // Returns 33
-  vtkm::Id pointIndexB =
-      vtkm::ExtentPointTopologyIndexToFlatIndex(vtkm::Id3(1,-1,0), extent);
-
-  // Returns 23
-  vtkm::Id cellIndexB =
-      vtkm::ExtentCellTopologyIndexToFlatIndex(vtkm::Id3(1,-1,0), extent);
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(pointIndexB == 33, "Bad conversion.");
-  VTKM_TEST_ASSERT(cellIndexB == 23, "Bad conversion.");
-  //// RESUME-EXAMPLE
-
-  // Returns 33
-  vtkm::Id firstPoint = vtkm::ExtentFirstPointOnCell(23, extent);
-  ////
-  //// PAUSE-EXAMPLE
-  VTKM_TEST_ASSERT(firstPoint == 33, "Got wrong point index.");
-  //// RESUME-EXAMPLE
-}
-////
-//// END-EXAMPLE Extent3.cxx
-////
 
 void Test()
 {
@@ -184,7 +105,6 @@ void Test()
   VectorOperations();
   LongerVector();
   EquilateralTriangle();
-  ExtentExample();
 }
 
 } // anonymous namespace

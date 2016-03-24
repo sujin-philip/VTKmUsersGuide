@@ -8,6 +8,102 @@ macros, types, and classes that define the environment in which code is
 run, the core types of data stored, and template introspection. We also
 start with a description of package structure used by VTK-m.
 
+
+\section{General Approach}
+\label{sec:GeneralApproach}
+
+VTK-m is designed to provide a \keyterm{pervasive parallelism}
+\index{pervasive~parallelism} throughout all its visualization algorithms,
+meaning that the algorithm is designed to operate with independent
+concurrency at the finest possible level throughout. VTK-m provides this
+pervasive parallelism by providing a programming construct called a
+\keyterm{worklet}, \index{worklet} which operates on a very fine
+granularity of data. The worklets are designed as serial components, and
+VTK-m handles whatever layers of concurrency are necessary, thereby
+removing the onus from the visualization algorithm developer. Worklet
+operation is then wrapped into \keyterm{filters}, \index{filter} which
+provide a simplified interface to end users.
+
+A worklet is essentially a small functor \index{functor} or kernel
+\index{kernel} designed to operate on a small element of data. (The name
+``worklet'' means a small amount of work. We mean small in this sense to be
+the amount of data, not necessarily the amount of instructions performed.)
+The worklet is constrained to contain a serial and stateless function.
+These constraints form three critical purposes. First, the constraints on
+the worklets allow VTK-m to schedule worklet invocations on a great many
+independent concurrent threads and thereby making the algorithm pervasively
+parallel. Second, the constraints allow VTK-m to provide thread safety. By
+controlling the memory access the toolkit can insure that no worklet will
+have any memory collisions, false sharing, or other parallel programming
+pitfalls. Third, the constraints encourage good programming practices. The
+worklet model provides a natural approach to visualization algorithm design
+that also has good general performance characteristics.
+
+VTK-m allows developers to design algorithms that are run on massive
+amounts of threads. However, VTK-m also allows developers to interface to
+applications, define data, and invoke algorithms that they have written or
+are provided otherwise. These two modes represent significantly different
+operations on the data. The operating code of an algorithm in a worklet is
+constrained to access only a small portion of data that is provided by the
+framework. Conversely, code that is building the data structures needs to
+manage the data in its entirety, but has little reason to perform
+computations on any particular element.
+
+Consequently, VTK-m is divided into two \keyterm{environments}
+\index{environment} that handle each of these use cases. Each environment
+has its own API, and direct interaction between the environments is
+disallowed. The environments are as follows.
+
+\begin{description}
+\item[Execution Environment] \index{execution~environment}
+  \index{environment!execution} This is the environment in which the
+  computational portion of algorithms are executed. The API for this
+  environment provides work for one element with convenient access to
+  information such as connectivity and neighborhood as needed by typical
+  visualization algorithms. Code for the execution environment is designed
+  to always execute on a very large number of threads.
+\item[Control Environment] \index{control~environment}
+  \index{execution!control} This is the environment that is used to
+  interface with applications, interface with I/O devices, and schedule
+  parallel execution of the algorithms. The associated API is designed for
+  users that want to use VTK-m to analyze their data using provided or
+  supplied filters. Code for the control environment is designed to run on
+  a single thread (or one single thread per process in an MPI job).
+\end{description}
+
+These dual programming environments are partially a convenience to isolate
+the application from the execution of the worklets and are partially a
+necessity to support GPU languages with host and device environments. The
+control and execution environments are logically equivalent to the host and
+device environments, respectively, in CUDA and other associated GPU
+languages.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=4in]{images/VTKmEnvironments}
+  \caption{Diagram of the VTK-m framework.}
+  \label{fig:VTKmDiagram}
+\end{figure}
+
+Figure~\ref{fig:VTKmDiagram} displays the relationship between the control
+and execution environment. The typical workflow when using VTK-m is that
+first the control thread establishes a data set in the control environment
+and then invokes a parallel operation on the data using a filter. From
+there the data is logically divided into its constituent elements, which
+are sent to independent invocations of a worklet. The worklet
+invocations, being independent, are run on as many concurrent threads as
+are supported by the device. On completion the results of the worklet
+invocations are collected to a single data structure and a handle is
+returned back to the control environment.
+
+\begin{didyouknow}
+  Are you only planning to use filters in VTK-m that already exist? If so,
+  then everything you work with will be in the control environment. The
+  execution environment is only used when implementing algorithms for
+  filters.
+\end{didyouknow}
+
+
 \section{Package Structure}
 \label{sec:PackageStructure}
 
@@ -23,13 +119,13 @@ The base package is named \vtkm{}. All classes within VTK-m are placed
 either directly in the \vtkm{} package or in a package beneath it. This
 helps prevent name collisions between VTK-m and any other library.
 
-As described in Section~\ref{sec:StructureOfVTKmFramework}, the VTK-m API
-is divided into two distinct environments: \index{environments} the control
-environment \index{control~environment} and the execution
-environment. \index{execution~environment} The API for these two
-environments are located in the \vtkmcont{} and \vtkmexec{} packages,
-respectively. Items located in the base \vtkm{} namespace are available in
-both environments.
+As described in Section~\ref{sec:GeneralApproach}, the VTK-m API is divided
+into two distinct environments: \index{environment} the control environment
+\index{control~environment} \index{environment!control} and the execution
+environment. \index{execution~environment} \index{environment!execution}
+The API for these two environments are located in the \vtkmcont{} and
+\vtkmexec{} packages, respectively. Items located in the base \vtkm{}
+namespace are available in both environments.
 
 Although it is conventional to spell out names in identifiers (see the
 coding conventions in Chapter~\ref{chap:CodingConventions}), there is an
@@ -42,32 +138,18 @@ pack lines in 80 column displays. These abbreviations are also used instead
 of more common abbreviations (e.g. ctrl for control) because, as part of
 actual English words, they are easier to type.
 
-\fix{Probably put a paragraph on filters here and move this paragraph
-  lower.}
-
-Worklets provided by VTK-m, described in
-Chapter~\ref{chap:ProvidedWorklets}, are contained in the \vtkmworklet{}
-package. Although the operation of a worklet happens exclusively in the
-execution environment, worklets are typically initialized in the control
-environment. Thus, the \vtkmworklet{} package is not encapsulated in either
-\vtkmcont{} or \vtkmexec{}.
-
-VTK-m provides a base set of library functions that are ported to
-the various systems and compilers on which it is used. These functions are
-located in the \vtkmmath{} package. The features in \vtkmmath{} are available
-in both the control and execution environments, but they are typically used
-in the execution environment.
+Further functionality in VTK-m is built on top of the base \vtkm{},
+\vtkmcont{}, and \vtkmexec{} packages. Support classes for building
+worklets, described in Chapter~\ref{chap:Worklets}, are contained in the
+\vtkmworklet{} package. Other facilities in VTK-m are provided in their own
+packages such as \vtkmio{}, \vtkmfilter{}, and \vtkmrendering{}. These
+packages are described in Part~\ref{part:GettingStarted}.
 
 VTK-m contains code that uses specialized compiler features, such as those
-with CUDA and OpenMP, or libraries, such as Intel Threading Building
-Blocks, that will not be available on all machines. Code for these features
-are encapsulated in their own packages: \vtkmcuda{}, \vtkmopenmp{}, and
-\vtkmtbb{}. Within each one of these packages, there will
-be \textnamespace{cont} and \textnamespace{exec} namespaces as necessary to
-denote features that are accessible in only one environment or the
-other. \fix{I'm thinking of reversing this to put the device-specific
-  namespaces under \vtkmcont{}. We have yet to need a device-specific thing
-  in \vtkmexec{}.}
+with CUDA, or libraries, such as Intel Threading Building Blocks, that will
+not be available on all machines. Code for these features are encapsulated
+in their own packages under the \vtkmcont{} namespace: \vtkmcontcuda{} and
+\vtkmconttbb{}.
 
 VTK-m contains OpenGL interoperability \index{OpenGL}
 \index{interoperability} that allows data generated with VTK-m to be
@@ -76,32 +158,43 @@ the \vtkmopengl{} package.
 
 Figure~\ref{fig:Packages} provides a diagram of the VTK-m package hierarchy.
 
-\begin{figure}
+\begin{figure}[htb]
   \centering
-  %% \begin{itemizetight}
-  %% \item \textnamespace{vtkm}
-  %%   \begin{itemizetight}
-  %%   \item \textnamespace{cont}
-  %%   \item \textnamespace{exec}
-  %%   \item \textnamespace{worklet}
-  %%   \item \textnamespace{math}
-  %%   \item \textnamespace{cuda}
-  %%     \begin{itemizetight}
-  %%     \item \textnamespace{cont}
-  %%     \end{itemizetight}
-  %%   \item \textnamespace{openmp}
-  %%     \begin{itemizetight}
-  %%     \item \textnamespace{cont}
-  %%     \end{itemizetight}
-  %%   \item \textnamespace{tbb}
-  %%     \begin{itemizetight}
-  %%     \item \textnamespace{cont}
-  %%     \end{itemizetight}
-  %%   \item \textnamespace{opengl}
-  %%   \end{itemizetight}
-  %% \end{itemizetight}
-  %\includegraphics{images/PackageHierarchy}
-  \fix{Make a graphic of the package hierarchy.}
+  %% \begin{itemize}
+  %% \item \vtkm{}
+  %% \item \vtkmexec{}
+  %% \item \vtkmcont{}
+  %% \item \vtkmcontcuda{}
+  %% \item \vtkmconttbb{}
+  %% \item \vtkmio{}
+  %% \item \vtkmioreader{}
+  %% \item \vtkmiowriter{}
+  %% \item \vtkmfilter{}
+  %% \item \vtkmrendering{}
+  %% \item \vtkmopengl{}
+  %% \item \vtkmworklet{}
+  %% %% \item \textnamespace{vtkm}
+  %% %%   \begin{itemize}
+  %% %%   \item \textnamespace{cont}
+  %% %%   \item \textnamespace{exec}
+  %% %%   \item \textnamespace{worklet}
+  %% %%   \item \textnamespace{math}
+  %% %%   \item \textnamespace{cuda}
+  %% %%     \begin{itemize}
+  %% %%     \item \textnamespace{cont}
+  %% %%     \end{itemize}
+  %% %%   \item \textnamespace{openmp}
+  %% %%     \begin{itemize}
+  %% %%     \item \textnamespace{cont}
+  %% %%     \end{itemize}
+  %% %%   \item \textnamespace{tbb}
+  %% %%     \begin{itemize}
+  %% %%     \item \textnamespace{cont}
+  %% %%     \end{itemize}
+  %% %%   \item \textnamespace{opengl}
+  %% %%   \end{itemize}
+  %% \end{itemize}
+  \includegraphics{images/PackageHierarchy}
   \caption{VTK-m package hierarchy.}
   \label{fig:Packages}
 \end{figure}
@@ -144,7 +237,7 @@ environments, respectively. These macros get defined by including just
 about any VTK-m header file, but including \vtkmheader{vtkm}{Types.h} will
 ensure they are defined. 
 
-The export macro is place after the template declaration, if there is one,
+The export macro is placed after the template declaration, if there is one,
 and before the return type for the function. Here is a simple example of a
 function that will square a value. Since most types you would use this
 function on have operators in both the control and execution environments,
@@ -290,66 +383,6 @@ the state of a polygon.
 
 \vtkmlisting{Repurposing a \protect\vtkm{Vec}.}{EquilateralTriangle.cxx}
 
-\subsection{Extents}
-
-\vtkm{Extent3} is a simple structure that holds the extent information for
-structured data (data defined on a regular grid). It contains two
-\vtkm{Id3} fields named \textcode{Min} and \textcode{Max} that define the
-minimum and maximum 3D index. \textcode{Min} and \textcode{Max} are
-\emph{inclusive} point indices.
-
-Although less used, there also exists \vtkm{Extent2}, which is the same as
-\vtkm{Extent3} except for structured grids with 2 topological
-dimensions. The two structures are exactly the same except that
-\vtkm{Extent2} uses \vtkm{Id2} objects for its \textcode{Min} and
-\textcode{Max} instead of \vtkm{Id3}. There is also a generic structure
-named \vtkm{Extent} that takes a single integer argument to make the
-structured extent for some arbitrary topological dimension.
-
-\vtkm{Extent3} and the other extent structures are defined in the
-\vtkmheader{vtkm}{Extent.h} header. This header also contains the following
-helper functions.
-
-\begin{description}
-\item[\vtkm{ExtentPointDimensions}] Takes an extent object as an argument
-  and returns a \vtkm{Id3} (or other appropriately sized tuple) giving the
-  number of points in each topological dimension.
-\item[\vtkm{ExtentCellDimensions}] Takes an extent object as an argument
-  and returns a \vtkm{Id3} (or other appropriately sized tuple) giving the
-  number of cells in each topological dimension. The number of cells is one
-  less than the number of points in each dimensions.
-\item[\vtkm{ExtentNumberOfPoints}] Takes an extent object as an argument
-  and returns the number of points in an associated structured mesh.
-\item[\vtkm{ExtentNumberOfCells}] Takes an extent object as an argument and
-  returns the number of cells in an associated structured mesh.
-\item[\vtkm{ExtentPointFlatIndexToTopologyIndex}] Elements in structured
-  grids have a single index with 0 being the entry at the minimum extent in
-  every direction and then increasing first in the $r$ direction, then the
-  $s$ direction, and then the $t$ direction. This function takes a flat
-  point index as its first argument and an extent as its second argument
-  and returns the ${r,s,t}$ topological coordinates in a \vtkm{Id3} (or
-  other appropriately sized tuple).
-\item[\vtkm{ExtentCellFlatIndexToTopologyIndex}] Takes a flat cell index as
-  its first argument and an extent as its second argument and returns the
-  ${r,s,t}$ topological coordinates in a \vtkm{Id3} (or other appropriately
-  sized tuple).
-\item[\vtkm{ExtentPointTopologyIndexToFlatIndex}] Takes topological point
-  coordinates as the first argument and an extent as the second argument
-  and returns the equivalent flat point index.
-\item[\vtkm{ExtentCellTopologyIndexToFlatIndex}] Takes topological cell
-  coordinates as the first argument and an extent as the second argument
-  and returns the equivalent flat cell index.
-\item[\vtkm{ExtentFirstPointOnCell}] Takes a flat cell index as its first
-  argument and returns the flat index to the first point incident on that
-  cell. This is a convenience function for some operations that relate
-  cells to points.
-\end{description}
-
-The following example demonstrates using a \vtkm{Extent3} and the
-supporting functions. Extents of different dimensions work
-corredspondingly.
-
-\vtkmlisting{Creating and using an \textidentifier{Extent3}.}{Extent3.cxx}
 
 \subsection{Pair}
 
@@ -509,8 +542,7 @@ metaprogramming is a list of class names (also sometimes called a tuple or
 vector, although both of those names have different meanings in VTK-m).
 
 Many VTK-m users only need predefined lists, such as the type lists
-specified in Section~\ref{sec:TypeLists} or the storage lists specified
-in Section~\ref{sec:StorageLists}. Those users can skip most of the
+specified in Section~\ref{sec:TypeLists}. Those users can skip most of the
 details of this section. However, it is sometimes useful to modify lists,
 create new lists, or operate on lists, and these usages are documented
 here.

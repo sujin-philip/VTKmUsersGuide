@@ -343,10 +343,6 @@
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{worklet}\indexnamespacetwo{vtkm}{worklet}}%
              {\writeindexidentifiertwo{vtkm}{worklet}{#1}}}
-\newcommand*{\vtkmmath}[1]{%
-  \ifthenelse{\equal{#1}{}}%
-             {\writenamespacetwo{vtkm}{math}\indexnamespacetwo{vtkm}{math}}%
-             {\writeindexidentifiertwo{vtkm}{math}{#1}}}
 \newcommand*{\vtkmio}[1]{%
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{io}\indexnamespacetwo{vtkm}{io}}%
@@ -360,36 +356,34 @@
              {\writenamespacethree{vtkm}{io}{writer}\indexnamespacethree{vtkm}{io}{writer}}%
              {\writeindexidentifierthree{vtkm}{io}{writer}{#1}}}
 
-\newcommand*{\vtkmcuda}[1]{%
+\newcommand*{\vtkmfilter}[1]{%
   \ifthenelse{\equal{#1}{}}%
-             {\writenamespacetwo{vtkm}{cuda}\indexnamespacetwo{vtkm}{cuda}}%
-             {\writeindexidentifiertwo{vtkm}{cuda}{#1}}}
-\newcommand*{\vtkmcudacont}[1]{%
+             {\writenamespacetwo{vtkm}{filter}\indexnamespacetwo{vtkm}{filter}}%
+             {\writeindexidentifiertwo{vtkm}{filter}{#1}}}
+
+\newcommand*{\vtkmrendering}[1]{%
   \ifthenelse{\equal{#1}{}}%
-             {\writenamespacethree{vtkm}{cuda}{cont}\indexnamespacethree{vtkm}{cuda}{cont}}%
-             {\writeindexidentifierthree{vtkm}{cuda}{cont}{#1}}}
-\newcommand*{\vtkmopenmp}[1]{%
-  \ifthenelse{\equal{#1}{}}%
-             {\writenamespacetwo{vtkm}{openmp}\indexnamespacetwo{vtkm}{openmp}}%
-             {\writeindexidentifiertwo{vtkm}{openmp}{#1}}}
-\newcommand*{\vtkmopenmpcont}[1]{%
-  \ifthenelse{\equal{#1}{}}%
-             {\writenamespacethree{vtkm}{openmp}{cont}\indexnamespacethree{vtkm}{openmp}{cont}}%
-             {\writeindexidentifierthree{vtkm}{openmp}{cont}{#1}}}
-\newcommand*{\vtkmtbb}[1]{%
-  \ifthenelse{\equal{#1}{}}%
-             {\writenamespacetwo{vtkm}{tbb}\indexnamespacetwo{vtkm}{tbb}}%
-             {\writeindexidentifiertwo{vtkm}{tbb}{#1}}}
-\newcommand*{\vtkmtbbcont}[1]{%
-  \ifthenelse{\equal{#1}{}}%
-             {\writenamespacethree{vtkm}{tbb}{cont}\indexnamespacethree{vtkm}{tbb}{cont}}%
-             {\writeindexidentifierthree{vtkm}{tbb}{cont}{#1}}}
+             {\writenamespacetwo{vtkm}{rendering}\indexnamespacetwo{vtkm}{rendering}}%
+             {\writeindexidentifiertwo{vtkm}{rendering}{#1}}}
 
 \newcommand*{\vtkmopengl}[1]{%
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{opengl}\indexnamespacetwo{vtkm}{opengl}}%
              {\writeindexidentifiertwo{vtkm}{opengl}{#1}}}
 
+
+\newcommand*{\vtkmcontcuda}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{cont}{cuda}\indexnamespacethree{vtkm}{cont}{cuda}}%
+             {\writeindexidentifierthree{vtkm}{cont}{cuda}{#1}}}
+\newcommand*{\vtkmcudaopenmp}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{cont}{openmp}\indexnamespacethree{vtkm}{cont}{openmp}}%
+             {\writeindexidentifierthree{vtkm}{cont}{openmp}{#1}}}
+\newcommand*{\vtkmconttbb}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{cont}{tbb}\indexnamespacethree{vtkm}{cont}{tbb}}%
+             {\writeindexidentifierthree{vtkm}{cont}{tbb}{#1}}}
 \newcommand*{\tparams}[1]{\textcode{<#1>}}
 
 \newcommand*{\textfilename}[1]{\textsf{#1}}

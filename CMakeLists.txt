@@ -38,6 +38,7 @@ set(input_docs
   IO.tex
   BasicProvisions.tex
   ArrayHandle.tex
+  DeviceAdapter.tex
   ControlEnvironment.tex
   ExecutionEnvironment.tex
   Worklets.tex

@@ -1,0 +1,628 @@
+% -*- latex -*-
+
+\chapter{Device Adapters}
+
+\index{device~adapter|(}
+
+As multiple vendors vie to provide accelerator-type processors, a great
+variance in the computer architecture exists. Likewise, there exist
+multiple compiler environments and libraries for these devices such as
+CUDA, OpenMP, and various threading libraries. These compiler technologies
+also vary from system to system.
+
+To make porting among these systems at all feasible, we require a base
+language support, and the language we use is C++. The majority of the code
+in VTK-m is constrained to the standard C++ language constructs to minimize
+the specialization from one system to the next.
+
+Each device and device technology requires some level of code
+specialization, and that specialization is encapsulated in a unit called a
+\keyterm{device adapter}. Thus, porting VTK-m to a new architecture can be
+done by adding only a device adapter.
+
+The device adapter is shown diagrammatically as the connection between the
+control and execution environments in Figure~\ref{fig:VTKmDiagram} on
+page~\pageref{fig:VTKmDiagram}. The functionality of the device adapter
+comprises two main parts: a collection of parallel algorithms run in the
+execution environment and a module to transfer data between the control and
+execution environments.
+
+This chapter describes how tags are used to specify which devices to use
+for operations within VTK-m. The chapter also outlines the features provided
+by a device adapter that allow you to directly control a device. Finally,
+we document how to create a new device adapter to port or specialize VTK-m
+for a different device or system.
+
+
+\section{Device Adapter Tag}
+\label{sec:DeviceAdapterTag}
+
+\index{device~adapter~tag|(}
+\index{tag!device~adapter|(}
+
+A device adapter is identified by a \keyterm{device adapter tag}. This tag,
+which is simply an empty struct type, is used as the template parameter for
+several classes in the VTK-m control environment and causes these classes
+to direct their work to a particular device.
+
+There are two ways to select a device adapter. The first is to make a
+global selection of a default device adapter. The second is to specify a
+specific device adapter as a template parameter.
+
+\subsection{Default Device Adapter}
+
+A default device adapter tag is specified in
+\vtkmheader{vtkm/cont}{DeviceAdapter.h} (although it can also by specified
+in many other VTK-m headers via header dependencies). If no other
+information is given, VTK-m attempts to choose a default device adapter
+that is a best fit for the system it is compiled on. VTK-m currently select
+the default device adapter with the following sequence of conditions.
+
+\begin{itemize}
+\item \index{CUDA} If the source code is being compiled by CUDA, the CUDA
+  device is used.
+\item \index{OpenMP} If the CUDA compiler is not being used and the current
+  compiler supports OpenMP, then the OpenMP device is used.
+  \fix{Technically, OpenMP is not yet supported in VTK-m, so this will
+    never actually be picked. But once it is implemented, this will be the
+    chain.}
+\item \index{Intel Threading Building Blocks} \index{TBB} If the compiler
+  supports neither CUDA nor OpenMP and VTK-m was configured to use Intel
+  Threading Building Blocks, then that device is used.
+\item \index{serial} If no parallel device adapters are found, then VTK-m
+  falls back to a serial device.
+\end{itemize}
+
+You can also set the default device adapter specifically by setting the
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} macro. This macro must be set
+\emph{before} including any VTK-m files. You can set
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} to any one of the following.
+
+\begin{description}
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_SERIAL}] Performs all computation on
+  the same single thread as the control environment. This device is useful
+  for debugging. This device is always available.
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_CUDA}] Uses a CUDA capable GPU
+  device. For this device to work, VTK-m must be configured to use CUDA and
+  the code must be compiled by the CUDA \textfilename{nvcc} compiler.
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_OPENMP}] Uses OpenMP compiler
+  extensions to run algorithms on multiple threads. For this device to
+  work, VTK-m must be configured to use OpenMP and the code must be
+  compiled with a compiler that supports OpenMP pragmas. \fix{Not currently
+    implemented.}
+\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_TBB}] Uses the Intel Threading
+  Building Blocks library to run algorithms on multiple threads. For this
+  device to work, VTK-m must be configured to use TBB and the executable
+  must be linked to the TBB library.
+\end{description}
+
+These macros provide a useful mechanism for quickly reconfiguring code to
+run on different devices. The following example shows a typical block of
+code at the top of a source file that could be used for quick
+reconfigurations.
+
+\vtkmlisting{Macros to port VTK-m code among different devices}{DefaultDeviceAdapter.cxx}
+
+\begin{didyouknow}
+  Filters do not actually use the default device adapter tag. They have a
+  more sophisticated device selection mechanism that determines the devices
+  available at runtime and will attempt running on multiple devices.
+\end{didyouknow}
+
+The default device adapter can always be overridden by specifying a device
+adapter tag, as described in the next section. There is actually one more
+internal default device adapter named
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_ERROR} that will cause a compile error if
+any component attempts to use the default device adapter. This feature is
+most often used in testing code to check when device adapters should be
+specified.
+
+\subsection{Specifying Device Adapter Tags}
+
+In addition to setting a global default device adapter, it is possible to
+explicitly set which device adapter to use in any feature provided by
+VTK-m. This is done by providing a device adapter tag as a template
+argument to VTK-m templated objects. The following device adapter tags are
+available in VTK-m.
+
+\index{device~adapter~tag!provided|(}
+\index{tag!device~adapter!provided|(}
+
+\begin{description}
+\item[\vtkmcont{DeviceAdapterTagSerial}] \index{serial} Performs all
+  computation on the same single thread as the control environment. This
+  device is useful for debugging. This device is always available. This tag
+  is defined in \vtkmheader{vtkm/cont}{DeviceAdapterSerial.h}.
+\item[\vtkmcont{DeviceAdapterTagCuda}] \index{CUDA} Uses a CUDA capable
+  GPU device. For this device to work, VTK-m must be configured to use CUDA
+  and the code must be compiled by the CUDA \textfilename{nvcc}
+  compiler. This tag is defined in
+  \vtkmheader{vtkm/cont/cuda}{DeviceAdapterCuda.h}.
+\item[\vtkmcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
+  compiler extensions to run algorithms on multiple threads. For this
+  device to work, VTK-m must be configured to use OpenMP and the code must be
+  compiled with a compiler that supports OpenMP pragmas. This tag is
+  defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}. \fix{Not
+    currently implemented.}
+\item[\vtkmcont{DeviceAdapterTagTBB}]
+  \index{Intel Threading Building Blocks} \index{TBB} Uses the Intel
+  Threading Building Blocks library to run algorithms on multiple
+  threads. For this device to work, VTK-m must be configured to use TBB and
+  the executable must be linked to the TBB library. This tag is defined in
+  \vtkmheader{vtkm/cont/tbb}{DeviceAdapterTBB.h}.
+\end{description}
+
+\index{tag!device~adapter!provided|)}
+\index{device~adapter~tag!provided|)}
+
+The following example uses the tag for the Intel Threading Building blocks
+device adapter to prepare an output array for that device. In this case,
+the device adapter tag is passed as a parameter for the
+\textcode{PrepareForOutput} \index{PrepareForOutput} method of
+\vtkmcont{ArrayHandle}.
+
+\vtkmlisting{Specifying a device using a device adapter tag.}{SpecifyDeviceAdapter.cxx}
+
+When structuring your code to always specify a particular device adapter,
+consider setting the default device adapter (with the
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER} macro) to
+\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_ERROR}. This will cause the compiler to
+produce an error if any object is instantiated with the default device
+adapter, which checks to make sure the code properly specifies every device
+adapter parameter.
+
+VTK-m also defines a macro named
+\vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_TAG}, which can be used in place
+of an explicit device adapter tag to use the default tag. This macro is
+used to create new templates that have template parameters for device
+adapters that can use the default. The following example defines a functor
+to be used with the \textcode{Schedule} operation (to be described later)
+that is templated on the device it uses.
+
+\vtkmlisting[ex:DefaultDeviceTemplateArg]{Specifying a default device for template parameters.}{DefaultDeviceTemplateArg.cxx}
+
+\begin{commonerrors}
+  A device adapter tag is a class just like every other type in C++. Thus
+  it is possible to accidently use a type that is not a device adapter tag
+  when one is expected. This leads to unexpected errors in strange parts of
+  the code. To help identify these errors, it is good practice to use the
+  \vtkmmacro{VTKM\_IS\_DEVICE\_ADAPTER\_TAG} macro to verify the type is a
+  valid device adapter tag. Example~\ref{ex:DefaultDeviceTemplateArg} uses
+  this macro on line 4.
+\end{commonerrors}
+
+\index{tag!device~adapter|)}
+\index{device~adapter~tag|)}
+
+
+\section{Device Adapter Algorithms}
+\label{sec:DeviceAdapterAlgorithms}
+
+\index{device~adapter!algorithm|(}
+\index{algorithm|(}
+
+VTK-m comes with the templated class \vtkmcont{DeviceAdapterAlgorithm} that
+provides a set of algorithms that can be invoked in the control environment
+and are run on the execution environment. The template has a single
+argument that specifies the device adapter tag.
+
+\vtkmlisting{Prototype for \protect\vtkmcont{DeviceAdapterAlgorithm}.}{DeviceAdapterAlgorithmPrototype.cxx}
+
+\textidentifier{DeviceAdapterAlgorithm} contains no state. It only has a
+set of static methods that implement its algorithms. The following methods
+are available.
+
+\begin{didyouknow}
+  Many of the following device adapter algorithms take input and output
+  \textidentifier{ArrayHandle}s, and these functions will handle their own
+  memory management. This means that it is unnecessary to allocate output
+  arrays. \index{Allocate} For example, it is unnecessary to call
+  \textidentifier{ArrayHandle}\textcode{::Allocate()} for the output array
+  passed to the \textcode{Copy} method.
+\end{didyouknow}
+
+\begin{description}
+\item[\textcode{Copy}] \index{copy} Copies data from an input array to an
+  output array. The copy takes place in the execution environment.
+\item[\textcode{LowerBounds}] \index{lower~bounds} The
+  \textcode{LowerBounds} method takes three arguments. The first argument
+  is an \textidentifier{ArrayHandle} of sorted values. The second argument
+  is another \textidentifier{ArrayHandle} of items to find in the first
+  array. \textcode{LowerBounds} find the index of the first item that is
+  greater than or equal to the target value, much like the
+  \textcode{std::lower\_bound} STL algorithm. The results are returned in
+  an \textidentifier{ArrayHandle} given in the third argument.
+
+  There are two specializations of \textcode{LowerBounds}. The first takes
+  an additional comparison function that defines the less-than
+  operation. The second takes only two parameters. The first is an
+  \textidentifier{ArrayHandle} of sorted \vtkm{Id}s and the second is an
+  \textidentifier{ArrayHandle} of \vtkm{Id}s to find in the first list. The
+  results are written back out to the second array. This second
+  specialization is useful for inverting index maps.
+\item[\textcode{Reduce}] \index{reduce} The \textcode{Reduce} method takes
+  an input array, initial value, and a binary function and computes a
+  ``total'' of applying the binary function to all entries in the array.
+  The provided binary function must be associative (but it need not be
+  commutative). There is a specialization of \textcode{Reduce} that does
+  not take a binary function and computes the sum.
+\item[\textcode{ReduceByKey}] \index{reduce~by~key} The
+  \textcode{ReduceByKey} method works similarly to the \textcode{Reduce}
+  method except that it takes an additional array of keys, which must be
+  the same length as the values being reduced. The arrays are partitioned
+  into segments that have identical adjacent keys, and a separate reduction
+  is performed on each partition. The unique keys and reduced values are
+  returned in separate arrays.
+\item[\textcode{ScanInclusive}] \index{scan!inclusive} The
+  \textcode{ScanInclusive} method takes an input and an output
+  \textidentifier{ArrayHandle} and performs a running sum on the input
+  array. The first value in the output is the same as the first value in
+  the input. The second value in the output is the sum of the first two
+  values in the input. The third value in the output is the sum of the
+  first three values of the input, and so on. \textcode{ScanInclusive}
+  returns the sum of all values in the input. There are two forms of
+  \textcode{ScanInclusive}: one performs the sum using addition whereas the
+  other accepts a custom binary function to use as the sum operator.
+\item[\textcode{ScanExclusive}] \index{scan!exclusive} The
+  \textcode{ScanExclusive} method takes an input and an output
+  \textidentifier{ArrayHandle} and performs a running sum on the input
+  array. The first value in the output is always 0. The second value in the
+  output is the same as the first value in the input. The third value in
+  the output is the sum of the first two values in the input. The fourth
+  value in the output is the sum of the first three values of the input,
+  and so on. \textcode{ScanExclusive} returns the sum of all values in the
+  input. There are two forms of \textcode{ScanExclusive}: one performs the
+  sum using addition whereas the other accepts a custom binary function to
+  use as the sum operator and a custom initial value to use in the running
+  sum.
+\item[\textcode{Schedule}] \index{schedule} The \textcode{Schedule} method
+  takes a functor as its first argument and invokes it a number of times
+  specified by the second argument. It should be assumed that each
+  invocation of the functor occurs on a separate thread although in
+  practice there could be some thread sharing.
+
+  There are two versions of the \textcode{Schedule} method. The first
+  version takes a \vtkm{Id} and invokes the functor that number of
+  times. The second version takes a \vtkm{Id3} and invokes the functor once
+  for every entry in a 3D array of the given dimensions.
+
+  The functor is expected to be an object with a const overloaded
+  parentheses operator. The operator takes as a parameter the index of the
+  invocation, which is either a \vtkm{Id} or a \vtkm{Id3} depending on what
+  version of \textcode{Schedule} is being used. The functor must also
+  subclass \vtkmexec{FunctorBase}, which provides the error handling
+  facilities for the execution environment. \textidentifier{FunctorBase}
+  contains a public method named \index{RaiseError}
+  \index{errors!execution~environment} \textcode{RaiseError} that takes a
+  message and will cause a \vtkmcont{ErrorExecution} exception to be thrown
+  in the control environment.
+\item[\textcode{Sort}] \index{sort} The \textcode{Sort} method provides an
+  unstable sort of an array. There are two forms of the \textcode{Sort}
+  method. The first takes an \textidentifier{ArrayHandle} and sorts the
+  values in place. The second takes an additional argument that is a
+  functor that provides the comparison operation for the sort.
+\item[\textcode{SortByKey}] \index{sort!by key} The \textcode{SortByKey}
+  method works similarly to the \textcode{Sort} method except that it takes
+  two \textidentifier{ArrayHandle}s: an array of keys and a corresponding
+  array of values. The sort orders the array of keys in ascending values
+  and also reorders the values so they remain paired with the same
+  key. Like \textcode{Sort}, \textcode{SortByKey} has a version that sorts
+  by the default less-than operator and a version that accepts a custom
+  comparison functor.
+\item[\textcode{StreamCompact}] \index{stream~compact} The
+  \textcode{StreamCompact} method selectively removes values from an
+  array. The first argument is an \textidentifier{ArrayHandle} to be
+  compacted and the second argument is an \textidentifier{ArrayHandle} of
+  equal size with flags indicating whether the corresponding input value is
+  to be copied to the output. The third argument is an output
+  \textidentifier{ArrayHandle} whose length is set to the number of true
+  flags in the stencil and the passed values are put in order to the output
+  array.
+
+  There is also a second form of \textidentifier{StreamCompact} that only
+  has the stencil and output as arguments. In this version, the output gets
+  the corresponding index of where the input should be taken from.
+\item[\textcode{Synchronize}] \index{synchronize} The
+  \textidentifier{Synchronize} method waits for any asynchronous operations
+  running on the device to complete and then returns.
+\item[\textcode{Unique}] \index{unique} The \textcode{Unique} method
+  removes all duplicate values in an \textidentifier{ArrayHandle}. The
+  method will only find duplicates if they are adjacent to each other in
+  the array. The easiest way to ensure that duplicate values are adjacent
+  is to sort the array first.
+
+  There are two versions of \textcode{Unique}. The first uses the equals
+  operator to compare entries. The second accepts a binary functor to
+  perform the comparisons.
+\item[\textcode{UpperBounds}] \index{upper~bounds} The
+  \textcode{UpperBounds} method takes three arguments. The first argument
+  is an \textidentifier{ArrayHandle} of sorted values. The second argument
+  is another \textidentifier{ArrayHandle} of items to find in the first
+  array. \textcode{UpperBounds} find the index of the first item that is
+  greater than to the target value, much like the
+  \textcode{std::upper\_bound} STL algorithm. The results are returned in
+  an \textidentifier{ArrayHandle} given in the third argument.
+
+  There are two specializations of \textcode{UpperBounds}. The first takes
+  an additional comparison function that defines the less-than
+  operation. The second takes only two parameters. The first is an
+  \textidentifier{ArrayHandle} of sorted \vtkm{Id}s and the second is an
+  \textidentifier{ArrayHandle} of \vtkm{Id}s to find in the first list. The
+  results are written back out to the second array. This second
+  specialization is useful for inverting index maps.
+\end{description}
+
+\index{algorithm|)}
+\index{device~adapter!algorithm|)}
+
+
+\section{Implementing Device Adapters}
+\label{sec:ImplementingDeviceAdapters}
+
+VTK-m comes with several implementations of device adapters so that it may
+be ported to a variety of platforms. It is also possible to provide new
+device adapters to support yet more devices, compilers, and libraries. A
+new device adapter provides a tag, a class to manage arrays in the
+execution environment, a collection of algorithms that run in the execution
+environment, and (optionally) a timer.
+
+Most device adapters are associated with some type of device or library,
+and all source code related directly to that device is placed in a
+subdirectory of \textfilename{vtkm/cont}. For example, files associated
+with CUDA are in \textfilename{vtkm/cont/cuda} and files associated with
+the Intel Threading Building Blocks (TBB) are located in
+\textfilename{vtkm/cont/tbb}. The documentation here assumes that you are
+adding a device adapter to the VTK-m source code and following these file
+conventions. However, it is also possible to define a device adapter
+outside of the core VTK-m, in which case the file paths might be different.
+
+For the purposes of discussion in this section, we will give a simple
+example of implementing a device adapter using the \textcode{std::thread}
+class provided by C++11. We will call our device \textcode{Cxx11Thread} and
+place it in the directory \textfilename{vtkm/cont/cxx11}.
+
+By convention the implementation of device adapters within VTK-m are
+divided into 3 header files with the names
+\textfilename{DeviceAdapterTag\textasteriskcentered.h},
+\textfilename{ArrayManagerExecution\textasteriskcentered.h} and
+\textfilename{DeviceAdapterAlgorithm\textasteriskcentered.h}, which are
+hidden in internal directories. The
+\textfilename{DeviceAdapter\textasteriskcentered.h} that most code includes
+is a trivial header that simply includes these other three files. For our
+example \textcode{std::thread} device, we will create the base header at
+\textfilename{vtkm/cont/cxx11/DeviceAdapterCxx11Thread.h}. The contents are
+the following (with minutia like include guards removed).
+
+\begin{vtkmexample}{Contents of the base header for a device adapter.}
+#include <vtkm/cont/cxx11/internal/DeviceAdapterTagCxx11Thread.h>
+#include <vtkm/cont/cxx11/internal/ArrayManagerExecutionCxx11Thread.h>
+#include <vtkm/cont/cxx11/internal/DeviceAdapterAlgorithmCxx11Thread.h>
+\end{vtkmexample}
+
+The reason VTK-m breaks up the code for its device adapters this way is
+that there is an interdependence between the implementation of each device
+adapter and the mechanism to pick a default device adapter. Breaking up the
+device adapter code in this way maintains an acyclic dependence among
+header files.
+
+\subsection{Tag}
+
+\index{device~adapter!tag|(}
+
+The device adapter tag, as described in Section~\ref{sec:DeviceAdapterTag}
+is a simple empty type that is used as a template parameter to identify the
+device adapter. Every device adapter implementation provides one. The
+device adapter tag is typically defined in an internal header file with a
+prefix of \textfilename{DeviceAdapterTag}.
+
+The device adapter tag should be created with the macro
+\vtkmmacro{VTKM\_VALID\_DEVICE\_ADAPTER}. This adapter takes an abbreviated
+name that it will append to \textcode{DeviceAdapterTag} to make the tag
+structure. It will also create some support classes that allow VTK-m to
+introspect the device adapter. The macro also expects a unique integer
+identifier that is usually stored in a macro prefixed with
+\textcode{VTKM\_DEVICE\_ADAPTER\_}. These identifiers for the device
+adapters provided by the core VTK-m are declared in
+\vtkmheader{vtkm/cont/internal}{DeviceAdapterTag.h}.
+
+The following example gives the implementation of our custom device
+adapter, which by convention would be placed in the
+\textfilename{vtkm/cont/cxx11/internal/DeviceAdapterTagCxx11Thread.h}
+header file.
+
+\vtkmlisting{Implementation of a device adapter tag.}{DeviceAdapterTagCxx11Thread.h}
+
+\index{device~adapter!tag|)}
+
+\subsection{Array Manager Execution}
+
+\index{device~adapter!array manager|(}
+\index{array~manager~execution|(}
+\index{execution~array~manager|(}
+
+VTK-m defines a template named \vtkmcontinternal{ArrayManagerExecution}
+that is responsible for allocating memory in the execution environment and
+copying data between the control and execution environment. The execution
+array manager is typically defined in an internal header file with a prefix
+of \textfilename{ArrayManagerExecution}.
+
+\vtkmlisting{Prototype for \protect\vtkmcontinternal{ArrayManagerExecution}.}{ArrayManagerExecutionPrototype.cxx}
+
+A device adapter must provide a partial specialization of
+\textidentifier{ArrayManagerExecution} for its device adapter tag. The
+implementation for \textidentifier{ArrayManagerExecution} is expected to
+manage the resources for a single array. All
+\textidentifier{ArrayManagerExecution} specializations must have a
+constructor that takes a pointer to a \vtkmcontinternal{Storage} object.
+The \textidentifier{ArrayManagerExecution} should store a reference to this
+\textidentifier{Storage} object and use it to pass data between control and
+execution environments. Additionally,
+\textidentifier{ArrayManagerExecution} must provide the following elements.
+
+\begin{description}
+\item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+  in the array. This is the same type as the first template argument.
+\item[\textcode{PortalType}] The type of an array portal that can be used
+  in the execution environment to access the array.
+\item[\textcode{PortalConstType}] A read-only (const) version of
+  \textcode{PortalType}.
+\item[\textcode{GetNumberOfValues}] A method that returns the number of
+  values stored in the array. The results are undefined if the data has not
+  been loaded or allocated.
+\item[\textcode{PrepareForInput}] A method that ensures an array is
+  allocated in the execution environment and valid data is there. The
+  method takes a \textcode{bool} flag that specifies whether data needs to
+  be copied to the execution environment. (If false, then data for this
+  array has not changed since the last operation.) The method returns a
+  \textcode{PortalConstType} that points to the data.
+\item[\textcode{PrepareForInPlace}] A method that ensures an array is
+  allocated in the execution environment and valid data is there. The
+  method takes a \textcode{bool} flag that specifies whether data needs to
+  be copied to the execution environment. (If false, then data for this
+  array has not changed since the last operation.) The method returns a
+  \textcode{PortalType} that points to the data.
+\item[\textcode{PrepareForOutput}] A method that takes an array
+  size and allocates an array in the execution environment
+  of the specified size. The initial memory may be uninitialized. The
+  method returns a \textcode{PortalType} to the data.
+\item[\textcode{RetrieveOutputData}] This method takes a storage object,
+  allocates memory in the control environment, and copies data from the
+  execution environment into it. If the control and execution environments
+  share arrays, then this can be a no-operation.
+\item[\textcode{CopyInto}] This method takes an STL-compatible iterator and
+  copies data from the execution environment into it.
+\item[\textcode{Shrink}] A method that adjusts the size of the array in the
+  execution environment to something that is a smaller size. All the data
+  up to the new length must remain valid. Typically, no memory is actually
+  reallocated. Instead, a different end is marked.
+\item[\textcode{ReleaseResources}] A method that frees any resources
+  (typically memory) in the execution environment.
+\end{description}
+
+Specializations of this template typically take on one of two forms. If the
+control and execution environments have separate memory spaces, then this
+class behaves by copying memory in methods such as
+\textcode{PrepareForInput} and \textcode{RetrieveOutputData}. This might
+require creating buffers in the control environment to efficiently move
+data from control array portals.
+
+However, if the control and execution environments share the same memory
+space, the execution array manager can, and should, delegate all of its
+operations to the \textidentifier{Storage} it is constructed with. VTK-m
+comes with a class called
+\vtkmcontinternal{ArrayManagerExecutionShareWithControl} that provides the
+implementation for an execution array manager that shares a memory space
+with the control environment. In this case, making the
+\textidentifier{ArrayManagerExecution} specialization be a trivial subclass
+is sufficient. Continuing our example of a device adapter based on C++11's
+\textcode{std::thread} class, here is the implementation of
+\textidentifier{ArrayManagerExecution}, which by convention would be placed
+in the
+\textfilename{vtkm/cont/cxx11/internal/ArrayManagerExecutionCxx11Thread.h}
+header file.
+
+\vtkmlisting{Specialization of \textidentifier{ArrayManagerExecution}.}{ArrayManagerExecutionCxx11Thread.h}
+
+\index{execution~array~manager|)}
+\index{array~manager~execution|)}
+\index{device~adapter!array manager|)}
+
+\subsection{Algorithms}
+
+\index{device~adapter!algorithm|(}
+\index{algorithm|(}
+
+A device adapter implementation must also provide a specialization of
+\vtkmcont{DeviceAdapterAlgorithm}, which is documented in
+Section~\ref{sec:DeviceAdapterAlgorithms}. The implementation for the
+device adapter algorithms is typically placed in a header file with a
+prefix of \textfilename{DeviceAdapterAlgorithm}.
+
+Although there are many methods in \textidentifier{DeviceAdapterAlgorithm},
+it is seldom necessary to implement them all. Instead, VTK-m comes with
+\vtkmcontinternal{DeviceAdapterAlgorithmGeneral} that provides generic
+implementation for most of the required algorithms. By deriving the
+specialization of \textidentifier{DeviceAdapterAlgorithm} from
+\textidentifier{DeviceAdapterAlgorithmGeneral}, only the implementations
+for \textcode{Schedule} and \textcode{Synchronize} need to be implemented.
+All other algorithms can be derived from those.
+
+That said, not all of the algorithms implemented in
+\textidentifier{DeviceAdapterAlgorithmGeneral} are optimized for all types
+of devices. Thus, it is worthwhile to provide algorithms optimized for the
+specific device when possible. In particular, it is best to provide
+specializations for the sort, scan, and reduce algorithms.
+
+One point to note when implementing the \textcode{Schedule} methods is to
+make sure that errors handled in the execution environment are handled
+correctly. As described in
+Section~\ref{sec:ExecutionEnvironment:ErrorHandling}, errors are signaled
+in the execution environment by calling \textcode{RaiseError} on a functor
+or worklet object. This is handled internally by the
+\vtkmexecinternal{ErrorMessageBuffer} class.
+\textidentifier{ErrorMessageBuffer} really just holds a small string
+buffer, which must be provided by the device adapter's \textcode{Schedule}
+method.
+
+So, before \textcode{Schedule} executes the functor it is given, it should
+allocate a small string array in the execution environment, initialize it
+to the empty string, encapsulate the array in an
+\textidentifier{ErrorMessageBuffer} object, and set this buffer object in
+the functor. When the execution completes, \textcode{Schedule} should check
+to see if an error exists in this buffer and throw a
+\vtkmcont{ErrorExecution} if an error has been reported.
+
+\begin{commonerrors}
+  Exceptions are generally not supposed to be thrown in the execution
+  environment, but it could happen on devices that support them.
+  Nevertheless, few thread schedulers work well when an exception is thrown
+  in them. Thus, when implementing adapters for devices that do support
+  exceptions, it is good practice to catch them within the thread and
+  report them through the \textidentifier{ErrorMessageBuffer}.
+\end{commonerrors}
+
+The following example is a minimal implementation of device adapter
+algorithms using C++11's \textcode{std::thread} class. Note that no attempt
+at providing optimizations has been attempted (and many are possible). By
+convention this code would be placed in the
+\textfilename{vtkm/cont/cxx11/internal/DeviceAdapterAlgorithmCxx11Thread.h}
+header file.
+
+\vtkmlisting{Minimal specialization of \textidentifier{DeviceAdapterAlgorithm}.}{DeviceAdapterAlgorithmCxx11Thread.h}
+
+\index{algorithm|)}
+\index{device~adapter!algorithm|)}
+
+\subsection{Timer Implementation}
+
+\index{timer|(}
+\index{device~adapter!timer|(}
+
+The VTK-m timer, described in Section~\ref{sec:Timers}, delegates to an
+internal class named \vtkmcont{DeviceAdapterTimerImplementation}. The
+interface for this class is the same as that for \vtkmcont{Timer}. A default
+implementation of this templated class uses the system timer and the
+\textcode{Synchronize} method in the device adapter algorithms.
+
+However, some devices might provide alternate or better methods for
+implementing timers. For example, the TBB and CUDA libraries come with high
+resolution timers that have better accuracy than the standard system
+timers. Thus, the device adapter can optionally provide a specialization of
+\textidentifier{DeviceAdapterTimerImplementation}, which is typically
+placed in the same header file as the device adapter algorithms.
+
+Continuing our example of a custom device adapter using C++11's
+\textcode{std::thread} class, we could use the default timer and it would
+work fine. But C++11 also comes with a \textcode{std::chrono} package that
+contains some portable time functions. The following code demonstrates
+creating a custom timer for our device adapter using this package. By
+convention, \textidentifier{DeviceAdapterTimerImplementation} is placed in
+the same header file as \textidentifier{DeviceAdapterAlgorithm}.
+
+\vtkmlisting{Specialization of \textidentifier{DeviceAdapterTimerImplementation}.}{DeviceAdapterTimerImplementationCxx11Thread.h}
+
+\index{device~adapter!timer|)}
+\index{timer|)}
+
+
+\index{device~adapter|)}

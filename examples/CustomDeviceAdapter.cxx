@@ -113,13 +113,28 @@ private:
     VTKM_EXEC_EXPORT
     void operator()() const
     {
-      for (vtkm::Id threadId = this->BeginId;
-           threadId < this->EndId;
-           threadId++)
+      try
       {
-        this->Functor(threadId);
-        // If an error is raised, abort execution.
-        if (this->ErrorMessage.IsErrorRaised()) { return; }
+        for (vtkm::Id threadId = this->BeginId;
+             threadId < this->EndId;
+             threadId++)
+        {
+          this->Functor(threadId);
+          // If an error is raised, abort execution.
+          if (this->ErrorMessage.IsErrorRaised()) { return; }
+        }
+      }
+      catch (vtkm::cont::Error error)
+      {
+        this->ErrorMessage.RaiseError(error.GetMessage().c_str());
+      }
+      catch (std::exception error)
+      {
+        this->ErrorMessage.RaiseError(error.what());
+      }
+      catch (...)
+      {
+        this->ErrorMessage.RaiseError("Unknown exception raised.");
       }
     }
 
@@ -144,25 +159,40 @@ private:
                            (this->BeginId/this->MaxRange[0])%this->MaxRange[1],
                            this->BeginId/(this->MaxRange[0]*this->MaxRange[1]));
 
-      for (vtkm::Id threadId = this->BeginId;
-           threadId < this->EndId;
-           threadId++)
+      try
       {
-        this->Functor(threadId3D);
-        // If an error is raised, abort execution.
-        if (this->ErrorMessage.IsErrorRaised()) { return; }
-
-        threadId3D[0]++;
-        if (threadId3D[0] >= MaxRange[0])
+        for (vtkm::Id threadId = this->BeginId;
+             threadId < this->EndId;
+             threadId++)
         {
-          threadId3D[0] = 0;
-          threadId3D[1]++;
-          if (threadId3D[1] >= MaxRange[1])
+          this->Functor(threadId3D);
+          // If an error is raised, abort execution.
+          if (this->ErrorMessage.IsErrorRaised()) { return; }
+
+          threadId3D[0]++;
+          if (threadId3D[0] >= MaxRange[0])
           {
-            threadId3D[1] = 0;
-            threadId3D[2]++;
+            threadId3D[0] = 0;
+            threadId3D[1]++;
+            if (threadId3D[1] >= MaxRange[1])
+            {
+              threadId3D[1] = 0;
+              threadId3D[2]++;
+            }
           }
         }
+      }
+      catch (vtkm::cont::Error error)
+      {
+        this->ErrorMessage.RaiseError(error.GetMessage().c_str());
+      }
+      catch (std::exception error)
+      {
+        this->ErrorMessage.RaiseError(error.what());
+      }
+      catch (...)
+      {
+        this->ErrorMessage.RaiseError("Unknown exception raised.");
       }
     }
 

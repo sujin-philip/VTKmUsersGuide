@@ -1,0 +1,301 @@
+% -*- latex -*-
+
+\chapter{Array Handles}
+\label{chap:ArrayHandle}
+
+\index{array~handle|(}
+
+An \keyterm{array handle}, implemented with the \vtkmcont{ArrayHandle}
+class, manages an array of data that can be accessed or manipulated by VTK-m
+algorithms. It is typical to construct an array handle in the control
+environment to pass data to an algorithm running in the execution
+environment. It is also typical for an algorithm running in the execution
+environment to allocate and populate an array handle, which can then be
+read back in the control environment. It is also possible for an array
+handle to manage data created by one VTK-m algorithm and passed to another,
+remaining in the execution environment the whole time and never copied to
+the control environment.
+
+\begin{didyouknow}
+  The array handle may have up to two copies of the array, one for the
+  control environment and one for the execution environment. However,
+  depending on the device and how the array is being used, the array handle
+  will only have one copy when possible. Copies between the environments
+  are implicit and lazy. They are copied only when an operation needs data
+  in an environment where the data is not.
+\end{didyouknow}
+
+\vtkmcont{ArrayHandle} behaves like a shared smart pointer in that when the
+C++ object is copied, each copy holds a reference to the same array. These
+copies are reference counted so that when all copies of the
+\vtkmcont{ArrayHandle} are destroyed, any allocated memory is released.
+
+
+\section{Creating Array Handles}
+
+\vtkmcont{ArrayHandle} is a templated class with two template parameters.
+The first template parameter is the only one required and specifies the
+base type of the entries in the array. The second template parameter
+specifies the storage used when storing data in the control environment.
+Storage objects are discussed later in Chapter~\ref{chap:Storage}, and for
+now we will use the default value.
+
+\begin{vtkmexample}{Declaration of the \protect\vtkmcont{ArrayHandle} templated class.}
+template<
+    typename T,
+    typename StorageTag = VTKM_DEFAULT_STORAGE_TAG>
+class ArrayHandle;
+\end{vtkmexample}
+
+There are multiple ways to create and populate an array handle. The default
+\vtkmcont{ArrayHandle} constructor will create an empty array with nothing
+allocated in either the control or execution environment. This is
+convenient for creating arrays used as the output for algorithms.
+
+\vtkmlisting{Creating an \textidentifier{ArrayHandle} for output data.}{CreateArrayHandle.cxx}
+
+Constructing an \textidentifier{ArrayHandle} that points to a provided C array or
+\textcode{std::vector} is straightforward with the
+\vtkmcont{make\_ArrayHandle} functions. These functions will make an array
+handle that points to the array data that you provide.
+
+\vtkmlisting{Creating an \textidentifier{ArrayHandle} that points to a provided C array.}{ArrayHandleFromCArray.cxx}
+
+\vtkmlisting[ex:ArrayHandleFromVector]{Creating an \textidentifier{ArrayHandle} that points to a provided \textcode{std::vector}.}{ArrayHandleFromVector.cxx}
+
+\emph{Be aware} that \vtkmcont{make\_ArrayHandle} makes a shallow pointer
+copy. This means that if you change or delete the data provided, the
+internal state of \textidentifier{ArrayHandle} becomes invalid and
+undefined behavior can ensue. The most common manifestation of this error
+happens when a \textcode{std::vector} goes out of scope. This subtle
+interaction will cause the \vtkmcont{ArrayHandle} to point to an
+unallocated portion of the memory heap. For example, if the code in
+Example~\ref{ex:ArrayHandleFromVector} where to be placed within a callable
+function or method, it could cause the \vtkmcont{ArrayHandle} to become
+invalid.
+
+\begin{commonerrors}
+  Because \textidentifier{ArrayHandle} does not manage data provided by
+  \textidentifier{make\_ArrayHandle}, you should only use these as
+  temporary objects. Example~\ref{ex:ArrayOutOfScope} demonstrates a method
+  of copying one of these temporary arrays into safe managed memory, and
+  Section~\ref{sec:ArrayHandle:Populate} describes how to put data directly
+  into an \textidentifier{ArrayHandle} object.
+\end{commonerrors}
+
+\vtkmlisting[ex:ArrayOutOfScope]{Invalidating an \textidentifier{ArrayHandle} by letting the source \textcode{std::vector} leave scope.}{ArrayOutOfScope.cxx}
+
+
+\section{Array Portals}
+\label{sec:ArrayPortals}
+
+\index{array~portal|(}
+\index{array~handle!portal|(}
+
+An array handle defines auxiliary structures called \keyterm{array portals}
+that provide direct access into its data. An array portal is a simple
+object that is somewhat functionally equivalent to an STL-type iterator, but
+with a much simpler interface. Array portals can be read-only (const) or
+read-write and they can be accessible from either the control environment
+or the execution environment. All these variants have similar interfaces
+although some features that are not applicable can be left out.
+
+An array portal object contains each of the following:
+\begin{description}
+\item[\textcode{ValueType}] A \textcode{typedef} of the type for each item
+  in the array.
+\item[\textcode{GetNumberOfValues}] A method that returns the number of
+  entries in the array.
+\item[\textcode{Get}] A method that returns the value at a given index.
+\item[\textcode{Set}] A method that changes the value at a given
+  index. This method does not need to exist for read-only (const) array
+  portals.
+\end{description}
+
+The following code example defines an array portal for a simple C array of
+scalar values. This definition has no practical value (it is covered by the
+more general \vtkmcontinternal{ArrayPortalFromIterators}), but demonstrates
+the function of each component.
+
+\vtkmlisting{A simple array portal implementation.}{SimpleArrayPortal.cxx}
+
+Although array portals are simple to implement and use, and array portals'
+functionality is similar to iterators, there exists a great deal of code
+already based on STL iterators and it is often convienient to interface
+with an array through an iterator rather than an array portal. The
+\vtkmcont{ArrayPortalToIterators} class can be used to convert an array
+portal to an STL-compatible iterator. The class is templated on the array
+portal type and has a constructor that accepts an instance of the array
+portal. It contains the following features.
+\begin{description}
+\item[\textcode{IteratorType}] A \textcode{typedef} of an STL-compatible
+  random-access iterator that can provide the same access as the array
+  portal.
+\item[\textcode{GetBegin}] A method that returns an STL-compatible iterator
+  of type \textcode{IteratorType} that points to the beginning of the
+  array.
+\item[\textcode{GetEnd}] A method that returns an STL-compatible iterator
+  of type \textcode{IteratorType} that points to the end of the array.
+\end{description}
+
+\vtkmlisting{Using \textidentifier{ArrayPortalToIterators}.}{ArrayPortalToIterators.cxx}
+
+As a convenience, \vtkmheader{vtkm/cont}{ArrayPortalToIterators.h} also
+defines a pair of functions named \textcode{ArrayPortalToIteratorBegin}
+\index{ArrayPortalToIteratorBegin} and \textcode{ArrayPortalToIteratorEnd}
+\index{ArrayPortalToIteratorEnd} that each take an array portal as an
+argument and return a begin and end iterator, respectively.
+
+\vtkmlisting{Using \textidentifier{ArrayPortalToIteratorBegin} and \textidentifier{ArrayPortalToIteratorEnd}.}{ArrayPortalToIteratorBeginEnd.cxx}
+
+\textidentifier{ArrayHandle} contains two \textcode{typedef}s for array
+portal types that are capable of interfacing with the underlying data in
+the control environment. These are \textcode{PortalControl}
+\index{PortalControl} and \textcode{PortalConstControl},
+\index{PortalConstControl} which define read-write and read-only (const)
+array portals, respectively.
+
+\textidentifier{ArrayHandle} also contains similar \textcode{typedef}s for
+array portals in the execution environment. Because these types are
+dependent on the device adapter used for execution, these typedefs are
+embedded in a templated class named \textcode{ExecutionTypes}.
+\index{ExecutionTypes} Within \textcode{ExecutionTypes} are the typedefs
+\textcode{Portal} and \textcode{PortalConst} defining the read-write and
+read-only (const) array portals, respectively, for the execution
+environment for the given device adapter tag.
+
+Because \vtkmcont{ArrayHandle} is control environment object, it provides
+the methods \textcode{GetPortalControl} \index{GetPortalControl} and
+\textcode{GetPortalConstControl} \index{GetPortalConstControl} to get the
+associated array portal objects. These methods also have the side effect of
+refreshing the control environment copy of the data, so this can be a way
+of synchronizing the data. Be aware that when an
+\textidentifier{ArrayHandle} is created with a pointer or
+\textcode{std::vector}, it is put in a read-only mode, and
+\textcode{GetPortalControl} can fail (although
+\textcode{GetPortalConstControl} will still work). Also be aware that
+calling \textcode{GetPortalControl} will invalidate any copy in the
+execution environment, meaning that any subsequent use will cause the data
+to be copied back again.
+
+\vtkmlisting{Using portals from an \textidentifier{ArrayHandle}.}{ControlPortals.cxx}
+
+\begin{didyouknow}
+  Most operations on arrays in VTK-m should really be done in the execution
+  environment. Keep in mind that whenever doing an operation using a
+  control array portal, that operation will likely be slow for large
+  arrays. However, some operations, like performing file I/O, make sense in
+  the control environment.
+\end{didyouknow}
+
+\index{array~handle!portal|)}
+\index{array~portal|)}
+
+
+\section{Allocating and Populating Array Handles}
+\label{sec:ArrayHandle:Allocate}
+\label{sec:ArrayHandle:Populate}
+
+\index{array~handle!allocate}
+\index{Allocate}
+
+\vtkmcont{ArrayHandle} is capable of allocating its own memory. The most
+straightforward way to allocate memory is to call the \textcode{Allocate}
+method. The \textcode{Allocate} method takes a single argument, which is
+the number of elements to make the array.
+
+\vtkmlisting{Allocating an \textidentifier{ArrayHandle}.}{ArrayHandleAllocate.cxx}
+
+\begin{commonerrors}
+  The ability to allocate memory is a key difference between
+  \textidentifier{ArrayHandle} and many other common forms of smart
+  pointers. When one \textidentifier{ArrayHandle} allocates new memory, all
+  other \textidentifier{ArrayHandle}s pointing to the same managed memory
+  get the newly allocated memory. This can be particularly surprising when
+  the originally managed memory is empty. For example, older versions of
+  \textcode{std::vector} initialized all its values by setting them to the
+  same object. When a \textcode{vector} of \textidentifier{ArrayHandle}s
+  was created and one entry was allocated, all entries changed to the same
+  allocation.
+\end{commonerrors}
+
+\index{array~handle!populate}
+\index{GetPortalControl}
+
+Once an \textidentifier{ArrayHandle} is allocated, it can be populated by
+using the portal returned from \textcode{GetPortalControl}, as described in
+Section~\ref{sec:ArrayPortals}. This is roughly the method used by the
+readers in the I/O package (Chapter~\ref{chap:FileIO}).
+
+\vtkmlisting{Populating a newly allocated \textidentifier{ArrayHandle}.}{ArrayHandlePopulate.cxx}
+
+
+\section{Interface to Execution Environment}
+\label{sec:ArrayHandle:InterfaceToExecutionEnvironment}
+
+\index{array~handle!execution~environment|(}
+
+One of the main functions of the array handle is to allow an array to be
+defined in the control environment and then be used in the execution
+environment. When using an \textidentifier{ArrayHandle} with filters or
+worklets, this transition is handled automatically. However, it is also
+possible to invoke the transfer for use in your own scheduled algorithms.
+
+The \textidentifier{ArrayHandle} class manages the transition from control
+to execution with a set of three methods that allocate, transfer, and ready
+the data in one operation. These methods all start with the prefix
+\textcode{Prepare} and are meant to be called before some operation happens
+in the execution environment. The methods are as follows.
+
+\begin{description}
+\item[\textcode{PrepareForInput}] \index{PrepareForInput} Copies data from
+  the control to the execution environment, if necessary, and readies the
+  data for read-only access.
+\item[\textcode{PrepareForInPlace}] \index{PrepareForInPlace} Copies the
+  data from the control to the execution environment, if necessary, and
+  readies the data for both reading and writing.
+\item[\textcode{PrepareForOutput}] \index{PrepareForOutput} Allocates space
+  (the size of which is given as a parameter) in the execution environment,
+  if necessary, and readies the space for writing.
+\end{description}
+
+The \textcode{PrepareForInput} and \textcode{PrepareForInPlace} methods
+each take a single argument that is the device adapter tag where execution
+will take place (see Section~\ref{sec:DeviceAdapterTag} for more
+information on device adapter tags). \textcode{PrepareForOutput} takes two
+arguments: the size of the space to allocate and the device adapter tag.
+Each of these methods returns an array portal that can be used in the
+execution environment. \textcode{PrepareForInput} returns an object of type
+\textidentifier{ArrayHandle}\textcode{:\colonhyp{}ExecutionTypes<{\it{}DeviceAdapterTag}>:\colonhyp{}PortalConst}
+whereas \textcode{PrepareForInPlace} and \textcode{PrepareForOutput} each
+return an object of type
+\textidentifier{ArrayHandle}\textcode{:\colonhyp{}ExecutionTypes<{\it{}DeviceAdapterTag}>:\colonhyp{}Portal}.
+
+Although these \textcode{Prepare} methods are called in the control
+environment, the returned array portal can only be used in the execution
+environment. Thus, the portal must be passed to an invocation of the
+execution environment. Typically this is done with a call to
+\textcode{Schedule} in \vtkmcont{DeviceAdapterAlgorithm}. This and other
+device adapter algorithms are described in detail in
+Section~\ref{sec:DeviceAdapterAlgorithms}, but here is a quick example of
+using these execution array portals in a simple functor.
+
+\vtkmlisting{Using an execution array portal from an \textidentifier{ArrayHandle}.}{ExecutionPortals.cxx}
+
+It should be noted that the array handle will expect any use of the
+execution array portal to finish before the next call to any
+\textidentifier{ArrayHandle} method. Since these \textcode{Prepare} methods
+are typically used in the process of scheduling an algorithm in the
+execution environment, this is seldom an issue.
+
+\begin{commonerrors}
+  There are many operations on \textidentifier{ArrayHandle} that can
+  invalidate the array portals, so do not keep them around indefinitely. It
+  is generally better to keep a reference to the
+  \textidentifier{ArrayHandle} and use one of the \textcode{Prepare} each
+  time the data are accessed in the execution environment.
+\end{commonerrors}
+
+\index{array~handle!execution~environment|)}
+
+\index{array~handle|)}

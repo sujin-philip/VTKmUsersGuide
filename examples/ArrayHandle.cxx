@@ -73,6 +73,41 @@ void ArrayHandleFromCArray()
   CheckArrayValues(inputArray);
 }
 
+vtkm::Float32 GetValueForArray(vtkm::Id index)
+{
+  return TestValue(index);
+}
+
+void AllocateAndFillArrayHandle()
+{
+  ////
+  //// BEGIN-EXAMPLE ArrayHandlePopulate.cxx
+  ////
+  ////
+  //// BEGIN-EXAMPLE ArrayHandleAllocate.cxx
+  ////
+  vtkm::cont::ArrayHandle<vtkm::Float32> arrayHandle;
+
+  const vtkm::Id ARRAY_SIZE = 50;
+  arrayHandle.Allocate(ARRAY_SIZE);
+  ////
+  //// END-EXAMPLE ArrayHandleAllocate.cxx
+  ////
+
+  typedef vtkm::cont::ArrayHandle<vtkm::Float32>::PortalControl PortalType;
+  PortalType portal = arrayHandle.GetPortalControl();
+
+  for (vtkm::Id index = 0; index < ARRAY_SIZE; index++)
+  {
+    portal.Set(index, GetValueForArray(index));
+  }
+  ////
+  //// END-EXAMPLE ArrayHandlePopulate.cxx
+  ////
+
+  CheckArrayValues(arrayHandle);
+}
+
 ////
 //// BEGIN-EXAMPLE ArrayOutOfScope.cxx
 ////
@@ -338,6 +373,7 @@ void Test()
   BasicConstruction();
   ArrayHandleFromCArray();
   ArrayHandleFromVector();
+  AllocateAndFillArrayHandle();
   CheckSafeDataLoad();
   TestArrayPortalVectors();
   TestControlPortalsExample();

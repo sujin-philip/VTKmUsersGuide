@@ -13,6 +13,7 @@
 %%%% Uncomment for draft mode.
 \usepackage{draftwatermark}
 \SetWatermarkText{DRAFT}
+\SetWatermarkColor[rgb]{.9,1,.9}
 \newcommand{\fix}[1]{{\color{red}\textsc{[#1]}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,6 +163,11 @@
   \label{part:Developing}
 
   \input{BasicProvisions}
+
+  \input{ArrayHandle}
+
+  \chapter{Fancy Array Storage}
+  \label{chap:Storage}
 
   \input{ControlEnvironment}
 

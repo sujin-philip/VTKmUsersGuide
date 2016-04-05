@@ -37,6 +37,7 @@ set(input_docs
   Introduction.tex
   IO.tex
   BasicProvisions.tex
+  ArrayHandle.tex
   ControlEnvironment.tex
   ExecutionEnvironment.tex
   Worklets.tex

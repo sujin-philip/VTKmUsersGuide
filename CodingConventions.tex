@@ -199,8 +199,8 @@ if (test)
   the nightly dashboards, which should include Windows, Mac, and Linux.
 \item Use \vtkm{Id} in lieu of \textcode{int} or \textcode{long} for data
   structure indices and \vtkm{IdComponent} for component indices of
-  \vtkm{Vec} and related classes (like \vtkmexec{CellField} and
-  \vtkmmath{Matrix}).
+  \vtkm{Vec} and related classes (like \vtkm{VecVariable} and
+  \vtkm{Matrix}).
 \item Whenever possible, use templates to resolve data types like
   \textcode{float}, \textcode{double}, or vectors to make code as flexible
   as possible. If a specific data type is required, prefer the

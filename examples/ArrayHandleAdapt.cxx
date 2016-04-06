@@ -1,6 +1,9 @@
 #include <vtkm/cont/ArrayHandle.h>
-#include <vtkm/cont/ArrayHandleCounting.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/DeviceAdapter.h>
+
+#include <vtkm/worklet/PointElevation.h>
 
 #include <vtkm/cont/testing/Testing.h>
 
@@ -197,30 +200,23 @@ public:
 ////
 //// BEGIN-EXAMPLE UsingArrayHandleAdapter.cxx
 ////
-template<typename GridType>
 VTKM_CONT_EXPORT
-void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
+void GetElevationAirPressure(vtkm::cont::DataSet grid, FooFieldsDeque *fields)
 {
   // Make an array handle that points to the pressure values in the fields.
   ArrayHandleFooPressure pressureHandle(fields);
 
-  // This is currently commented out because worklets are not yet implemented.
-//  // Run an elevation worklet.
-//  vtkm::worklet::Elevation elevation(vtkm::make_Vector3(0.0, 0.0, 0.0),
-//                                     vtkm::make_Vector3(0.0, 0.0, 10.0),
-//                                     vtkm::make_Vector2(0.02, 0.0));
-//  vtkm::cont::DispatcherMapField<vtkm::worklet::Elevation>
-//      dispatcher(elevation);
-//  dispatcher.Invoke(grid.GetPointCoordinates(), pressureHandle);
-  //// PAUSE-EXAMPLE
+  // Use the elevation worklet to estimate atmospheric pressure based on the
+  // height of the point coordinates. Atmospheric pressure is 101325 Pa at
+  // sea level and drops about 12 Pa per meter.
+  vtkm::worklet::PointElevation elevation;
+  elevation.SetLowPoint(vtkm::make_Vec(0.0, 0.0, 0.0));
+  elevation.SetHighPoint(vtkm::make_Vec(0.0, 0.0, 2000.0));
+  elevation.SetRange(101325.0, 77325.0);
 
-  // In lieu of running something interesting, for now just copy from one array
-  // to another in the execution environment.
-  vtkm::cont::ArrayHandleCounting<vtkm::Float32> countingArray(1.0f, 0.5f, 50);
-  vtkm::cont::DeviceAdapterAlgorithm<VTKM_DEFAULT_DEVICE_ADAPTER_TAG>::Copy(
-        countingArray, pressureHandle);
-
-  //// RESUME-EXAMPLE
+  vtkm::worklet::DispatcherMapField<vtkm::worklet::PointElevation>
+      dispatcher(elevation);
+  dispatcher.Invoke(grid.GetCoordinateSystem().GetData(), pressureHandle);
 
   // Make sure the values are flushed back to the control environment.
   pressureHandle.GetPortalConstControl();
@@ -233,14 +229,22 @@ void GetElevationAirPressure(const GridType &grid, FooFieldsDeque *fields)
 
 void Test()
 {
-  FooFieldsDeque fields(50);
-  GetElevationAirPressure(NULL, &fields);
+  vtkm::cont::DataSet grid =
+      vtkm::cont::DataSetBuilderUniform::Create(vtkm::Id3(2, 2, 50));
 
-  vtkm::Float32 value = 1;
-  for (vtkm::Id index = 0; index < 50; index++)
+  FooFieldsDeque fields(4*50);
+  GetElevationAirPressure(grid, &fields);
+
+  vtkm::Float32 value = 101325.0f;
+  for (vtkm::Id heightIndex = 0; heightIndex < 50; heightIndex++)
   {
-    VTKM_TEST_ASSERT(fields[index].Pressure == value, "Bad value.");
-    value += 0.5f;
+    for (vtkm::Id slabIndex = 0; slabIndex < 4; slabIndex++)
+    {
+      VTKM_TEST_ASSERT(test_equal(fields[4*heightIndex+slabIndex].Pressure,
+                                  value),
+                       "Bad value.");
+    }
+    value -= 12.0f;
   }
 }
 

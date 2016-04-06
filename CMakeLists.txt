@@ -9,6 +9,7 @@ set(images
   images/SandiaLogo.pdf
   images/DOELogo.pdf
   images/KitwareLogo.png
+  images/ArrayHandleStorage.pdf
   images/CellConnectionsHexahedron.pdf
   images/CellConnectionsLine.pdf
   images/CellConnectionsPolygon.pdf
@@ -39,6 +40,7 @@ set(input_docs
   BasicProvisions.tex
   ArrayHandle.tex
   DeviceAdapter.tex
+  FancyArrayStorage.tex
   ControlEnvironment.tex
   ExecutionEnvironment.tex
   Worklets.tex

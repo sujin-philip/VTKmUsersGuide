@@ -76,6 +76,11 @@ add_latex_document(GettingStarted.tex
   EXCLUDE_FROM_ALL
   )
 
+add_latex_document(Using.tex
+  ${add_latex_document_args}
+  EXCLUDE_FROM_ALL
+  )
+
 add_latex_document(Developing.tex
   ${add_latex_document_args}
   EXCLUDE_FROM_ALL

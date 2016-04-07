@@ -157,10 +157,10 @@
 
 }{}
 
-\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Developing}}{
+\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Using}}{
 
-  \part{Developing with VTK-m}
-  \label{part:Developing}
+  \part{Using VTK-m}
+  \label{part:Using}
 
   \input{BasicProvisions}
 
@@ -172,25 +172,40 @@
 
   \input{ControlEnvironment}
 
-  \input{Worklets}
-
-  \input{ExecutionEnvironment}
+  \chapter{Filter Policies}
+  \label{chap:policies}
 
   \chapter{OpenGL Interoperability}
   \label{chap:OpenGLInteroperability}
 
 }{}
 
+\ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Developing}}{
+
+  \part{Developing with VTK-m}
+  \label{part:Developing}
+
+  \input{Worklets}
+
+  \input{ExecutionEnvironment}
+
+}{}
+
 \ifthenelse{\equal{\buildtype}{Full} \OR \equal{\buildtype}{Advanced}}{
 
-  \part{Advanced Customization}
+  \part{Advanced Development}
   \label{part:Advanced}
 
   \input{AdvancedWorklets}
 
-  \input{CodingConventions}
 
 }{}
+
+\appendix
+\part{Appendix}
+\label{part:Appendix}
+\input{CodingConventions}
+
 
 \backmatter
 %\chapter{Index}

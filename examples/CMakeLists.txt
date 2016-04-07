@@ -4,6 +4,7 @@ set(example_src
   ArrayHandleAdapt.cxx
   ArrayHandleCast.cxx
   ArrayHandleConstant.cxx
+  ArrayHandleCoordinateSystems.cxx
   ArrayHandleCounting.cxx
   ArrayHandleDerived.cxx
   ArrayHandleImplicit.cxx

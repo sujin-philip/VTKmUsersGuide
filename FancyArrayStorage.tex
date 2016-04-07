@@ -310,21 +310,76 @@ can sometimes be used to avoid having to declare the full array type.
 \subsection{Coordinate System Arrays}
 \label{sec:CoordinateSystemArrays}
 
+Many of the data structures we use in VTK-m are described in a 3D
+coordinate system. Although, as we will see in Chapter~\ref{chap:DataSets},
+we can use any \textidentifier{ArrayHandle} to store point coordinates,
+including a raw array of 3D vectors, there are some common patterns for
+point coordinates that we can use specialized arrays to better represent
+the data.
+
 \index{array~handle!uniform~point~coordinates|(}
 \index{uniform~point~coordinates~array~handle|(}
 
-\fix{Write this}
+There are two fancy array handles that each handle a special form of
+coordinate system. The first such array handle is
+\vtkmcont{ArrayHandleUniformPointCoordinates}, which represents a uniform
+sampling of space. The constructor for
+\textidentifier{ArrayHandleUniformPointCoordinates} takes three arguments.
+The first argument is a \vtkm{Id3} that specifies the number of samples in
+the $x$, $y$, and $z$ directions. The second argument, which is optional,
+specifies the origin (the location of the first point at the lower left
+corner). If not specified, the origin is set to $[0,0,0]$. The third
+argument, which is also optional, specifies the distance between samples in
+the $x$, $y$, and $z$ directions. If not specified, the spacing is set to
+$1$ in each direction.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleUniformPointCoordinates}.}{ArrayHandleUniformPointCoordinates.cxx}
 
 \index{uniform~point~coordinates~array~handle|)}
 \index{array~handle!uniform~point~coordinates|)}
 
 \index{array~handle!Cartesian~product|(}
+\index{array~handle!rectilinear~point~coordinates|(}
 \index{Cartesian~product~array~handle|(}
+\index{rectilinear~point~coordinates~array~handle|(}
 
-\fix{Write this}
+The second fancy array handle for special coordinate systems is
+\vtkmcont{ArrayHandleCartesianProduct}, which represents a rectilinear
+sampling of space where the samples are axis aligned but have variable
+spacing. Sets of coordinates of this type are most efficiently represented
+by having a separate array for each component of the axis, and then for
+each $[i,j,k]$ index of the array take the value for each component from
+each array using the respective index. This is equivalent to performing a
+Cartesian product on the arrays.
 
+\textidentifier{ArrayHandleCartesianProduct} is a templated class. It has
+three template parameters, which are the types of the arrays used for the
+$x$, $y$, and $z$ axes. The constructor for
+\textidentifier{ArrayHandleCartesianProduct} takes the three arrays.
+
+\vtkmlisting{Using a \textidentifier{ArrayHandleCartesianProduct}.}{ArrayHandleCartesianProduct.cxx}
+
+The \vtkmheader{vtkm/cont/ArrayHandleCartesianProduct.h} header also
+contains the templated convenience function
+\vtkmcont{make\_ArrayHandleCartesianProduct} that takes the three axis
+arrays and returns an array of the Cartesian product. This function can
+sometimes be used to avoid having to declare the full array type.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleCartesianProduct}.}{MakeArrayHandleCartesianProduct.cxx}
+
+\index{rectilinear~point~coordinates~array~handle|)}
 \index{Cartesian~product~array~handle|)}
+\index{array~handle!rectilinear~point~coordinates|)}
 \index{array~handle!Cartesian~product|)}
+
+\begin{didyouknow}
+  These specialized arrays for coordinate systems greatly reduce the code
+  duplication in VTK-m. Most scientific visualization systems need separate
+  implementations of algorithms for uniform, rectilinear, and unstructured
+  grids. But in VTK-m an algorithm can be written once and then applied to
+  all these different grid structures by using these specialized array
+  handles and letting the compiler's templates optimize the code.
+\end{didyouknow}
 
 \subsection{Composite Vector Arrays}
 \label{sec:CompositeVectorArrays}

@@ -2,6 +2,9 @@
 set(example_src
   ArrayHandle.cxx
   ArrayHandleAdapt.cxx
+  ArrayHandleCast.cxx
+  ArrayHandleConstant.cxx
+  ArrayHandleCounting.cxx
   ArrayHandleDerived.cxx
   ArrayHandleImplicit.cxx
   ArrayHandlePermutation.cxx

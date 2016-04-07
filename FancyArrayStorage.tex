@@ -117,21 +117,29 @@ ways in which new fancy arrays can be implemented.
 \index{array~handle!constant|(}
 \index{constant~array~handle|(}
 
-\fix{Write this.}
+A constant array is a fancy array handle that has the same value in all of
+its entries. The constant array provides this array without actually using
+any memory.
+
+Specifying a constant array in VTK-m is straightforward. VTK-m has a class
+named \vtkmcont{ArrayHandleConstant}. \textidentifier{ArrayHandleConstant}
+is a templated class with a single template argument that is the type of
+value for each element in the array. The constructor for
+\textidentifier{ArrayHandleConstant} takes the value to provide by the
+array and the number of values the array should present. The following
+example is a simple demonstration of the constant array handle.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleConstant}.}{ArrayHandleConstant.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleConstant.h} header also contains the
+templated convenience function \vtkmcont{make\_ArrayHandleConstant} that
+takes a value and a size for the array. This function can sometimes be used
+to avoid having to declare the full array type.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleConstant}.}{MakeArrayHandleConstant.cxx}
 
 \index{constant~array~handle|)}
 \index{array~handle!constant|)}
-
-\subsection{Cast Arrays}
-\label{sec:CastArrays}
-
-\index{array~handle!cast|(}
-\index{cast~array~handle|(}
-
-\fix{Write this.}
-
-\index{cast~array~handle|)}
-\index{array~handle!cast|)}
 
 \subsection{Counting Arrays}
 \label{sec:CountingArrays}
@@ -139,16 +147,98 @@ ways in which new fancy arrays can be implemented.
 \index{array~handle!counting|(}
 \index{counting~array~handle|(}
 
-\fix{Write this}
+A counting array is a fancy array handle that provides a sequence of
+numbers. These fancy arrays can represent the data without actually using
+any memory.
 
 \index{array~handle!index|(}
 \index{index~array~handle|(}
 
+VTK-m provides two versions of a counting array. The first version is an
+index array that provides a specialized but common form of a counting array
+called an index array. An index array has values of type \vtkm{Id} that
+start at 0 and count up by 1 (i.e. $0, 1, 2, 3,\ldots$). The index array
+mirrors the array's index.
+
+Specifying an index array in VTK-m is done with a class named
+\vtkmcont{ArrayHandleIndex}. The constructor for
+\textidentifier{ArrayHandleIndex} takes the size of the array to create.
+The following example is a simple demonstration of the index array handle.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleIndex}.}{ArrayHandleIndex.cxx}
+
 \index{index~array~handle|)}
 \index{array~handle!index|)}
 
+The \vtkmcont{ArrayHandleCounting} class provides a more general form of
+counting. \textidentifier{ArrayHandleCounting} is a templated class with a
+single template argument that is the type of value for each element in the
+array. The constructor for \textidentifier{ArrayHandleCounting} takes three
+arguments: the start value (used at index 0), the step from one value to
+the next, and the length of the array. The following example is a simple
+demonstration of the counting array handle.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleCounting}.}{ArrayHandleCountingBasic.cxx}
+
+\begin{didyouknow}
+  In addition to being simpler to declare,
+  \textidentifier{ArrayHandleIndex} is slightly faster than
+  \textidentifier{ArrayHandleCounting}. Thus, when applicable, you should
+  prefer using \textidentifier{ArrayHandleIndex}.
+\end{didyouknow}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleCounting.h} header also contains the
+templated convenience function \vtkmcont{make\_ArrayHandleCounting} that
+also takes the start value, step, and length as arguments. This function
+can sometimes be used to avoid having to declare the full array type.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleCounting}.}{MakeArrayHandleCountingBasic.cxx}
+
+There are no fundamental limits on how \textidentifier{ArrayHandleCounting}
+counts. For example, it is possible to count backwards.
+
+\vtkmlisting{Counting backwards with \textidentifier{ArrayHandleCounting}.}{ArrayHandleCountingBackward.cxx}
+
+It is also possible to use \textidentifier{ArrayHandleCounting} to make
+sequences of \vtkm{Vec} values with piece-wise counting in each of the
+components.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleCounting} with \protect\vtkm{Vec} objects.}{ArrayHandleCountingVec.cxx}
+
 \index{counting~array~handle|)}
 \index{array~handle!counting|)}
+
+\subsection{Cast Arrays}
+\label{sec:CastArrays}
+
+\index{array~handle!cast|(}
+\index{cast~array~handle|(}
+
+A cast array is a fancy array that changes the type of the elements in an
+array. The cast array provides this re-typed array without actually copying
+or generating any data. Instead, casts are performed as the array is
+accessed.
+
+VTK-m has a class named \vtkmcont{ArrayHandleCast} to perform this implicit
+casting. \textidentifier{ArrayHandleCast} is a templated class with two
+template arguments. The first argument is the type to cast values to. The
+second argument is the type of the original \textidentifier{ArrayHandle}.
+The constructor to \textidentifier{ArrayHandleCast} takes the
+\textidentifier{ArrayHandle} to modify by casting.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleCast}.}{ArrayHandleCast.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleCast.h} header also contains the
+templated convenience function \vtkmcont{make\_ArrayHandleCast} that
+constructs the cast array. The first argument is the original
+\textidentifier{ArrayHandle} original array to cast. The optional second
+argument is of the type to cast to (or you can optionally specify the
+cast-to type as a template argument.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleCast}.}{MakeArrayHandleCast.cxx}
+
+\index{cast~array~handle|)}
+\index{array~handle!cast|)}
 
 \subsection{Permuted Arrays}
 \label{sec:PermutedArrays}
@@ -457,7 +547,7 @@ pre-processor correctly handles commas in the template specification.
 \index{array~handle!transform|)}
 
 
-\section{Derived Storage}
+\subsection{Derived Storage}
 \label{sec:DerivedStorage}
 
 \index{array~handle!derived|(}

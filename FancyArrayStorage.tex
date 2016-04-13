@@ -387,7 +387,49 @@ sometimes be used to avoid having to declare the full array type.
 \index{array~handle!composite~vector~arrays|(}
 \index{composite~vector~arrays~array~handle|(}
 
-\fix{Write this}
+A composite vector array is a fancy array handle that combines two to four
+arrays of the same size and value type and combines their corresponding
+values to form a \vtkm{Vec}. A composite vector array is similar in nature
+to a zipped array (described in Section~\ref{sec:ZippedArrays}) except that
+values are combined into \vtkm{Vec}s instead of \vtkm{Pair}s. The created
+\vtkm{Vec}s are not stored in their own memory space. Rather, the pairs are
+generated as the array is used.
+
+A composite vector array can be created using the
+\vtkmcont{ArrayHandleCompositeVector} class. This class has a single
+template argument that is a ``signature'' for the arrays to be combined.
+These signatures can be tricky to prototype, so
+\vtkmheader{vtkm/cont/ArrayHandleCompositeVector.h} header also contains a
+helper struct named \vtkmcont{ArrayHandleCompositeVectorType} to define the
+type. \textidentifier{ArrayHandleCompositeVectorType} takes a variable
+number of \textidentifier{ArrayHandle} types that compose the vector.
+\textidentifier{ArrayHandleCompositeVectorType} has an internal type named
+\textcode{type} that is the appropriately defined
+\textidentifier{ArrayHandleCompositeVector}.
+
+The constructor for \textidentifier{ArrayHandleCompositeVector} takes
+instances of the array handles to combine along with the component from
+each array to use. If the array handles being combined contain scalar data,
+then the appropriate component to use is 0.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleCompositeVector}.}{ArrayHandleCompositeVectorBasic.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleCompositeVector.h} header also
+contains the templated convenience function
+\vtkmcont{make\_ArrayHandleCompositeVector} which takes two to four array
+handles and returns an \textidentifier{ArrayHandleCompositeVector}. This
+function can sometimes be used to avoid having to declare the full array
+type.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleCompositeVector}.}{MakeArrayHandleCompositeVector.cxx}
+
+\textidentifier{ArrayHandleCompositeVector} is often used to combine scalar
+arrays into vector arrays, but it can also be used to pull components out
+of other vector arrays. The following example uses this feature to convert
+an array of 2D $x,y$ coordinates and an array of elevations to 3D $x,y,z$
+coordinates.
+
+\vtkmlisting{Combining vector components with \textidentifier{ArrayHandleCompositeVector}.}{ArrayHandleCompositeVectorComponents.cxx}
 
 \index{composite~vector~arrays~array~handle|)}
 \index{array~handle!composite~vector~arrays|)}

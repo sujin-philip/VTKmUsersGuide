@@ -3,6 +3,7 @@ set(example_src
   ArrayHandle.cxx
   ArrayHandleAdapt.cxx
   ArrayHandleCast.cxx
+  ArrayHandleCompositeVector.cxx
   ArrayHandleConstant.cxx
   ArrayHandleCoordinateSystems.cxx
   ArrayHandleCounting.cxx

@@ -332,10 +332,13 @@ A \textidentifier{CellSetPermutation} is established by providing a mapping
 array that for every cell index provides the equivalent cell index in the
 cell set being permuted. \textidentifier{CellSetPermutation} is most often
 used to mask out cells in a data set so that algorithms will skip over
-those cells when running. Note that although
-\textidentifier{CellSetPermutation} can mask cells, it cannot mask points.
-All points from the original cell set are available in the permuted cell
-set regardless of whether they are used.
+those cells when running.
+
+\begin{didyouknow}
+  Although \textidentifier{CellSetPermutation} can mask cells, it cannot
+  mask points. All points from the original cell set are available in the
+  permuted cell set regardless of whether they are used.
+\end{didyouknow}
 
 The following example uses \vtkmcont{CellSetPermutation} with a counting
 array to expose every tenth cell. This provides a simple way to subsample a

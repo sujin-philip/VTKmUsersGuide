@@ -445,8 +445,8 @@ void CreateCellSetPermutation()
 
   // Create a permutation of that cell set containing only every 10th cell.
   vtkm::cont::CellSetPermutation<
-        vtkm::cont::ArrayHandleCounting<vtkm::Id>,
-        vtkm::cont::CellSetStructured<3> >
+        vtkm::cont::CellSetStructured<3>,
+        vtkm::cont::ArrayHandleCounting<vtkm::Id> >
       permutedCellSet(permutationArray, originalCellSet);
   ////
   //// END-EXAMPLE CreateCellSetPermutation.cxx

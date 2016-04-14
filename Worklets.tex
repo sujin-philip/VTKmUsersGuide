@@ -271,6 +271,12 @@ Section~\ref{sec:TypeLists} for a description of type lists.) In fact, this
 type list modifier is so common that the following convenience subtags used
 with \textsignature{Field} tags are defined for all worklet types.
 
+\begin{didyouknow}
+  Any type list will work as modifiers for \controlsignature tags. However,
+  these common type lists are provided for convenience and to make the
+  \controlsignature shorter and more readable.
+\end{didyouknow}
+
 \begin{description}
   \label{TypeTagList}
 \item[\sigtag{AllTypes}] All possible types.
@@ -1827,9 +1833,46 @@ scatter to build the count array.
 \index{worklet!scatter|)}
 \index{scatter|)}
 
-\index{worklet!creating|)}
-\index{worklet|)}
+
+\section{Error Handling}
+\label{sec:ExecutionEnvironment:ErrorHandling}
+\label{sec:Worklet:ErrorHandling}
+
+
+\index{errors|(}
+\index{errors!execution~environment|(}
+\index{errors!worklet|(}
+\index{worklet!error~handling|(}
+
+It is sometimes the case during the execution of an algorithm that an error
+condition can occur that causes the computation to become invalid. At such
+a time, it is important to raise an error to alert the calling code of the
+problem. Since VTK-m uses an exception mechanism to raise errors, we want
+an error in the execution environment to throw an exception.
+
+However, throwing exceptions in a parallel algorithm is problematic. Some
+accelerator architectures, like CUDA, do not even support throwing
+exceptions. Even on architectures that do support exceptions, throwing them
+in a thread block can cause problems. An exception raised in one thread may
+or may not be thrown in another, which increases the potential for
+deadlocks, and it is unclear how uncaught exceptions progress through
+thread blocks.
+
+VTK-m handles this problem by using a flag and check mechanism. When a
+worklet (or other subclass of \vtkmexec{FunctorBase}) encounters an error,
+it can call its \textcode{RaiseError} method to flag the problem and record
+a message for the error. Once all the threads terminate, the scheduler
+checks for the error, and if one exists it throws a
+\vtkmcont{ErrorExecution} exception in the control environment. Thus,
+calling \textcode{RaiseError} looks like an exception was thrown from the
+perspective of the control environment code that invoked it.
+
+\vtkmlisting{Raising an error in the execution environment.}{ExecutionErrors.cxx}
+
+\index{worklet!error~handling|)}
+\index{errors!worklet|)}
+\index{errors!execution~environment|)}
+\index{errors|)}
 
 \index{worklet!creating|)}
-
 \index{worklet|)}

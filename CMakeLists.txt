@@ -46,6 +46,7 @@ set(input_docs
   DataSet.tex
   ExecutionEnvironment.tex
   Worklets.tex
+  Math.tex
   AdvancedWorklets.tex
   CodingConventions.tex
   )

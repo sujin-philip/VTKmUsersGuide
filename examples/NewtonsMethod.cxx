@@ -1,5 +1,5 @@
 #include <vtkm/Matrix.h>
-#include <vtkm/exec/NewtonsMethod.h>
+#include <vtkm/NewtonsMethod.h>
 
 #include <vtkm/testing/Testing.h>
 
@@ -50,14 +50,14 @@ void SolveNonlinear()
   // There are two possible solutions, which are (x=1,y=1) and (x=-1,y=-1).
   // The one found depends on the starting value.
   vtkm::Vec<vtkm::Float32,2> answer1 =
-      vtkm::exec::NewtonsMethod(JacobianFunctor(),
+      vtkm::NewtonsMethod(JacobianFunctor(),
                                 FunctionFunctor(),
                                 vtkm::make_Vec(2.0f, 1.0f),
                                 vtkm::make_Vec(1.0f, 0.0f));
   // answer1 is [1,1]
 
   vtkm::Vec<vtkm::Float32,2> answer2 =
-      vtkm::exec::NewtonsMethod(JacobianFunctor(),
+      vtkm::NewtonsMethod(JacobianFunctor(),
                                 FunctionFunctor(),
                                 vtkm::make_Vec(2.0f, 1.0f),
                                 vtkm::make_Vec(0.0f, -2.0f));

@@ -275,6 +275,14 @@ declare the full array type.
   memory locations, which can be difficult to debug.
 \end{commonerrors}
 
+\begin{didyouknow}
+  You can write to a \textidentifier{ArrayHandlePermutation} by, for
+  example, using it as an output array. Writes to the
+  \textidentifier{ArrayHandlePermutation} will go to the respective
+  location in the source array. However,
+  \textidentifier{ArrayHandlePermutation} cannot be resized.
+\end{didyouknow}
+
 \index{permuted~array~handle|)}
 \index{array~handle!permutation|)}
 
@@ -288,7 +296,8 @@ A zip array is a fancy array handle that combines two arrays of the same
 size to pair up the corresponding values. Each element in the zipped array
 is a \vtkm{Pair} containing the values of the two respective arrays. These
 pairs are not stored in their own memory space. Rather, the pairs are
-generated as the array is used.
+generated as the array is used. Writing a pair to the zipped array writes
+the values in the two source arrays.
 
 Specifying a zipped array in VTK-m is straightforward. VTK-m has a class
 named \vtkmcont{ArrayHandleZip} that takes the two arrays providing values
@@ -392,8 +401,10 @@ arrays of the same size and value type and combines their corresponding
 values to form a \vtkm{Vec}. A composite vector array is similar in nature
 to a zipped array (described in Section~\ref{sec:ZippedArrays}) except that
 values are combined into \vtkm{Vec}s instead of \vtkm{Pair}s. The created
-\vtkm{Vec}s are not stored in their own memory space. Rather, the pairs are
-generated as the array is used.
+\vtkm{Vec}s are not stored in their own memory space. Rather, the
+\textidentifier{Vec}s are generated as the array is used. Writing
+\textidentifier{Vec}s to the composite vector array writes values into the
+components of the source arrays.
 
 A composite vector array can be created using the
 \vtkmcont{ArrayHandleCompositeVector} class. This class has a single
@@ -440,7 +451,29 @@ coordinates.
 \index{array~handle!group~vector|(}
 \index{group~vector~array~handle|(}
 
-\fix{Write this}
+A grouped vector array is a fancy array handle that groups consecutive
+values of an array together to form a \vtkm{Vec}. The source array must be
+of a length that is divisible by the requested \textidentifier{Vec} size.
+The created \vtkm{Vec}s are not stored in their own memory space. Rather,
+the \textidentifier{Vec}s are generated as the array is used. Writing
+\textidentifier{Vec}s to the grouped vector array writes values into the
+the source array.
+
+A grouped vector array is created using the \vtkmcont{ArrayHandleGroupVec}
+class. This templated class has two template arguments. The first argument
+is the type of array being grouped and the second argument is an integer
+specifying the size of the \textidentifier{Vec}s to create (the number of
+values to group together).
+
+\vtkmlisting{Using \textidentifier{ArrayHandleGroupVec}.}{ArrayHandleGroupVecBasic.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleGroupVec.h} header also contains the
+templated convenience function \vtkmcont{make\_ArrayHandleGroupVec} that
+takes an instance of the array to group into \textidentifier{Vec}s. You
+must specify the size of the \textidentifier{Vec}s as a template parameter
+when using \vtkmcont{make\_ArrayHandleGroupVec}.
+
+\vtkmlisting{Using \textidentifier{make\_ArrayHandleGroupVec}.}{MakeArrayHandleGroupVec.cxx}
 
 \index{group~vector~array~handle|)}
 \index{array~handle!group~vector|)}

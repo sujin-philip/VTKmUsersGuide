@@ -219,6 +219,23 @@ void PrintArrayContents(const DynamicArrayType &array)
 //// END-EXAMPLE UsingCastAndCall.cxx
 ////
 
+namespace second_def {
+
+////
+//// BEGIN-EXAMPLE DynamicArrayHandleBase.cxx
+////
+template<typename TypeList, typename StorageList>
+void PrintArrayContents(
+    const vtkm::cont::DynamicArrayHandleBase<TypeList,StorageList> &array)
+{
+  array.CastAndCall(PrintArrayContentsFunctor());
+}
+////
+//// END-EXAMPLE DynamicArrayHandleBase.cxx
+////
+
+} // namespace second_def
+
 ////
 //// BEGIN-EXAMPLE CastAndCallStorage.cxx
 ////
@@ -246,7 +263,7 @@ void TryPrintArrayContents()
 
   vtkm::cont::DynamicArrayHandle dynamicArray = concreteArray;
 
-  PrintArrayContents(dynamicArray);
+  second_def::PrintArrayContents(dynamicArray);
 
   ////
   //// BEGIN-EXAMPLE CastAndCallAllTypes.cxx

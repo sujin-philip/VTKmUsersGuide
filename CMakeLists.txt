@@ -41,6 +41,7 @@ set(input_docs
   ArrayHandle.tex
   DeviceAdapter.tex
   FancyArrayStorage.tex
+  DynamicArrayHandle.tex
   ControlEnvironment.tex
   ExecutionEnvironment.tex
   Worklets.tex

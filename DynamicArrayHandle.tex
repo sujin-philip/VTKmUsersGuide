@@ -1,0 +1,242 @@
+% -*- latex -*-
+
+\chapter{Dynamic Array Handles}
+\label{chap:DynamicArrayHandle}
+
+\index{dynamic~array~handle|(}
+\index{array~handle!dynamic|(}
+
+The \textidentifier{ArrayHandle} class uses templating to make very
+efficient and type-safe access to data. However, it is sometimes
+inconvenient or impossible to specify the element type and storage at
+run-time. The \textidentifier{DynamicArrayHandle} class provides a mechanism
+to manage arrays of data with unspecified types.
+
+\vtkmcont{DynamicArrayHandle} holds a reference to an array. Unlike
+\textidentifier{ArrayHandle}, \textidentifier{DynamicArrayHandle} is
+\emph{not} templated. Instead, it uses C++ run-type type information to
+store the array without type and cast it when appropriate.
+
+\index{dynamic~array~handle!construct}
+A \textidentifier{DynamicArrayHandle} can be established by constructing it
+with or assigning it to an \textidentifier{ArrayHandle}. The following
+example demonstrates how a \textidentifier{DynamicArrayHandle} might be
+used to load an array whose type is not known until run-time.
+
+\vtkmlisting{Creating a \textidentifier{DynamicArrayHandle}.}{CreateDynamicArrayHandle.cxx}
+
+\section{Querying and Casting}
+\label{sec:DynamicArrayHandleQueryingAndCasting}
+
+\index{dynamic~array~handle!query}
+Data pointed to by a \textidentifier{DynamicArrayHandle} is not directly
+accessible. However, there are a few generic queries you can make without
+directly knowing the data type. The \textcode{GetNumberOfValues} method
+returns the length of the array with respect to its base data type. It is
+also common in VTK-m to use data types, such as \vtkm{Vec}, with multiple
+components per value. The \textcode{GetNumberOfComponents} method returns
+the number of components in a vector-like type (or 1 for scalars).
+
+\vtkmlisting{Non type-specific queries on \textidentifier{DynamicArrayHandle}.}{NonTypeQueriesDynamicArrayHandle.cxx}
+
+\index{dynamic~array~handle!new~instance}
+It is also often desirable to create a new array based on the underlying
+type of a \textidentifier{DynamicArrayHandle}. For example, when a filter
+creates a field, it is common to make this output field the same type as
+the input. To satisfy this use case, \textidentifier{DynamicArrayHandle}
+has a method named \textcode{NewInstance} that creates a new empty array
+with the same underlying type as the original array.
+
+\vtkmlisting{Using \textidentifier{DynamicArrayHandle}\textcode{::NewInstance()}.}{DynamicArrayHandleNewInstance.cxx}
+
+Before the data with a \textidentifier{DynamicArrayHandle} can be accessed,
+the type and storage of the array must be established. This is usually done
+internally within VTK-m when a worklet \fix{or filter?} is invoked.
+However, it is also possible to query the types and cast to a concrete
+\textidentifier{ArrayHandle}.
+
+\index{dynamic~array~handle!query}
+You can query the component type and storage type using the
+\textcode{IsArrayHandleType}, \textcode{IsSameType}, and
+\textcode{IsTypeAndStorage} methods. \textcode{IsArrayHandleType} takes an
+example array handle type and returns whether the underlying array matches
+the given static array type. \textcode{IsSameType} behaves the same as
+\textcode{IsArrayHandleType} but accepts an instances of an
+\textidentifier{ArrayHandle} object to automatically resolve the template
+parameters. \textcode{IsTypeAndStorage} takes an example
+component type and an example storage type as arguments and returns whether
+the underlying array matches both types.
+
+\vtkmlisting{Querying the component and storage types of a \textidentifier{DynamicArrayHandle}.}{QueryDynamicArrayHandle.cxx}
+
+\index{dynamic~array~handle!cast}
+Once the type of the \textidentifier{DynamicArrayHandle} is known, it can
+be cast to a concrete \textidentifier{ArrayHandle}, which has access to the
+data as described in Chapter~\ref{chap:ArrayHandle}. The easiest way to do
+this is to use the \textcode{CopyTo} method. This templated method takes a
+reference to an \textidentifier{ArrayHandle} as an argument and sets that
+array handle to point to the array in \textidentifier{DynamicArrayHandle}.
+If the given types are incorrect, then \textcode{CopyTo} throws
+a \vtkmcont{ErrorControlBadValue} exception.
+
+\vtkmlisting{Casting a \textidentifier{DynamicArrayHandle} to a concrete
+  \textidentifier{ArrayHandle}.}{CastDynamicArrayHandle.cxx}
+
+\begin{commonerrors}
+  Remember that \textidentifier{ArrayHandle} and
+  \textidentifier{DynamicArrayHandle} represent pointers to the data, so
+  this ``copy'' is a shallow copy. There is still only one copy of the
+  data, and if you change the data in one array handle that change is
+  reflected in the other. 
+\end{commonerrors}
+
+\section{Casting to Unknown Types}
+
+\index{dynamic~array~handle!cast|(}
+
+Using \textcode{CopyTo} is fine as long as the correct types are
+known, but often times they are not. For this use case
+\textidentifier{DynamicArrayHandle} has a method named
+\textcode{CastAndCall} that attempts to cast the array to some set of
+types.
+
+The \textcode{CastAndCall} method accepts a functor to run on the
+appropriately cast array. The functor must have an overloaded const
+parentheses operator that accepts an \textidentifier{ArrayHandle} of the
+appropriate type.
+
+\vtkmlisting[ex:UsingCastAndCall]{Operating on \textidentifier{DynamicArrayHandle} with \textcode{CastAndCall}.}{UsingCastAndCall.cxx}
+
+\begin{commonerrors}
+  It is possible to store any form of \textidentifier{ArrayHandle} in a
+  \textidentifier{DynamicArrayHandle}, but it is not possible for
+  \textcode{CastAndCall} to check every possible form of
+  \textidentifier{ArrayHandle}. If \textcode{CastAndCall} cannot determine
+  the \textidentifier{ArrayHandle} type, then an
+  \textidentifier{ErrorControlBadValue} is thrown. The following section
+  describes how to specify the forms of \textidentifier{ArrayHandle} to try.
+\end{commonerrors}
+
+\section{Specifying Cast Lists}
+\label{sec:DynamicArrayHandleSpecifyingCastLists}
+
+The \textcode{CastAndCall} method can only check a finite number of types.
+The default form of \textcode{CastAndCall} uses a default set of common
+types. These default lists can be overridden using the VTK-m list tags
+facility, which is discussed at length in Section~\ref{sec:ListTags}. There
+are separate lists for value types and for storage types.
+
+Common type lists for value are defined in
+\vtkmheader{vtkm}{TypeListTag.h} and are documented in
+Section~\ref{sec:TypeLists}. This header also defines
+\vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG}, which defines the default list
+of value types tried in \textcode{CastAndCall}.
+
+\index{tag!storage lists|(}
+\index{lists!storage|(}
+\index{storage lists|(}
+
+Common storage lists are defined in
+\vtkmheader{vtkm/cont}{StorageListTag.h}. There is only one common storage
+distributed with VTK-m: \textidentifier{StorageBasic}. A list tag
+containing this type is defined as \vtkmcont{StorageListTagBasic}.
+
+As with other lists, it is possible to create new storage type lists
+using the existing type lists and the list bases from
+Section~\ref{sec:BuildingListTags}.
+
+The \vtkmheader{vtkm/cont}{StorageListTag.h} header also defines a macro
+named \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_LIST\_TAG} that defines a
+default list of types to use in classes like
+\textidentifier{DynamicArrayHandle}. This list can be overridden by
+defining the \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_LIST\_TAG} macro
+\emph{before} any VTK-m headers are included. If included after a VTK-m
+header, the list is not likely to take effect. Do not ignore compiler
+warnings about the macro being redefined, which you will not get if defined
+correctly.
+
+\index{storage lists|)}
+\index{lists!storage|)}
+\index{tag!storage lists|)}
+
+There is a form of \textcode{CastAndCall} that accepts tags for the list of
+component types and storage types. This can be used when the specific
+lists are known at the time of the call. However, when creating generic
+operations like the \textcode{PrintArrayContents} function in
+Example~\ref{ex:UsingCastAndCall}, passing these tags is inconvenient at
+best.
+
+To address this use case, \textidentifier{DynamicArrayHandle} has a pair of
+methods named \textcode{ResetTypeList} and
+\textcode{ResetStorageList}. These methods return a new object with that
+behaves just like a \textidentifier{DynamicArrayHandle} with identical
+state except that the cast and call functionality uses the specified
+component type or storage type instead of the default. (Note that
+\textcode{PrintArrayContents} in Example~\ref{ex:UsingCastAndCall} is
+templated on the type of \textidentifier{DynamicArrayHandle}. This is to
+accommodate using the objects from the \textcode{Reset*List} methods, which
+have the same behavior but different type names.)
+
+So the default component type list contains a subset of the basic VTK-m
+types. If you wanted to accommodate more types, you could use
+\textcode{ResetTypeList}.
+
+\vtkmlisting{Trying all component types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallAllTypes.cxx}
+
+Likewise, if you happen to know a particular type of the dynamic array,
+that can be specified to reduce the amount of object code created by
+templates in the compiler.
+
+\vtkmlisting{Specifying a single component type in a \textidentifier{DynamicArrayHandle}.}{CastAndCallSingleType.cxx}
+
+Storage type lists can be changed similarly.
+
+\vtkmlisting{Specifying different storage types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallStorage.cxx}
+
+\begin{commonerrors}
+  The \textcode{ResetTypeList} and \textcode{ResetStorageList} do not
+  change the object they are called on. Rather, they return a new object
+  with different type information. Calling these methods has no effect
+  unless you do something with the returned value.
+\end{commonerrors}
+
+Both the component type list and the storage type list can be modified by
+chaining these reset calls.
+
+\vtkmlisting{Specifying both component and storage types in a \textidentifier{DynamicArrayHandle}.}{CastAndCallTypeAndStorage.cxx}
+
+The \textcode{ResetTypeList} and \textcode{ResetStorageList} work by
+returning a \vtkmcont{DynamicArrayHandleBase} object.
+\textidentifier{DynamicArrayHandleBase} specifies the value and storage tag
+lists as template arguments and otherwise behaves just like
+\textidentifier{DynamicArrayHandle}.
+
+\begin{didyouknow}
+  I lied earlier when I said at the beginning of this chapter that
+  \textidentifier{DynamicArrayHandle} is a class that is not templated.
+  This symbol is really just a \textcode{typedef} of
+  \textidentifier{DynamicArrayHandleBase}. Because the
+  \textidentifier{DynamicArrayHandle} fully specifies the template
+  arguments, it behaves like a class, but if you get a compiler error it
+  will show up as \textidentifier{DynamicArrayHandleBase}.
+\end{didyouknow}
+
+Most code does not need to worry about working directly with
+\textidentifier{DynamicArrayHandleBase}. However, it is sometimes useful to
+declare it in templated functions that accept dynamic array handles so that
+works with every type list. The function in
+Example~\ref{ex:UsingCastAndCall} did this by making the dynamic array
+handle class itself the template argument. This will work, but it is prone
+to error because the template will resolve to any type of argument. When
+passing objects that are not dynamic array handles will result in strange
+and hard to diagnose errors. Instead, we can define the same function using
+\textidentifier{DyamicArrayHandleBase} so that the template will only match
+dynamic array handle types.
+
+\vtkmlisting{Using \textidentifier{DynamicArrayHandleBase} to accept generic dynamic array handles.}{DynamicArrayHandleBase.cxx}
+
+
+\index{dynamic~array~handle!cast|)}
+
+\index{array~handle!dynamic|)}
+\index{dynamic~array~handle|)}

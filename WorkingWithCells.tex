@@ -1,27 +1,7 @@
 % -*- latex -*-
 
-\chapter{Execution Environment}
-\label{chap:ExecutionEnvironment}
-
-\index{execution~environment|(}
-\index{environment!execution|(}
-
-The execution environment is exposed to developers that write worklets for
-different visualization algorithms. In addition to providing all the
-mechanisms for building the worklet object itself, the execution
-environment contains supporting code that can be useful to the
-implementations of visualization algorithms.
-
-The data structures in the execution environment provide information and
-operations for a single element. This is in contrast to the control
-environment, where data structures are built on arrays providing
-information for large collections of data. These respective data structures
-reflect the nature of the two environments. The control environment manages
-the stores of data whereas the execution environment performs large
-parallel processing through fine operations.
-
-\section{Working with Topology}
-\label{sec:ExecutionEnvironment:WorkingWithTopology}
+\chapter{Working with Cells}
+\label{chap:WorkingWithCells}
 
 In the control environment, data is defined in mesh structures that
 comprise a set of finite cells. (See Section~\ref{sec:DataSets:CellSets}
@@ -39,7 +19,7 @@ companion data like coordinate and field information are held in separate
 structures. This organization is designed so a worklet may specify exactly
 what information it needs, and only that information will be loaded.
 
-\subsection{Cell Shape Tags and Ids}
+\section{Cell Shape Tags and Ids}
 \label{sec:CellShapeTagsIds}
 
 \index{shape|(}
@@ -109,7 +89,7 @@ When using cell shapes in templated classes and functions, you can use the
 shape tag. This macro takes one argument and will produce a compile error
 if the argument is not a cell shape tag type.
 
-\subsubsection{Converting Between Tags and Identifiers}
+\subsection{Converting Between Tags and Identifiers}
 
 Every cell shape tag has a member variable named \textcode{Id} that
 contains the identifier for the cell shape. This provides a convenient
@@ -119,7 +99,7 @@ tags have their \textcode{Id} member as a compile-time constant, but
 
 \vtkmheader{vtkm}{CellShape.h} also declares a templated class named
 \vtkm{CellShapeIdToTag} that converts a cell shape identifier to a cell
-shape tag. \textidentifier{CellShapeIdToTag} as a single template argument
+shape tag. \textidentifier{CellShapeIdToTag} has a single template argument
 that is the identifier. Inside the class is a type named \textcode{Tag}
 that is the type of the correct tag.
 
@@ -143,7 +123,7 @@ Example~\ref{ex:GenericCellNormal}.
 \index{tag!shape|)}
 \index{tag!cell~shape|)}
 
-\subsubsection{Cell Traits}
+\subsection{Cell Traits}
 
 \index{cell~traits|(}
 
@@ -180,7 +160,7 @@ members.
 \index{cell~shape|)}
 \index{shape|)}
 
-\subsection{Parametric and World Coordinates}
+\section{Parametric and World Coordinates}
 
 \index{parametric~coordinates|(}
 \index{world~coordinates|(}
@@ -232,7 +212,7 @@ following functions for working with parametric coordinates.
 \index{world~coordinates|)}
 \index{parametric~coordinates|)}
 
-\subsection{Interpolation}
+\section{Interpolation}
 
 \index{cell!interpolation|(}
 \index{interpolation|(}
@@ -253,7 +233,7 @@ location represented by the given parametric coordinates.
 \index{interpolation|)}
 \index{cell!interpolation|)}
 
-\subsection{Derivatives}
+\section{Derivatives}
 
 \index{cell!derivative|(}
 \index{cell!gradient|(}
@@ -278,6 +258,3 @@ gradient of the field.
 \index{derivative|)}
 \index{cell!gradient|)}
 \index{cell!derivative|)}
-
-\index{environment!execution|)}
-\index{execution~environment|)}

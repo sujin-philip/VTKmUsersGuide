@@ -44,9 +44,9 @@ set(input_docs
   FancyArrayStorage.tex
   DynamicArrayHandle.tex
   DataSet.tex
-  ExecutionEnvironment.tex
   Worklets.tex
   Math.tex
+  WorkingWithCells.tex
   AdvancedWorklets.tex
   CodingConventions.tex
   )

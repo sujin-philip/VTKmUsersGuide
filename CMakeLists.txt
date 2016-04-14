@@ -44,7 +44,6 @@ set(input_docs
   FancyArrayStorage.tex
   DynamicArrayHandle.tex
   DataSet.tex
-  ControlEnvironment.tex
   ExecutionEnvironment.tex
   Worklets.tex
   AdvancedWorklets.tex

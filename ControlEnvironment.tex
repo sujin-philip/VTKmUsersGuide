@@ -16,39 +16,6 @@ Most users of VTK-m will have some interaction with the control
 environment, for you cannot define data structures or execute any
 algorithms without it.
 
-\section{Timers}
-\label{sec:Timers}
-
-\index{timer|(}
-
-It is often the case that you need to measure the time it takes for an
-operation to happen. This could be for performing measurements for
-algorithm study or it could be to dynamically adjust scheduling.
-
-Performing timing in a multi-threaded environment can be tricky because
-operations happen asynchronously. In the VTK-m control environment timing
-is simplified because the control environment operates on a single
-thread. However, operations invoked in the execution environment may run
-asynchronously to operations in the control environment.
-
-To ensure that accurate timings can be made, VTK-m provides a
-\vtkmcont{Timer} class that is templated on the device adapter to provide
-an accurate measurement of operations that happen on the device. If not
-template parameter is provided, the default device adapter is used.
-
-The timing starts when the \textidentifier{Timer} is constructed. The time
-elapsed can be retrieved with a call to the \textcode{GetElapsedTime}
-method. This method will block until all operations in the execution
-environment complete so as to return an accurate time. The timer can be
-restarted with a call to the \textcode{Reset} method.
-
-\fix{This example needs to be updated when something interesting can be
-  invoked.}
-
-\vtkmlisting{Using \protect\vtkmcont{Timer}.}{Timer.cxx}
-
-\index{timer|)}
-
 \section{Error Handling}
 \label{sec:ErrorHandlingControl}
 

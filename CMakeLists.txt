@@ -40,6 +40,7 @@ set(input_docs
   BasicProvisions.tex
   ArrayHandle.tex
   DeviceAdapter.tex
+  Timer.tex
   FancyArrayStorage.tex
   DynamicArrayHandle.tex
   DataSet.tex

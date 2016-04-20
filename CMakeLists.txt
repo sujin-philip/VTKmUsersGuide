@@ -37,6 +37,7 @@ set(input_docs
   Contributors.tex
   Introduction.tex
   IO.tex
+  ProvidedFilters.tex
   BasicProvisions.tex
   ArrayHandle.tex
   DeviceAdapter.tex

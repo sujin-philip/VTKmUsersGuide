@@ -16,7 +16,6 @@
 
 #include <vtkm/cont/tbb/DeviceAdapterTBB.h>
 
-#include <vtkm/exec/Assert.h>
 #include <vtkm/exec/FunctorBase.h>
 
 #include <vtkm/cont/testing/Testing.h>
@@ -49,8 +48,8 @@ struct SetPortalFunctor : vtkm::exec::FunctorBase
   void operator()(vtkm::Id index) const
   {
     //// PAUSE-EXAMPLE
-    VTKM_ASSERT_EXEC(index >= 0, *this);
-    VTKM_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), *this);
+    VTKM_ASSERT(index >= 0);
+    VTKM_ASSERT(index < this->Portal.GetNumberOfValues());
     //// RESUME-EXAMPLE
     typedef typename ExecPortalType::ValueType ValueType;
     this->Portal.Set(index, TestValue(index, ValueType()));

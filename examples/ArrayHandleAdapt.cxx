@@ -33,8 +33,8 @@ typedef std::deque<FooFields> FooFieldsDeque;
 ////
 //// BEGIN-EXAMPLE ArrayPortalAdapter.cxx
 ////
-#include <vtkm/cont/Assert.h>
 #include <vtkm/cont/internal/IteratorFromArrayPortal.h>
+#include <vtkm/Assert.h>
 
 //// PAUSE-EXAMPLE
 namespace {
@@ -67,15 +67,15 @@ public:
 
   VTKM_CONT_EXPORT
   ValueType Get(vtkm::Id index) const {
-    VTKM_ASSERT_CONT(index >= 0);
-    VTKM_ASSERT_CONT(index < this->GetNumberOfValues());
+    VTKM_ASSERT(index >= 0);
+    VTKM_ASSERT(index < this->GetNumberOfValues());
     return (*this->Container)[index].Pressure;
   }
 
   VTKM_CONT_EXPORT
   void Set(vtkm::Id index, ValueType value) const {
-    VTKM_ASSERT_CONT(index >= 0);
-    VTKM_ASSERT_CONT(index < this->GetNumberOfValues());
+    VTKM_ASSERT(index >= 0);
+    VTKM_ASSERT(index < this->GetNumberOfValues());
     (*this->Container)[index].Pressure = value;
   }
 

@@ -3,7 +3,6 @@
 ////
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayPortal.h>
-#include <vtkm/cont/Assert.h>
 
 template<typename P1, typename P2>
 class ArrayPortalConcatenate
@@ -111,27 +110,27 @@ public:
 
   VTKM_CONT_EXPORT
   PortalType GetPortal() {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     return PortalType(this->Array1.GetPortalControl(),
                       this->Array2.GetPortalControl());
   }
 
   VTKM_CONT_EXPORT
   PortalConstType GetPortalConst() const {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     return PortalConstType(this->Array1.GetPortalConstControl(),
                            this->Array2.GetPortalConstControl());
   }
 
   VTKM_CONT_EXPORT
   vtkm::Id GetNumberOfValues() const {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
   }
 
   VTKM_CONT_EXPORT
   void Allocate(vtkm::Id numberOfValues) {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     // This implementation of allocate, which allocates the same amount in both
     // arrays, is arbitrary. It could, for example, leave the size of Array1
     // alone and change the size of Array2. Or, probably most likely, it could
@@ -143,7 +142,7 @@ public:
 
   VTKM_CONT_EXPORT
   void Shrink(vtkm::Id numberOfValues) {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     if (numberOfValues < this->Array1.GetNumberOfValues())
     {
       this->Array1.Shrink(numberOfValues);
@@ -157,7 +156,7 @@ public:
 
   VTKM_CONT_EXPORT
   void ReleaseResources() {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     this->Array1.ReleaseResources();
     this->Array2.ReleaseResources();
   }
@@ -165,12 +164,12 @@ public:
   // Requried for later use in ArrayTransfer class.
   VTKM_CONT_EXPORT
   const ArrayHandleType1 &GetArray1() const {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     return this->Array1;
   }
   VTKM_CONT_EXPORT
   const ArrayHandleType2 &GetArray2() const {
-    VTKM_ASSERT_CONT(this->Valid);
+    VTKM_ASSERT(this->Valid);
     return this->Array2;
   }
 

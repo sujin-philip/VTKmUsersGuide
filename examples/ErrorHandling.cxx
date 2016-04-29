@@ -34,6 +34,29 @@ int main(int argc, char **argv)
 ////
 
 ////
+//// BEGIN-EXAMPLE Assert.cxx
+////
+template<typename T>
+VTKM_CONT_EXPORT
+T GetArrayValue(vtkm::cont::ArrayHandle<T> arrayHandle, vtkm::Id index)
+{
+  VTKM_ASSERT(index >= 0);
+  VTKM_ASSERT(index < arrayHandle.GetNumberOfValues());
+  ////
+  //// END-EXAMPLE Assert.cxx
+  ////
+  return arrayHandle.GetPortalConstControl().Get(index);
+}
+
+VTKM_CONT_EXPORT
+void TryGetArrayValue()
+{
+  vtkm::Float32 buffer[] = {2.0f, 5.0f};
+  GetArrayValue(vtkm::cont::make_ArrayHandle(buffer,2), 0);
+  GetArrayValue(vtkm::cont::make_ArrayHandle(buffer,2), 1);
+}
+
+////
 //// BEGIN-EXAMPLE ExecutionErrors.cxx
 ////
 struct SquareRoot : vtkm::worklet::WorkletMapField
@@ -87,6 +110,7 @@ void TrySquareRoot()
 void Test()
 {
   VTKM_TEST_ASSERT(ErrorHandlingNamespace::main(0, NULL) != 0, "No error?");
+  TryGetArrayValue();
   TrySquareRoot();
 }
 

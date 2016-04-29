@@ -1838,8 +1838,8 @@ scatter to build the count array.
 \label{sec:ExecutionEnvironment:ErrorHandling}
 \label{sec:Worklet:ErrorHandling}
 
-
 \index{errors|(}
+
 \index{errors!execution~environment|(}
 \index{errors!worklet|(}
 \index{worklet!error~handling|(}
@@ -1872,6 +1872,19 @@ perspective of the control environment code that invoked it.
 \index{worklet!error~handling|)}
 \index{errors!worklet|)}
 \index{errors!execution~environment|)}
+
+\index{errors!assert|(}
+\index{assert|(}
+
+It is also worth noting that the \vtkmmacro{VTKM\_ASSERT} macro described
+in Section~\ref{sec:ErrorHandlingControl} also works within worklets and
+other code running in the execution environment. Of course, a failed assert
+will terminate execution rather than just raise an error so is best for
+checking invalid conditions for debugging purposes.
+
+\index{assert|)}
+\index{errors!assert|)}
+
 \index{errors|)}
 
 \index{worklet!creating|)}

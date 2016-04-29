@@ -279,6 +279,7 @@ placed before the export macro.
 \label{sec:ErrorHandlingControl}
 
 \index{errors|(}
+
 \index{errors!control~environment|(}
 
 VTK-m uses exceptions to report errors. All exceptions thrown by VTK-m will
@@ -293,13 +294,6 @@ gives an indication of the type of error that occured when the exception
 was thrown. Catching one of these subclasses may help a program better
 recover from errors.
 \begin{description}
-\item[\vtkmcont{ErrorControlAssert}] \index{assert} \index{errors!assert}
-  Thrown when an assertion fails, meaning a VTK-m operation reached an
-  unexpected state. The header file \vtkmheader{vtkm/cont}{Assert.h}
-  defines a macro named \vtkmmacro{VTKM\_ASSERT\_CONT} that behaves much
-  like the POSIX C assert macro except that a
-  \textidentifier{ErrorControlAssert} is thrown rather than killing the
-  application outright.
 \item[\vtkmcont{ErrorControlBadAllocation}] Thrown when there is a problem
   accessing or manipulating memory. Often this is thrown when an allocation
   fails because there is insufficient memory, but other memory access
@@ -320,6 +314,42 @@ recover from errors.
 \end{description}
 
 \index{errors!control~environment|)}
+
+\index{assert|(}
+\index{errors!assert|(}
+
+In addition to the aforementioned error signaling, the
+\vtkmheader{vtkm}{Assert.h} header file defines a macro named
+\vtkmmacro{VTKM\_ASSERT}. This macro behaves the same as the POSIX
+\textmacro{assert} macro. It takes a single argument that is a condition
+that is expected to be true. If it is not true, the program is halted and a
+message is printed. Asserts are useful debugging tools to ensure that
+software is behaving and being used as expected.
+
+\vtkmlisting{Using \protect\vtkmmacro{VTKM\_ASSERT}.}{Assert.cxx}
+
+\begin{didyouknow}
+  Like the POSIX \textmacro{assert}, if the \vtkmmacro{NDEBUG} macro is
+  defined, then \vtkmmacro{VTKM\_ASSERT} will become an empty expression.
+  Typically \vtkmmacro{NDEBUG} is defined with a compiler flag (like
+  \textcode{-DNDEBUG}) for release builds to better optimize the code.
+  CMake will automatically add this flag for release builds.
+\end{didyouknow}
+
+\begin{commonerrors}
+  A helpful warning provided by many compilers alerts you of unused
+  variables. (This warning is commonly enabled on VTK-m regression test
+  nightly builds.) If a function argument is used only in a
+  \vtkmmacro{VTKM\_ASSERT}, then it will be required for debug builds and
+  be unused in release builds. To get around this problem, add a statement
+  to the function of the form \textcode{(void)\textit{variableName};}. This
+  statement will have no effect on the code generated but will suppress the
+  warning for release builds.
+\end{commonerrors}
+
+\index{errors!assert|)}
+\index{assert|)}
+
 \index{errors|)}
 
 

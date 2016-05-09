@@ -20,13 +20,13 @@ void DoTiming()
 
   vtkm::cont::Timer<> timer;
 
-  vtkm::filter::FieldResult fieldResult =
+  vtkm::filter::ResultField result =
       elevationFilter.Execute(dataSet, dataSet.GetCoordinateSystem());
 
   // This code makes sure data is pulled back to the host in a host/device
   // architecture.
   vtkm::cont::ArrayHandle<vtkm::Float64> outArray;
-  fieldResult.FieldAs(outArray);
+  result.FieldAs(outArray);
   outArray.GetPortalConstControl();
 
   vtkm::Float64 elapsedTime = timer.GetElapsedTime();

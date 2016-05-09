@@ -22,20 +22,15 @@ vtkm::cont::DataSet ComputeAirPressure(vtkm::cont::DataSet dataSet)
   elevationFilter.SetHighPoint(0.0, 0.0, 2000.0);
   elevationFilter.SetRange(101325.0, 77325.0);
 
-  vtkm::filter::FieldResult fieldResult =
+  vtkm::filter::ResultField result =
       elevationFilter.Execute(dataSet, dataSet.GetCoordinateSystem());
 
-  if (!fieldResult.IsValid())
+  if (!result.IsValid())
   {
     throw vtkm::cont::ErrorControlBadValue("Failed to run elevation filter.");
   }
 
-  // In the near future, FieldResult should contain a data set that is a copy
-  // of the input with the field attached with the appropriate association.
-  // When that exists, we should just return that.
-  vtkm::cont::DataSet result = dataSet;
-  result.AddField(fieldResult.GetField());
-  return result;
+  return result.GetDataSet();
 }
 ////
 //// END-EXAMPLE PointElevation.cxx

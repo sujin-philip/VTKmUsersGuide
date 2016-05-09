@@ -35,7 +35,74 @@ filters in VTK-m.
 Every \vtkmcont{DataSet} object contains a list of \index{field}
 \keyterm{fields}. A field describes some numerical value associated with
 different parts of the data set in space. Fields often represent physical
-properties such as temperature, pressure, or velocity. HEREHEREHERE.
+properties such as temperature, pressure, or velocity. \keyterm{Field
+  filters} are a class of filters that generate a new field. These new
+fields are typically derived from one or more existing fields or point
+coordinates on the data set. For example, mass, volume, and density are
+interrelated, and any one can be derived from the other two.
+
+All field filters contain an \textcode{Execute} method that takes two
+arguments. The first argument is a \vtkmcont{DataSet} object with the input
+data. The second argument specifies the field from which to derive a new
+field. The field can be specified as either a string naming a field in the
+input \textidentifier{DataSet} object, as a \vtkmcont{Field} object, or as
+a coordinate system (typically retrived from a \textidentifier{DataSet}
+object with the \textcode{GetCoordianteSystem} method). See Sections
+\ref{sec:DataSets:Fields} and \ref{sec:DataSets:CoordinateSystems} for more
+information on fields and coordinate systems, respectively.
+
+Field filters often need more information than just a data set and a field.
+Any additional information is provided using methods in the filter class
+that changes the state. These methods are called before \textcode{Execute}.
+One such method that all field filters has is
+\textcode{SetOutputFieldName}, which specifies the name assigned to the
+generated field. If not specified, then the filter will use a default name.
+
+The \textcode{Execute} method returns a \vtkmfilter{ResultField} object,
+which contains the state of the execution and the data generated. A
+\textidentifier{ResultField} object has the following methods.
+
+\begin{description}
+\item[\textcode{IsValid}] Returns a \textcode{bool} value specifying
+  whether the execution completed successfully. If \textcode{true}, then
+  the execution was successful and the data stored in the
+  \textidentifier{ResultField} is valid. If \textcode{false}, then the
+  execution failed.
+\item[\textcode{GetDataSet}] Returns a \textidentifier{DataSet} containing
+  the results of the execution. The data set returned is a shallow copy of
+  the input data with the generated field added.
+\item[\textcode{GetField}] Returns the field information in a
+  \vtkmcont{Field} object. Field objects are described in
+  Section~\ref{sec:DataSets:Fields}.
+\item[\textcode{FieldAs}] Given a \vtkmcont{ArrayHandle} object, allocates
+  the array and copies the generated field data into it.
+\end{description}
+
+The following example provides a simple demonstration of using a field
+filter. It specifically uses the point elevation filter, which is one of
+the field filters.
+
+\vtkmlisting[ex:PointElevation]{Using \textidentifier{PointElevation}, which is a field filter.}{PointElevation.cxx}
+
+\subsection{Cell Average}
+
+\index{cell~average|(}
+\index{average|(}
+
+
+
+\index{average|}
+\index{cell~average|)}
+
+\subsection{Point Elevation}
+
+\index{point~elevation|(}
+\index{elevation|(}
+
+Example~\ref{ex:PointElevation}
+
+\index{elevation|)}
+\index{point~elevation|)}
 
 \index{field~filter|)}
 \index{filter!field|)}

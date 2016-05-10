@@ -89,7 +89,33 @@ the field filters.
 \index{cell~average|(}
 \index{average|(}
 
+\vtkmfilter{CellAverage} is the cell average filter. It will take a data
+set with a collection of cells and a field defined on the points of the
+data set and create a new field defined on the cells. The values of this
+new derived field are computed by averaging the values of the input field
+at all the incident points. This is a simple way to convert a point field
+to a cell field. Both the input data set and the input field are specified
+as arguments to the \textcode{Execute} method.
 
+The default name for the output cell field is the same name as the input
+point field. The name can be overridden using the
+\textcode{SetOutputFieldName} method.
+
+In addition the standard \textcode{SetOutputFieldName} and
+\textcode{Execute} methods, \textidentifier{CellAverage} provides the
+following methods.
+
+\begin{description}
+\item[\textcode{SetActiveCellSet}] Sets the index for the cell set to use
+  from the \textidentifier{DataSet} provided to the \textcode{Execute}
+  method. The default index is 0, which is the first cell set. If you want
+  to set the active cell set by name, you can use the
+  \textidentifier{GetCellSetIndex} method on the \textidentifier{DataSet}
+  object that will be used with \textcode{Execute}.
+\item[\textcode{GetActiveCellSetIndex}] Returns the index to be used when
+  getting a cell set from the \textidentifier{DataSet} passed to
+  \textcode{Execute}. Set with \textcode{SetActiveCellSet}.
+\end{description}
 
 \index{average|}
 \index{cell~average|)}
@@ -99,7 +125,39 @@ the field filters.
 \index{point~elevation|(}
 \index{elevation|(}
 
-Example~\ref{ex:PointElevation}
+\vtkmfilter{PointElevation} computes the ``elevation'' of a field of point
+coordinates in space. The filter will take a data set and a field of 3
+dimensional vectors and compute the distance along a line defined by a low
+point and a high point. Any point in the plane touching the low point and
+perpendicular to the line is set to the minimum range value in the
+elevation whereas any point in the plane touching the high point and
+perpendicular to the line is set to the maximum range value. All other
+values are interpolated linearly between these two planes. This filter is
+commonly used to compute the elevation of points in some direction, but can
+be repurposed for a variety of measures.
+
+The input field (or coordinate system) is specified as the second argument
+to the \textcode{Execute} method. A \vtkmcont{DataSet} that is expected to
+contain the field is also given but is otherwise unused.
+Example~\ref{ex:PointElevation} gives a demonstration of the elevation
+filter.
+
+The default name for the output field is ``elevation'', but that can be
+overridden using the \textcode{SetOutputFieldName} method.
+
+In addition to the standard \textcode{SetOutputFieldName} and
+\textcode{Execute} methods, \textidentifier{PointElevation} provides the
+following methods.
+
+\begin{description}
+\item[\textcode{SetLowPoint}/\textcode{SetHighPoint}] This pair of methods
+  is used to set the low and high points, respectively, of the elevation.
+  Each method takes three floating point numbers specifying the $x$, $y$,
+  and $z$ components of the low or high point.
+\item[\textcode{SetRange}] Sets the range of values to use for the output
+  field. This method takes two floating point numbers specifying the low
+  and high values, respectively.
+\end{description}
 
 \index{elevation|)}
 \index{point~elevation|)}
@@ -115,5 +173,15 @@ Example~\ref{ex:PointElevation}
 
 \index{data~set~filter|)}
 \index{filter!data~set|)}
+
+
+\section{Data Set and Field Filters}
+
+\index{filter!data~set~with~field|(}
+\index{data~set~with~filter|(}
+
+\index{data~set~with~filter|)}
+\index{filter!data~set~with~field|)}
+
 
 \index{filter|)}

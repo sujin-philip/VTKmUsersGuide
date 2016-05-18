@@ -316,7 +316,7 @@ vtkm::cont::DataSet BuildDataSet()
   static const vtkm::Id NUM_ROWS = 5;
 
   vtkm::cont::DataSetBuilderExplicitIterative dataSetBuilder;
-  dataSetBuilder.Begin(2);
+  dataSetBuilder.Begin();
 
   for (vtkm::Id row = 0; row < NUM_ROWS; row++)
   {

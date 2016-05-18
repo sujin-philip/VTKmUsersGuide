@@ -1,5 +1,5 @@
-#include <vtkm/filter/CellAverage.h>
 #include <vtkm/filter/PointElevation.h>
+#include <vtkm/filter/VertexClustering.h>
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
@@ -36,13 +36,50 @@ vtkm::cont::DataSet ComputeAirPressure(vtkm::cont::DataSet dataSet)
 //// END-EXAMPLE PointElevation.cxx
 ////
 
-void Test()
+void DoPointElevation()
 {
   vtkm::cont::testing::MakeTestDataSet makeData;
   vtkm::cont::DataSet inData = makeData.Make3DRegularDataSet0();
 
   vtkm::cont::DataSet pressureData = ComputeAirPressure(inData);
-  pressureData.GetField("pressure");
+
+  pressureData.GetField("pressure").PrintSummary(std::cout);
+  std::cout << std::endl;
+}
+
+void DoVertexClustring()
+{
+  vtkm::cont::testing::MakeTestDataSet makeData;
+  vtkm::cont::DataSet originalSurface = makeData.Make3DExplicitDataSetCowNose();
+
+  ////
+  //// BEGIN-EXAMPLE VertexClustering.cxx
+  ////
+  vtkm::filter::VertexClustering vertexClustering;
+
+  vertexClustering.SetNumberOfDivisions(vtkm::Id3(128,128,128));
+
+  vtkm::filter::ResultDataSet result =
+      vertexClustering.Execute(originalSurface);
+
+  if (!result.IsValid())
+  {
+    throw vtkm::cont::ErrorControlBadValue("Failed to run elevation filter.");
+  }
+
+  vtkm::cont::DataSet simplifiedSurface = result.GetDataSet();
+  ////
+  //// END-EXAMPLE VertexClustering.cxx
+  ////
+
+  simplifiedSurface.PrintSummary(std::cout);
+  std::cout << std::endl;
+}
+
+void Test()
+{
+  DoPointElevation();
+  DoVertexClustring();
 }
 
 }  // anonymous namespace

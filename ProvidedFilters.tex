@@ -171,6 +171,48 @@ following methods.
 \index{filter!data~set|(}
 \index{data~set~filter|(}
 
+\keyterm{Data set filters} are a class of filters that generate a new data
+set with a new topology. This new topology is typically derived from an
+existing data set. For example, a data set can be significantly alterned by
+adding, removing, or replacing cells.
+
+All data set filters contain an \textcode{Execute} method that takes one
+argument: a \vtkmcont{DataSet} object with the input data. The
+\textcode{Execute} method returns a \vtkmfilter{ResultDataSet} object,
+which contains the state of the execution and the data generated. A
+\textidentifier{ResultDataSet} object has the following methods.
+
+\begin{description}
+\item[\textcode{IsValid}] Returns a \textcode{bool} value specifying
+  whether the execution completed successfully. If \textcode{true}, then
+  the execution was successful and the data stored in the
+  \textidentifier{ResultField} is valid. If \textcode{false}, then the
+  execution failed.
+\item[\textcode{GetDataSet}] Returns a \textidentifier{DataSet} containing
+  the results of the execution.
+\end{description}
+
+Some data set filters need more information that just a data set when
+executing. Any additional information is provided using methods in the
+filter class that changes the state. These methods are called before
+\textcode{Execute}.
+
+Because the new data set is derived from existing data, it can often
+inherit field information from the original data. All data set filters also
+contain a \textcode{MapFieldOntoOutput} method to map fields from the
+output to the input. This method takes two arguments. The first argument is
+the \textidentifier{ResultDataSet} object returned from the last call to
+\textcode{Execute}. The second argument is a \vtkmcont{Field} object that
+comes from the input. \textcode{MapFieldOntoOutput} returns a
+\textcode{bool} that is true if the field was successfully mapped and added
+to the output data set in the \textidentifier{ResultDataSet} object.
+
+The following example provides a simple demonstration of using a data set
+filter. It specifically uses the vertex clustring filter, which is one of
+the data set filters.
+
+\vtkmlisting[ex:VertexClustering]{Using \textidentifier{VertexClustering}, which is a data set filter.}{VertexClustering.cxx}
+
 \index{data~set~filter|)}
 \index{filter!data~set|)}
 

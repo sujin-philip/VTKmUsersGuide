@@ -173,7 +173,7 @@ following methods.
 
 \keyterm{Data set filters} are a class of filters that generate a new data
 set with a new topology. This new topology is typically derived from an
-existing data set. For example, a data set can be significantly alterned by
+existing data set. For example, a data set can be significantly altered by
 adding, removing, or replacing cells.
 
 All data set filters contain an \textcode{Execute} method that takes one
@@ -207,14 +207,77 @@ comes from the input. \textcode{MapFieldOntoOutput} returns a
 \textcode{bool} that is true if the field was successfully mapped and added
 to the output data set in the \textidentifier{ResultDataSet} object.
 
+\begin{commonerrors}
+  Not all data set filters support the mapping of all input fields to the
+  output. If the mapping is not supported, \textcode{MapFieldOntoOutput}
+  will simply return false.
+\end{commonerrors}
+
 The following example provides a simple demonstration of using a data set
-filter. It specifically uses the vertex clustring filter, which is one of
+filter. It specifically uses the vertex clustering filter, which is one of
 the data set filters.
 
-\vtkmlisting[ex:VertexClustering]{Using \textidentifier{VertexClustering}, which is a data set filter.}{VertexClustering.cxx}
+\vtkmlisting[ex:VertexClustering]{Using \textidentifier{VertexClustering},
+  which is a data set filter.}{VertexClustering.cxx}
+
+\subsection{External Faces}
+
+\index{external~faces|(}
+\index{face!external|(}
+
+\vtkmfilter{ExternalFaces} is a filter that extracts all the external faces
+from a polyhedral data set. An external face is any face that is on the
+boundary of a mesh. Thus, if there is a hole in a volume, the boundary of
+that hole will be considered external. More formally, an external face is
+one that belongs to only one cell in a mesh.
+
+\begin{commonerrors}
+  The current implementation of the external faces filter only supports
+  tetrahedron cell cells. Future versions will support general 3D cell
+  shapes. \fix{Remove this when the code is updated.}
+\end{commonerrors}
+
+The external faces filter has no extra methods beyond the base methods of
+data set filters (i.e. \textcode{Execute} and
+\textcode{MapFieldOntoOutput}) because it requires no further metadata for
+its operations.
+
+\index{face!external|)}
+\index{external~faces|)}
 
 \index{data~set~filter|)}
 \index{filter!data~set|)}
+
+\subsection{Vertex Clustering}
+
+\index{vertex~clustering|(}
+\index{surface~simplification|(}
+
+\vtkmfilter{VertexClustering} is a filter that simplifies a polygonal mesh.
+It does so by dividing space into a uniform grid of bin and then merges
+together all points located in the same bin. The smaller the dimensions of
+this binning grid, the fewer polygons will be in the output cells and the
+coarser the representation. This surface simplification is an important
+operation to support \index{level~of~detail}\index{LOD}level of detail (LOD)
+rendering in visualization applications. Example~\ref{ex:VertexClustering}
+provides a demonstration of the vertex clustering filter.
+
+In addition to the standard \textcode{Execute} and
+\textcode{MapFieldOntoOutput} methods, \textidentifier{VertexClustering}
+provides the following methods.
+
+\begin{description}
+\item[\textcode{SetNumberOfDivisions}] Set the dimensions of the uniform
+  grid that establishes the bins used for clustering. Setting smaller
+  numbers of dimensions produces a smaller output, but with a coarser
+  representation of the surface. The dimensions are provided as a
+  \vtkm{Id3}.
+\item[\textcode{GetNumberOfDimensions}] Returns the number of dimensions
+  used for binning. The dimensions are returned as a \vtkm{Id3}.
+\end{description}
+
+\index{surface~simplification|}
+\index{vertex~clustering|)}
 
 
 \section{Data Set and Field Filters}

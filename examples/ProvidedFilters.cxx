@@ -47,7 +47,7 @@ void DoPointElevation()
   std::cout << std::endl;
 }
 
-void DoVertexClustring()
+void DoVertexClustering()
 {
   vtkm::cont::testing::MakeTestDataSet makeData;
   vtkm::cont::DataSet originalSurface = makeData.Make3DExplicitDataSetCowNose();
@@ -64,7 +64,7 @@ void DoVertexClustring()
 
   if (!result.IsValid())
   {
-    throw vtkm::cont::ErrorControlBadValue("Failed to run elevation filter.");
+    throw vtkm::cont::ErrorControlBadValue("Failed to run vertex clustering.");
   }
 
   vtkm::cont::DataSet simplifiedSurface = result.GetDataSet();
@@ -79,7 +79,7 @@ void DoVertexClustring()
 void Test()
 {
   DoPointElevation();
-  DoVertexClustring();
+  DoVertexClustering();
 }
 
 }  // anonymous namespace

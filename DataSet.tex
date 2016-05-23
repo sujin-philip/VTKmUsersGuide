@@ -195,14 +195,26 @@ grid that identify which points and cells are on the boundary of the mesh.
 
 A cell set determines the topological structure of the data in a data set.
 Fundamentally, any cell set is a collection of cells, which typically (but
-not always) represent some region in space. 3D cells are made up of points,
-edges, and faces. (2D cells have only points and edges, and 1D cells have
-only points.) The arrangement of these points, edges, and faces is defined
-by the \index{shape}\index{cell~set!shape}\index{cell~shape}\keyterm{shape}
-of the cell, which prescribes a specific ordering of each. The basic cell
-shapes provided by VTK-m are discussed in detail in
+not always) represent some region in space. 3D cells are made up of
+\index{point}\index{shape!point}points,
+\index{edge}\index{shape!edge}edges, and
+\index{face}\index{shape!face}faces. (2D cells have only points and edges,
+and 1D cells have only points.) Figure~\ref{fig:CellTopology} shows the
+relationship between a cell's shape and these topological elements. The
+arrangement of these points, edges, and faces is defined by the
+\index{shape}\index{cell~set!shape}\index{cell~shape}\keyterm{shape} of the
+cell, which prescribes a specific ordering of each. The basic cell shapes
+provided by VTK-m are discussed in detail in
 Section~\ref{sec:CellShapeTagsIds} starting on
 page~\pageref{sec:CellShapeTagsIds}.
+
+\begin{figure}[htb]
+  \fix{TODO: Add figure showing relationship between a cell and its points,
+    edges, and faces. I think I had one on my last EC proposal.}
+  \caption{The relationship between a cell shape and its topological
+    elements (points, edges, and faces).}
+  \label{fig:CellTopology}
+\end{figure}
 
 There are multiple ways to express the connections of a cell set, each with
 different benefits and restrictions. These different cell set types are

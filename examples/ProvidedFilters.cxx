@@ -1,3 +1,4 @@
+#include <vtkm/filter/MarchingCubes.h>
 #include <vtkm/filter/PointElevation.h>
 #include <vtkm/filter/VertexClustering.h>
 
@@ -67,6 +68,14 @@ void DoVertexClustering()
     throw vtkm::cont::ErrorControlBadValue("Failed to run vertex clustering.");
   }
 
+  for (vtkm::IdComponent fieldIndex = 0;
+       fieldIndex < originalSurface.GetNumberOfFields();
+       fieldIndex++)
+  {
+    vertexClustering.MapFieldOntoOutput(result,
+                                        originalSurface.GetField(fieldIndex));
+  }
+
   vtkm::cont::DataSet simplifiedSurface = result.GetDataSet();
   ////
   //// END-EXAMPLE VertexClustering.cxx
@@ -76,10 +85,47 @@ void DoVertexClustering()
   std::cout << std::endl;
 }
 
+void DoMarchingCubes()
+{
+  vtkm::cont::testing::MakeTestDataSet makeData;
+  vtkm::cont::DataSet inData = makeData.Make3DRectilinearDataSet0();
+
+  ////
+  //// BEGIN-EXAMPLE MarchingCubes.cxx
+  ////
+  vtkm::filter::MarchingCubes marchingCubes;
+
+  marchingCubes.SetIsoValue(10.0);
+
+  vtkm::filter::ResultDataSet result =
+      marchingCubes.Execute(inData, "pointvar");
+
+  if (!result.IsValid())
+  {
+    throw vtkm::cont::ErrorControlBadValue("Failed to run Marching Cubes.");
+  }
+
+  for (vtkm::IdComponent fieldIndex = 0;
+       fieldIndex < inData.GetNumberOfFields();
+       fieldIndex++)
+  {
+    marchingCubes.MapFieldOntoOutput(result, inData.GetField(fieldIndex));
+  }
+
+  vtkm::cont::DataSet isosurface = result.GetDataSet();
+  ////
+  //// END-EXAMPLE MarchingCubes.cxx
+  ////
+
+  isosurface.PrintSummary(std::cout);
+  std::cout << std::endl;
+}
+
 void Test()
 {
   DoPointElevation();
   DoVertexClustering();
+  DoMarchingCubes();
 }
 
 }  // anonymous namespace

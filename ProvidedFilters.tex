@@ -54,7 +54,7 @@ information on fields and coordinate systems, respectively.
 Field filters often need more information than just a data set and a field.
 Any additional information is provided using methods in the filter class
 that changes the state. These methods are called before \textcode{Execute}.
-One such method that all field filters has is
+One such method that all field filters have is
 \textcode{SetOutputFieldName}, which specifies the name assigned to the
 generated field. If not specified, then the filter will use a default name.
 
@@ -177,8 +177,21 @@ existing data set. For example, a data set can be significantly altered by
 adding, removing, or replacing cells.
 
 All data set filters contain an \textcode{Execute} method that takes one
-argument: a \vtkmcont{DataSet} object with the input data. The
-\textcode{Execute} method returns a \vtkmfilter{ResultDataSet} object,
+argument: a \vtkmcont{DataSet} object with the input data.
+
+Some data set filters need more information that just a data set when
+executing. Any additional information is provided using methods in the
+filter class that changes the state. These methods are called before
+\textcode{Execute}. One such method that all data set filters have is
+\textcode{SetActiveCellSet}, which selects which cell set in the input
+\textidentifier{DataSet} to operate on. Likewise,
+\textcode{SetActiveCoordinateSystem} selects which coordinate system to
+operate on. By default, the filter will operate on the first cell set and
+coordinate system. (See Sections \ref{sec:DataSets:CellSets} and
+\ref{sec:DataSets:CoordinateSystems} for more information about cell sets
+and coordinate systems, respectively.)
+
+The \textcode{Execute} method returns a \vtkmfilter{ResultDataSet} object,
 which contains the state of the execution and the data generated. A
 \textidentifier{ResultDataSet} object has the following methods.
 
@@ -191,11 +204,6 @@ which contains the state of the execution and the data generated. A
 \item[\textcode{GetDataSet}] Returns a \textidentifier{DataSet} containing
   the results of the execution.
 \end{description}
-
-Some data set filters need more information that just a data set when
-executing. Any additional information is provided using methods in the
-filter class that changes the state. These methods are called before
-\textcode{Execute}.
 
 Because the new data set is derived from existing data, it can often
 inherit field information from the original data. All data set filters also
@@ -284,6 +292,96 @@ provides the following methods.
 
 \index{filter!data~set~with~field|(}
 \index{data~set~with~filter|(}
+
+\keyterm{Data set and field filters} are a class of filters that generate a
+new data set with a new topology. This new topology is derived from an
+existing data set and at least one of the fields in the data set. For
+example, a field might determine how each cell is culled, clipped, or
+sliced.
+
+All data set and field filters contain an \textcode{Execute} method that
+takes two arguments. The first argument is a \vtkmcont{DataSet} object with
+the input data. The second argument specifies the field from which to
+derive a new field. The field can be specified as either a string naming a
+field in the input \textidentifier{DataSet} object, as a \vtkmcont{Field}
+object, or as a coordinate system (typically retrived from a
+\textidentifier{DataSet} object with the \textcode{GetCoordianteSystem}
+method). See Sections \ref{sec:DataSets:Fields} and
+\ref{sec:DataSets:CoordinateSystems} for more information on fields and
+coordinate systems, respectively.
+
+Some data set filters need more information that just a data set when
+executing. Any additional information is provided using methods in the
+filter class that changes the state. These methods are called before
+\textcode{Execute}. One such method that all data set filters have is
+\textcode{SetActiveCellSet}, which selects which cell set in the input
+\textidentifier{DataSet} to operate on. Likewise,
+\textcode{SetActiveCoordinateSystem} selects which coordinate system to
+operate on. By default, the filter will operate on the first cell set and
+coordinate system. (See Sections \ref{sec:DataSets:CellSets} and
+\ref{sec:DataSets:CoordinateSystems} for more information about cell sets
+and coordinate systems, respectively.)
+
+The \textcode{Execute} method returns a \vtkmfilter{ResultDataSet} object,
+which contains the state of the execution and the data generated. A
+\textidentifier{ResultDataSet} object has the following methods.
+
+\begin{description}
+\item[\textcode{IsValid}] Returns a \textcode{bool} value specifying
+  whether the execution completed successfully. If \textcode{true}, then
+  the execution was successful and the data stored in the
+  \textidentifier{ResultField} is valid. If \textcode{false}, then the
+  execution failed.
+\item[\textcode{GetDataSet}] Returns a \textidentifier{DataSet} containing
+  the results of the execution.
+\end{description}
+
+Because the new data set is derived from existing data, it can often
+inherit field information from the original data. All data set filters also
+contain a \textcode{MapFieldOntoOutput} method to map fields from the
+output to the input. This method takes two arguments. The first argument is
+the \textidentifier{ResultDataSet} object returned from the last call to
+\textcode{Execute}. The second argument is a \vtkmcont{Field} object that
+comes from the input. \textcode{MapFieldOntoOutput} returns a
+\textcode{bool} that is true if the field was successfully mapped and added
+to the output data set in the \textidentifier{ResultDataSet} object.
+
+\begin{commonerrors}
+  Not all data set filters support the mapping of all input fields to the
+  output. If the mapping is not supported, \textcode{MapFieldOntoOutput}
+  will simply return false.
+\end{commonerrors}
+
+The following example provides a simple demonstration of using a data set
+and field filter. It specifically uses the Marching Cubes filter, which is
+one of the data set and field filters.
+
+\vtkmlisting[ex:MarchingCubes]{Using \textidentifier{MarchingCubes},
+  which is a data set and field filter.}{MarchingCubes.cxx}
+
+\subsection{Marching Cubes}
+
+\index{filter!Marching~Cubes|(}
+\index{filter!contour|(}
+\index{filter!isosurface|(}
+\index{Marching~Cubes|(}
+\index{contour|(}
+\index{isosurface|(}
+
+\index{isosurface|)}
+\index{contour|)}
+\index{Marching~Cubes|)}
+\index{filter!isosurface|)}
+\index{filter!contour|)}
+\index{filter!Marching~Cubes|)}
+
+\subsection{Threshold}
+
+\index{filter!threshold|(}
+\index{threshold|(}
+
+\index{threshold|)}
+\index{filter!threshold|)}
 
 \index{data~set~with~filter|)}
 \index{filter!data~set~with~field|)}

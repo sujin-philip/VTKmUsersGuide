@@ -246,7 +246,7 @@ one that belongs to only one cell in a mesh.
 \end{commonerrors}
 
 The external faces filter has no extra methods beyond the base methods of
-data set filters (i.e. \textcode{Execute} and
+data set filters (such as \textcode{Execute} and
 \textcode{MapFieldOntoOutput}) because it requires no further metadata for
 its operations.
 
@@ -270,9 +270,9 @@ operation to support \index{level~of~detail}\index{LOD}level of detail (LOD)
 rendering in visualization applications. Example~\ref{ex:VertexClustering}
 provides a demonstration of the vertex clustering filter.
 
-In addition to the standard \textcode{Execute} and
-\textcode{MapFieldOntoOutput} methods, \textidentifier{VertexClustering}
-provides the following methods.
+In addition to the standard \textcode{Execute},
+\textcode{MapFieldOntoOutput}, and other methods,
+\textidentifier{VertexClustering} provides the following methods.
 
 \begin{description}
 \item[\textcode{SetNumberOfDivisions}] Set the dimensions of the uniform
@@ -304,7 +304,7 @@ takes two arguments. The first argument is a \vtkmcont{DataSet} object with
 the input data. The second argument specifies the field from which to
 derive a new field. The field can be specified as either a string naming a
 field in the input \textidentifier{DataSet} object, as a \vtkmcont{Field}
-object, or as a coordinate system (typically retrived from a
+object, or as a coordinate system (typically retrieved from a
 \textidentifier{DataSet} object with the \textcode{GetCoordianteSystem}
 method). See Sections \ref{sec:DataSets:Fields} and
 \ref{sec:DataSets:CoordinateSystems} for more information on fields and
@@ -368,6 +368,41 @@ one of the data set and field filters.
 \index{contour|(}
 \index{isosurface|(}
 
+\keyterm{Contouring} is one of the most fundamental filters in scientific
+visualization. A contour is the locus where a field is equal to a
+particular value. A topographic map showing curves of various elevations
+often used when hiking in hilly regions is an example of contours of an
+elevation field in 2 dimensions. Extended to 3 dimensions, a contour gives
+a surface. Thus, a contour is often called an \keyterm{isosurface}.
+Marching Cubes is a well know algorithm for computing contours and is
+implemented by \vtkmfilter{MarchingCubes}. Example~\ref{ex:MarchingCubes}
+provides a demonstration of the Marching Cubes filter.
+
+In addition to the standard \textcode{Execute},
+\textcode{MapFieldOntoOutput}, and other methods,
+\textidentifier{MarchingCubes} provides the following methods.
+
+\begin{description}
+\item[\textcode{SetIsoValue}] Provide the value on which to extract the
+  contour. The contour will be the surface where the field (provided to
+  \textcode{Execute}) is equal to this value.
+\item[\textcode{GetIsoValue}] Retrieve the currently set iso value.
+\item[\textcode{SetMergeDuplicatePoints}] Sets a Boolean flag to determine
+  whether coincident points in the data set should be merged. Because the
+  Marching Cubes filter (like all filters in VTK-m) runs in parallel,
+  parallel threads can (and often do) create duplicate versions of points.
+  When this flag is set to true, a secondary operation will find all
+  duplicated points and combine them together.
+\item[\textcode{GetMergeDuplicatePoints}] Returns the merge duplicate
+  points flag.
+\item[\textcode{SetGenerateNormals}] Sets a Boolean flag to determine
+  whether to generate normal vectors for the surface. Normals are used in
+  shading calculations during rendering and can make the surface appear
+  more smooth. Generated normals are based on the gradient of the field
+  being contoured.
+\item[\textcode{GetGenerateNormals}] Returns the generate normals flag.
+\end{description}
+
 \index{isosurface|)}
 \index{contour|)}
 \index{Marching~Cubes|)}
@@ -379,6 +414,24 @@ one of the data set and field filters.
 
 \index{filter!threshold|(}
 \index{threshold|(}
+
+A threshold operation removes topology elements from a data set that do not
+meet a specified criterion. The \vtkmfilter{Threshold} filter removes all
+cells where the field (provided to \textcode{Execute}) is not between a
+range of values.
+
+In addition to the standard \textcode{Execute},
+\textcode{MapFieldOntoOutput}, and other methods,
+\textidentifier{Threshold} provides the following methods.
+
+\begin{description}
+\item[\textcode{SetLowerThreshold}] Sets the lower scalar value. Any cells
+  where the scalar field is less than this value are removed.
+\item[\textcode{SetUpperThreshold}] Sets the upper scalar value. Any cells
+  where the scalar field is more than this value are removed.
+\item[\textcode{GetLowerThreshold}] Returns the lower threshold value.
+\item[\textcode{GetUpperThreshold}] Returns the upper threshold value.
+\end{description}
 
 \index{threshold|)}
 \index{filter!threshold|)}

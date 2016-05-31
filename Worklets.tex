@@ -196,7 +196,7 @@ components of a worklet.
 %% class TriangulateCell : public vtkm::worklet::WorkletMapPointToCell
 %% {
 %% public:
-%%   typedef void ControlSignature(TopologyIn topology,
+%%   typedef void ControlSignature(CellSetIn topology,
 %%                                 ExecObject tables,
 %%                                 FieldOutCell<> connectivityOut);
 %%   typedef void ExecutionSignature(CellShape, PointIndices, _2, _3, VisitIndex);
@@ -392,7 +392,7 @@ Different types of worklets can have different types of domain. For example
 a simple field map worklet has a \sigtag{FieldIn} argument as its input
 domain, and the size of the input domain is taken from the size of the
 associated field array. Likewise, a worklet that maps topology has a
-\sigtag{TopologyIn} argument as its input domain, and the size of the input
+\sigtag{CellSetIn} argument as its input domain, and the size of the input
 domain is taken from the cell set.
 
 Specifying the \inputdomain is optional. If it is not specified, the first
@@ -630,15 +630,15 @@ A point to cell map worklet supports the following tags in the parameters
 of its \controlsignature.
 
 \begin{description}
-\item[\sigtag{TopologyIn}] This tag represents the cell set that defines
-  the collection of cells the map will operate on. A \sigtag{TopologyIn}
+\item[\sigtag{CellSetIn}] This tag represents the cell set that defines
+  the collection of cells the map will operate on. A \sigtag{CellSetIn}
   argument expects a \textidentifier{CellSet} subclass or a
   \textidentifier{DynamicCellSet} in the associated parameter of the
   dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
   cell shape tag. (Cell shapes and the operations you can do with cells are
   discussed in Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.)
 
-  There must be exactly one \sigtag{TopologyIn} argument, and the worklet's
+  There must be exactly one \sigtag{CellSetIn} argument, and the worklet's
   \inputdomain must be set to this argument.
 
 \item[\sigtag{FieldInPoint}] This tag represents an input field that is
@@ -712,7 +712,7 @@ A field map worklet supports the following tags in the parameters of its
   with cells are discussed in
   Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.) This is the
   same value that gets provided if you reference the
-  \textsignature{TopologyIn} parameter.
+  \textsignature{CellSetIn} parameter.
 
 \item[\sigtag{PointCount}] This tag produces a \vtkm{IdComponent} equal to
   the number of points incident on the cell being visited. The Vecs
@@ -762,13 +762,13 @@ A cell to point map worklet supports the following tags in the parameters
 of its \controlsignature.
 
 \begin{description}
-\item[\sigtag{TopologyIn}] This tag represents the cell set that defines
-  the collection of points the map will operate on. A \sigtag{TopologyIn}
+\item[\sigtag{CellSetIn}] This tag represents the cell set that defines
+  the collection of points the map will operate on. A \sigtag{CellSetIn}
   argument expects a \textidentifier{CellSet} subclass or a
   \textidentifier{DynamicCellSet} in the associated parameter of the
   dispatcher's \textcode{Invoke}.
 
-  There must be exactly one \sigtag{TopologyIn} argument, and the worklet's
+  There must be exactly one \sigtag{CellSetIn} argument, and the worklet's
   \inputdomain must be set to this argument.
 
 \item[\sigtag{FieldInCell}] This tag represents an input field that is
@@ -918,15 +918,15 @@ parameters of its \controlsignature, which are equivalent to tags in the
 other topology maps but with different (more general) names.
 
 \begin{description}
-\item[\sigtag{TopologyIn}] This tag represents the cell set that defines
-  the collection of elements the map will operate on. A \sigtag{TopologyIn}
+\item[\sigtag{CellSetIn}] This tag represents the cell set that defines
+  the collection of elements the map will operate on. A \sigtag{CellSetIn}
   argument expects a \textidentifier{CellSet} subclass or a
   \textidentifier{DynamicCellSet} in the associated parameter of the
   dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
   cell shape tag. (Cell shapes and the operations you can do with cells are
   discussed in Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.)
 
-  There must be exactly one \sigtag{TopologyIn} argument, and the worklet's
+  There must be exactly one \sigtag{CellSetIn} argument, and the worklet's
   \inputdomain must be set to this argument.
 
 \item[\sigtag{FieldInFrom}] This tag represents an input field that is
@@ -994,7 +994,7 @@ parameters of its \executionsignature.
   you can do with cells are discussed in
   Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.) This is the
   same value that gets provided if you reference the
-  \textsignature{TopologyIn} parameter.
+  \textsignature{CellSetIn} parameter.
 
   If the ``to'' element is cells, the \sigtag{CellShape} clearly will match
   the shape of each cell. Other elements will have shapes to match their

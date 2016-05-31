@@ -84,7 +84,7 @@ vtkm::Float32 LookupTriangleQuality(const PortalType &triangleQualityPortal,
 
 struct TriangleQualityWorklet : vtkm::worklet::WorkletMapPointToCell
 {
-  typedef void ControlSignature(TopologyIn cells,
+  typedef void ControlSignature(CellSetIn cells,
                                 FieldInPoint<Vec3> pointCoordinates,
                                 WholeArrayIn<Scalar> triangleQualityTable,
                                 FieldOutCell<Scalar> triangleQuality);
@@ -171,7 +171,7 @@ private:
 
 struct TriangleQualityWorklet2 : vtkm::worklet::WorkletMapPointToCell
 {
-  typedef void ControlSignature(TopologyIn cells,
+  typedef void ControlSignature(CellSetIn cells,
                                 FieldInPoint<Vec3> pointCoordinates,
                                 ExecObject triangleQualityTable,
                                 FieldOutCell<Scalar> triangleQuality);

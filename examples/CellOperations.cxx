@@ -15,7 +15,7 @@ namespace {
 ////
 struct CellCenters : vtkm::worklet::WorkletMapPointToCell
 {
-  typedef void ControlSignature(TopologyIn,
+  typedef void ControlSignature(CellSetIn,
                                 FieldInPoint<> inputField,
                                 FieldOutCell<> outputField);
   typedef void ExecutionSignature(CellShape, PointCount, _2, _3);
@@ -66,7 +66,7 @@ void TryCellCenters()
 ////
 struct CellDerivatives : vtkm::worklet::WorkletMapPointToCell
 {
-  typedef void ControlSignature(TopologyIn,
+  typedef void ControlSignature(CellSetIn,
                                 FieldInPoint<> inputField,
                                 FieldInPoint<Vec3> pointCoordinates,
                                 FieldOutCell<> outputField);

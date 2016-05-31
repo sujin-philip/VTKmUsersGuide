@@ -17,7 +17,7 @@ namespace {
 class CellCenter : public vtkm::worklet::WorkletMapPointToCell
 {
 public:
-  typedef void ControlSignature(TopologyIn cellSet,
+  typedef void ControlSignature(CellSetIn cellSet,
                                 FieldInPoint<> inputPointField,
                                 FieldOut<> outputCellField);
   typedef _3 ExecutionSignature(_1, PointCount, _2);

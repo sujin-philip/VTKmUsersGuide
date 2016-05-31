@@ -17,7 +17,7 @@ namespace {
 class AverageCellField : public vtkm::worklet::WorkletMapCellToPoint
 {
 public:
-  typedef void ControlSignature(TopologyIn cellSet,
+  typedef void ControlSignature(CellSetIn cellSet,
                                 FieldInCell<> inputCellField,
                                 FieldOut<> outputPointField);
   typedef void ExecutionSignature(CellCount, _2, _3);

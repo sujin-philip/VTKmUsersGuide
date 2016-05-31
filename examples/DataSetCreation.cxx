@@ -24,19 +24,12 @@ void CreateUniformGrid()
   //// END-EXAMPLE CreateUniformGrid.cxx
   ////
 
-  vtkm::Float64 bounds[6];
-  dataSet.GetCoordinateSystem().GetBounds(bounds,
-                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  std::cout << bounds[0] << " " << bounds[1] << std::endl
-            << bounds[2] << " " << bounds[3] << std::endl
-            << bounds[4] << " " << bounds[5] << std::endl;
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
+        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds << std::endl;
 
-  VTKM_TEST_ASSERT(test_equal(bounds[0],   0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[1], 100), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[2],   0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[3], 100), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[4],   0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[5],  25), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0,100,0,100,0,25)),
+                   "Bad bounds");
 }
 
 void CreateUniformGridCustomOriginSpacing()
@@ -58,19 +51,12 @@ void CreateUniformGridCustomOriginSpacing()
   //// END-EXAMPLE CreateUniformGridCustomOriginSpacing.cxx
   ////
 
-  vtkm::Float64 bounds[6];
-  dataSet.GetCoordinateSystem().GetBounds(bounds,
-                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  std::cout << bounds[0] << " " << bounds[1] << std::endl
-            << bounds[2] << " " << bounds[3] << std::endl
-            << bounds[4] << " " << bounds[5] << std::endl;
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
+        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds << std::endl;
 
-  VTKM_TEST_ASSERT(test_equal(bounds[0], -50), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[1],  50), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[2], -50), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[3],  50), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[4], -50), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[5],  50), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(-50,50,-50,50,-50,50)),
+                   "Bad bounds");
 }
 
 void CreateRectilinearGrid()
@@ -114,25 +100,12 @@ void CreateRectilinearGrid()
   std::cout << "Num points: " << numPoints << std::endl;
   VTKM_TEST_ASSERT(numPoints == 4080501, "Got wrong number of points.");
 
-  // Disabling this test for now. Some things in the source need to change.
-  // First, CoordinateSystem should have a version of GetBounds that allows
-  // you to specify a new storage tag list. Second, there are currently some
-  // errors in ArrayHandleCartesianProduct that need to be fixed. Since I'm
-  // currently working off Dave P.'s branch, I don't want to go through and
-  // fix those right now.
-  vtkm::Float64 bounds[6];
-  dataSet.GetCoordinateSystem().GetBounds(bounds,
-                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  std::cout << bounds[0] << " " << bounds[1] << std::endl
-            << bounds[2] << " " << bounds[3] << std::endl
-            << bounds[4] << " " << bounds[5] << std::endl;
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
+        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds << std::endl;
 
-  VTKM_TEST_ASSERT(test_equal(bounds[0], -4), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[1],  4), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[2],  0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[3],  2), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[4], -1), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[5],  1), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(-4,4,0,2,-1,1)),
+                   "Bad bounds");
 }
 
 void CreateExplicitGrid()
@@ -208,19 +181,12 @@ void CreateExplicitGrid()
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
                    "Data set has wrong number of cells.");
 
-  vtkm::Float64 bounds[6];
-  dataSet.GetCoordinateSystem().GetBounds(bounds,
-                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  std::cout << bounds[0] << " " << bounds[1] << std::endl
-            << bounds[2] << " " << bounds[3] << std::endl
-            << bounds[4] << " " << bounds[5] << std::endl;
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
+        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds << std::endl;
 
-  VTKM_TEST_ASSERT(test_equal(bounds[0], 0.2), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[1], 1.8), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[2], 0.0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[3], 1.2), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[4], 0.0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[5], 0.0), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0.2,1.8,0.0,1.2,0.0,0.0)),
+                   "Bad bounds");
 
   // Do a simple check of the connectivity by getting the number of cells
   // incident on each point. This array is unlikely to be correct if the
@@ -311,19 +277,12 @@ void CreateExplicitGridIterative()
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
                    "Data set has wrong number of cells.");
 
-  vtkm::Float64 bounds[6];
-  dataSet.GetCoordinateSystem().GetBounds(bounds,
-                                          VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  std::cout << bounds[0] << " " << bounds[1] << std::endl
-            << bounds[2] << " " << bounds[3] << std::endl
-            << bounds[4] << " " << bounds[5] << std::endl;
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
+        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  std::cout << bounds << std::endl;
 
-  VTKM_TEST_ASSERT(test_equal(bounds[0], 0.2), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[1], 1.8), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[2], 0.0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[3], 1.2), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[4], 0.0), "Bad bounds");
-  VTKM_TEST_ASSERT(test_equal(bounds[5], 0.0), "Bad bounds");
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0.2,1.8,0.0,1.2,0.0,0.0)),
+                   "Bad bounds");
 
   // Do a simple check of the connectivity by getting the number of cells
   // incident on each point. This array is unlikely to be correct if the

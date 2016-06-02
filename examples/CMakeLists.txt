@@ -62,7 +62,7 @@ if (BUILD_EXAMPLES)
   foreach (test ${example_src})
     get_filename_component(tname ${test} NAME_WE)
     add_test(NAME ${tname}
-      COMMAND ${test_prog} ${tname}
+      COMMAND ${test_prog} ${tname} --no-interaction
       )
   endforeach()
 

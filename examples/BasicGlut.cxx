@@ -7,10 +7,11 @@
 
 #include <vtkm/io/reader/VTKDataSetReader.h>
 
-#include <vtkm/rendering/RenderSurfaceGL.h>
-#include <vtkm/rendering/SceneRendererGL.h>
+#include <vtkm/rendering/Actor.h>
+#include <vtkm/rendering/Camera.h>
+#include <vtkm/rendering/CanvasGL.h>
+#include <vtkm/rendering/MapperGL.h>
 #include <vtkm/rendering/View.h>
-#include <vtkm/rendering/Window.h>
 #include <vtkm/rendering/WorldAnnotatorGL.h>
 
 #ifdef __APPLE__
@@ -21,28 +22,39 @@
 
 namespace BasicGlutExample {
 
-typedef vtkm::rendering::SceneRendererGL<> SceneRendererType;
-typedef vtkm::rendering::RenderSurfaceGL RenderSurfaceType;
+typedef vtkm::rendering::MapperGL<> MapperType;
+typedef vtkm::rendering::CanvasGL CanvasType;
 typedef vtkm::rendering::WorldAnnotatorGL WorldAnnotatorType;
-typedef vtkm::rendering::Window3D<
-    SceneRendererType, RenderSurfaceType, WorldAnnotatorType> WindowType;
+typedef vtkm::rendering::View3D<
+    MapperType, CanvasType, WorldAnnotatorType> ViewType;
 
-WindowType *gWindowPointer = NULL;
+ViewType *gViewPointer = NULL;
 
 int gButtonState[3] = { GLUT_UP, GLUT_UP, GLUT_UP };
 int gMousePositionX;
 int gMousePositionY;
+//// PAUSE-EXAMPLE
+bool gNoInteraction;
+//// RESUME-EXAMPLE
 
 void DisplayCallback()
 {
-  gWindowPointer->Paint();
+  gViewPointer->Paint();
   glutSwapBuffers();
+  //// PAUSE-EXAMPLE
+  if (gNoInteraction)
+  {
+    delete gViewPointer;
+    gViewPointer = NULL;
+    exit(0);
+  }
+  //// RESUME-EXAMPLE
 }
 
 void WindowReshapeCallback(int width, int height)
 {
-  gWindowPointer->View.Width = width;
-  gWindowPointer->View.Height = height;
+  gViewPointer->Camera.Width = width;
+  gViewPointer->Camera.Height = height;
 }
 
 void MouseButtonCallback(int buttonIndex, int state, int x, int y)
@@ -54,8 +66,8 @@ void MouseButtonCallback(int buttonIndex, int state, int x, int y)
 
 void MouseMoveCallback(int x, int y)
 {
-  vtkm::Int32 width = gWindowPointer->View.Width;
-  vtkm::Int32 height = gWindowPointer->View.Height;
+  vtkm::Int32 width = gViewPointer->Camera.Width;
+  vtkm::Int32 height = gViewPointer->Camera.Height;
 
   vtkm::Float32 lastX = (2.0f*gMousePositionX)/width - 1.0f;
   vtkm::Float32 lastY = 1.0f - (2.0f*gMousePositionY)/height;
@@ -64,15 +76,15 @@ void MouseMoveCallback(int x, int y)
 
   if (gButtonState[0] == GLUT_DOWN)
   {
-    gWindowPointer->View.TrackballRotate(lastX, lastY, nextX, nextY);
+    gViewPointer->Camera.TrackballRotate(lastX, lastY, nextX, nextY);
   }
   else if (gButtonState[1] == GLUT_DOWN)
   {
-    gWindowPointer->View.Pan3D(nextX-lastX, nextY-lastY);
+    gViewPointer->Camera.Pan3D(nextX-lastX, nextY-lastY);
   }
   else if (gButtonState[2] == GLUT_DOWN)
   {
-    gWindowPointer->View.Zoom3D(nextY-lastY);
+    gViewPointer->Camera.Zoom3D(nextY-lastY);
   }
 
   gMousePositionX = x;
@@ -87,8 +99,8 @@ void KeyPressCallback(unsigned char key, int x, int y)
   {
     case 'q':
     case 'Q':
-      delete gWindowPointer;
-      gWindowPointer = NULL;
+      delete gViewPointer;
+      gViewPointer = NULL;
       exit(0);
       break;
   }
@@ -115,30 +127,39 @@ int main(int argc, char *argv[])
   vtkm::cont::DataSet surfaceData;
   vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
   surfaceData = reader.ReadDataSet();
-  std::cout << surfaceData.GetCoordinateSystem().GetBounds(VTKM_DEFAULT_DEVICE_ADAPTER_TAG()) << std::endl;
 
-  SceneRendererType sceneRenderer;
-  RenderSurfaceType renderSurface;
+  MapperType mapper;
+  CanvasType canvas;
 
-  vtkm::rendering::Plot plot(surfaceData.GetCellSet(),
-                             surfaceData.GetCoordinateSystem(),
-                             surfaceData.GetField("RandomPointScalars"),
-                             // Get rid of this after edits.
-                             vtkm::rendering::ColorTable(""));
+  vtkm::rendering::Actor actor(surfaceData.GetCellSet(),
+                               surfaceData.GetCoordinateSystem(),
+                               surfaceData.GetField("RandomPointScalars"),
+                               // Get rid of this after edits.
+                               vtkm::rendering::ColorTable(""));
 
   vtkm::rendering::Scene scene;
-  scene.Plots.push_back(plot);
+  scene.Actors.push_back(actor);
 
-  vtkm::rendering::View view(vtkm::rendering::View::VIEW_3D);
-  view.View3d.LookAt = vtkm::Vec<vtkm::Float32,3>(0.775f, -0.44f, 0.0f);
-  view.View3d.Position = vtkm::Vec<vtkm::Float32,3>(0.775f, -0.44f, -25.0f);
-  view.View3d.Up = vtkm::Vec<vtkm::Float32,3>(0.0f, 1.0f, 0.0f);
-  view.View3d.FieldOfView = 30.0f;
-  view.NearPlane = 1.0f;
-  view.FarPlane = 10000.0f;
+  vtkm::rendering::Camera camera(vtkm::rendering::Camera::VIEW_3D);
+  camera.Camera3d.LookAt = vtkm::Vec<vtkm::Float32,3>(0.775f, -0.44f, 0.0f);
+  camera.Camera3d.Position = vtkm::Vec<vtkm::Float32,3>(0.775f, -0.44f, -25.0f);
+  camera.Camera3d.Up = vtkm::Vec<vtkm::Float32,3>(0.0f, 1.0f, 0.0f);
+  camera.Camera3d.FieldOfView = 30.0f;
+  camera.NearPlane = 1.0f;
+  camera.FarPlane = 10000.0f;
 
-  gWindowPointer = new WindowType(scene, sceneRenderer, renderSurface, view);
+  gViewPointer = new ViewType(scene, mapper, canvas, camera);
 
+  //// PAUSE-EXAMPLE
+  if ((argc > 1) && (strcmp(argv[1], "--no-interaction") == 0))
+  {
+    gNoInteraction = true;
+  }
+  else
+  {
+    gNoInteraction = false;
+  }
+  //// RESUME-EXAMPLE
   // Start the GLUT rendering system. This function typically does not return.
   glutMainLoop();
 

@@ -1,0 +1,228 @@
+%-*- latex -*-
+
+\chapter{Rendering}
+\label{chap:Rendering}
+
+\index{rendering|(}
+
+Rendering, the generation of images from data, is a key component to
+visualization. To assist with rendering, VTK-m provides a rendering package
+to produce imagery from data.
+
+The rendering package in VTK-m is not intended to be a fully featured
+rendering system or library. Rather, it is a lightweight rendering package
+with two primary use cases:
+\begin{enumerate}
+\item New users getting started with VTK-m need a ``quick and dirty''
+  render method to see their visualization results.
+\item In situ visualization that integrates VTK-m with a simulation or
+  other data-generation system might need a lightweight rendering method.
+\end{enumerate}
+
+Both of these use cases require just a basic rendering platform. Because
+VTK-m is designed to be integrated into larger systems, it does not aspire
+to have a fully featured rendering system.
+
+\begin{didyouknow}
+  VTK-m's big sister toolkit VTK is already integrated with VTK-m and has
+  its own fully featured rendering system. If you need more rendering
+  capabilities than what VTK-m provides, you can leverage VTK instead.
+\end{didyouknow}
+
+\section{Creating a Rendering Canvas}
+
+\index{rendering!canvas|(}
+\index{canvas|(}
+
+The first step in using VTK-m's rendering package is to create a
+\keyterm{canvas}, which is managed by \vtkmrendering{Canvas} and its
+subclasses. The \textidentifier{Canvas} object manages the frame buffers
+and the rendering context.
+
+Subclasses of \textidentifier{Canvas} establish a context for different
+rendering systems. Currently, there are two main subclasses: one for using
+OpenGL rendering (\vtkmrendering{CanvasGL}) and one for using built in
+ray tracing (\vtkmrendering{CanvasRayTracer}).
+
+\subsection{Creating an OpenGL Context with GLUT}
+
+\index{rendering!GLUT|(}
+\index{rendering!OpenGL|(}
+\index{canvas!GLUT|(}
+\index{canvas!OpenGL|(}
+\index{GLUT|(}
+\index{OpenGL|(}
+
+One feature that is notably (and intentionally) missing from the VTK-m
+rendering package is the ability to open a rendering window or build a
+graphical user interface. However, VTK-m can use an OpenGL context
+established elsewhere to perform rendering. OpenGL is a widely-accepted
+rendering library supported by all hardware vendors on pretty much all
+computing platforms. It is also extensively used by many applications
+performing rendering, particularly scientific visualization applications.
+
+Once an OpenGL rendering context is established, it can be used by VTK-m by
+simply creating a \vtkmrendering{CanvasGL}. When created,
+\textidentifier{CanvasGL} will find the current OpenGL context, query its
+size, and ready the VTK-m rendering system to use it.
+
+Unfortunately, creating a window with an OpenGL context is platform
+dependent. There are numerous libraries available that provide the ability
+to create an OpenGL window that have been ported to many platforms (such as
+MS Windows, Unix, and Mac OSX). One such library is \keyterm{GLUT}.
+
+GLUT is a very simple utility toolkit that provides a basic mechanism for
+creating a window with an OpenGL context. It additionally provides simple
+user interface features to capture keystrokes and mouse movements. For the
+purposes of demonstration, we will provide examples that use GLUT to make a
+simple interactive rendering application.
+
+\begin{didyouknow}
+  We are demonstrating rendering with GLUT for illustrative purposes only.
+  VTK-m is not directly associated with GLUT: It neither comes with GLUT
+  nor depends on GLUT. You are welcome to follow these boilerplate
+  examples, or you can integrate with another rendering system of your
+  choosing.
+\end{didyouknow}
+
+This section provides a terse description of getting a GLUT application up
+and running. This is not meant to be a thorough description of the GLUT
+library. There are other resources that document using the GLUT API, the
+most complete of which is the book \emph{OpenGL Programming for the X
+  Window System} by Mark J. Kilgard. The information provided here is just
+enough to get you started.
+
+\begin{commonerrors}
+  Although distributed for free, the original GLUT library was not released
+  as open source. Unfortunately, the GLUT copyright holders are not as
+  actively developing GLUT as they once were, and consequently some systems
+  are declaring GLUT as deprecated. However, there some newer projects like
+  FreeGLUT and OpenGLUT that are open source, that are being more actively
+  developed, and that are drop in replacements to the original GLUT
+  library. There are also alternative libraries such as GLFW that have
+  similar capabilities but a different API. These are not documented here,
+  but are worth investigating if GLUT does not work for you.
+\end{commonerrors}
+
+The first call made to the GLUT library should be to the function
+\textcode{glutInit}, which takes as arguments the \textcode{argc} and
+\textcode{argv} arguments passed to the \textcode{main} C function.
+\textcode{glutInit} will find any window-system specific flags (such as
+\textcode{-display}), use them to initialize the windowing system, and
+strip them from the arguments.
+
+Next, the parameters for the window to be created should be established.
+The function \textcode{glutInitWindowSize} takes the width and the height
+of the renderable space in the window. The function
+\textcode{glutInitDisplayMode} takes a mask of flags that are or-ed
+together to specify the capabilities of the window. We recommend the flags
+\textcode{GLUT\_RGBA}, \textcode{GLUT\_DOUBLE}, \textcode{GLUT\_ALPHA}, and
+\textcode{GLUT\_DEPTH}. Once these are specified a call to
+\textcode{glutCreateWindow} will create a window and initialize the OpenGL
+context. \textcode{glutCreateWindow} takes a string for an argument that is
+used in the title bar of the window.
+
+\vtkmlisting{Initializing the GLUT library and creating a window to render into.}{InitializeGlut.cxx}
+
+\index{GLUT!callbacks|(}
+
+Apart from the initial setup, most of the interaction with the GLUT
+library happens through callbacks. As part of its initialization, an
+application provides function pointers to GLUT. GLUT then calls these
+provided functions when certain events happen. GLUT supports many callbacks
+for different types of events. Here is the small set of callbacks we use in
+our small example.
+
+\begin{description}
+\item[\textcode{glutDisplayFunc}] The display function is called when the
+  window needs to be redrawn. The callback should issue the appropriate
+  OpenGL rendering calls and then call \textcode{glutSwapBuffers} to show
+  the result.
+\item[\textcode{glutReshapeFunc}] The reshape function is called whenever
+  the window is resized. The callback is given the width and height of the
+  new rendering window.
+\item[\textcode{glutMouseFunc}] The mouse button function is called
+  whenever a mouse button is pressed or released. The GLUT system gives the
+  index of the button, the state the button changed to
+  (\textcode{GLUT\_DOWN} or \textcode{GLUT\_UP}) and the pixel location of
+  the event.
+\item[\textcode{glutMotionFunc}] The mouse motion function is called
+  whenever the mouse is moved while any button is pressed. The callback is
+  given the pixel location to where the mouse moved to, but not the state
+  of any of the buttons. If the button state is important, it must be
+  preserved in a global variable. If the mouse motion should result in a
+  change in the rendered view, the function should call
+  \textcode{glutPostRedisplay}, which will tell GLUT to call the display
+  function when the windowing system is ready.
+\item[\textcode{glutKeygboardFunc}] The keyboard function is called
+  whenever a regular key is pressed. The callback is given the character of
+  the key pressed as well as the pixel location of the mouse when the key
+  was pressed. If the key press should result in a change in the rendered
+  view, the function should call \textcode{glutPostRedisplay}, which will
+  tell GLUT to call the display function when the windowing system is
+  ready.
+\end{description}
+
+\begin{didyouknow}
+  There are many other GLUT callbacks not documented here. Consult the GLUT
+  documentation for more information.
+\end{didyouknow}
+
+\vtkmlisting{Registering callbacks with GLUT.}{InitializeGlutCallbacks.cxx}
+
+\index{GLUT!callbacks|)}
+
+Once the GLUT library is initialized, the rendering window created, and all
+the necessary callbacks are registered, call \textcode{glutMainLoop}. This
+causes GLUT to enter its main event loop where it will manage the windowing
+system. \textcode{glutMainLoop} will never return. Rather, it will continue
+to respond to events and invoke the callbacks until the program is
+otherwise interrupted.
+
+Example~\ref{ex:BasicGlut} puts this all together to give a full example of
+a simple GLUT program rendering with VTK-m. The examples of the GLUT
+callbacks are straightforward. The VTK-m rendering classes used are
+documented in the following sections.
+
+\vtkmlisting[ex:BasicGlut]{A simple but full example of an application using GLUT and VTK-m together.}{BasicGlut.cxx}
+
+\index{OpenGL|)}
+\index{GLUT|)}
+\index{canvas!OpenGL|)}
+\index{canvas!GLUT|)}
+\index{rendering!OpenGL|)}
+\index{rendering!GLUT|)}
+
+\subsection{Creating an Off Screen Rendering Canvas}
+
+\index{rendering!off~screen|(}
+\index{canvas!off~screen|(}
+
+\index{canvas!off~screen|)}
+\index{rendering!off~screen|)}
+
+\index{canvas|)}
+\index{rendering!canvas|)}
+
+
+\section{Scenes and Actors}
+
+
+\section{Views}
+
+\index{rendering!view|(}
+\index{view|(}
+
+\index{view|)}
+\index{rendering!view|)}
+
+
+\section{Manipulating the Camera}
+
+\index{rendering!camera|(}
+\index{camera|(}
+
+\index{camera|)}
+\index{rendering!camera|)}
+
+\index{rendering|)}

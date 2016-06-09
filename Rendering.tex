@@ -198,6 +198,31 @@ documented in the following sections.
 \index{rendering!off~screen|(}
 \index{canvas!off~screen|(}
 
+Another use case for rendering in VTK-m is rendering to an off screen
+buffer. This is the preferred method when doing automated visualization
+such as when running visualization in situ with a simulation. VTK-m comes
+built in with multiple methods to create off screen rendering contexts.
+There are multiple subclasses to \vtkmrendering{Canvas} that, when
+constructed, create their own rendering contexts, so can be used
+immediately. All of these classes take as parameters to their constructors
+the width and height of the image to create.
+
+The following classes, when constructed, create an off screen rendering
+buffer.
+
+\begin{description}
+\item[\vtkmrendering{CanvasOSMesa}] \index{rendering!OSMesa}
+  \index{canvas!OSMesa} \index{OSMesa} Creates an off screen OpenGL
+  rendering buffer using the OSMesa library. For this to be available,
+  VTK-m must have been configured to use the OSMesa library. Also, be aware
+  that OSMesa contexts do not use GPU hardware.
+\item[\vtkmrendering{CanvasRayTracer}] \index{rendering!ray~tracing}
+  \index{canvas!ray~tracing} \index{ray~tracing!canvas} Creates the frame
+  buffers required for ray tracing. When invoking this canvas, you must use
+  other ray tracing component where applicable. OpenGL rendering does not
+  work with the \textidentifier{CanvasRayTracer}.
+\end{description}
+
 \index{canvas!off~screen|)}
 \index{rendering!off~screen|)}
 
@@ -208,7 +233,7 @@ documented in the following sections.
 \section{Scenes and Actors}
 
 
-\section{Views}
+\section{Views and Mappers}
 
 \index{rendering!view|(}
 \index{view|(}

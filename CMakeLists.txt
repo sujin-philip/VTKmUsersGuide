@@ -10,6 +10,7 @@ set(images
   images/DOELogo.pdf
   images/KitwareLogo.png
   images/ArrayHandleStorage.pdf
+  images/BasicGlut.png
   images/CellConnectionsHexahedron.pdf
   images/CellConnectionsLine.pdf
   images/CellConnectionsPolygon.pdf

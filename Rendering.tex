@@ -188,7 +188,8 @@ following sections.
 \vtkmlisting[ex:BasicGlut]{A simple but full example of an application using GLUT and VTK-m together.}{BasicGlut.cxx}
 
 \begin{figure}[htb]
-  \fix{Add screen shot of cow.}
+  \centering
+  \includegraphics[width=4in]{images/BasicGlut}
   \caption{Output of the rendering program listed in
     Example~\ref{ex:BasicGlut}.}
   \label{fig:BasicGlut}
@@ -275,7 +276,45 @@ example demonstrates creating a \textidentifier{Scene} with one
 
 \vtkmlisting{Creating an \textidentifier{Actor} and adding it to a \textidentifier{Scene}.}{ActorScene.cxx}
 
-\section{Views and Mappers}
+
+\section{Mappers}
+
+\index{rendering!mapper|(}
+\index{mapper|(}
+
+A \keyterm{mapper} is a unit that converts data (managed by an
+\textidentifier{Actor}) and issues commands to the rendering subsystem to
+generate images. All mappers in VTK-m are a subclass of
+\vtkmrendering{Mapper}. Different rendering systems (as established by the
+\textidentifier{Canvas}) often require different mappers. Also, different
+mappers could render different types of data in different ways. For
+example, one mapper might render polygonal surfaces whereas another might
+render polyhedra as a translucent volume. Thus, a mapper should be picked
+to match both the rendering system of the \textidentifier{Canvas} and the
+data in the \textidentifier{Actor}.
+
+The following mappers are provided by VTK-m.
+
+\begin{description}
+\item[\vtkmrendering{MapperGL}] Uses OpenGL to render surfaces. If the data
+  contain polyhedra, then their faces are rendered.
+  \textidentifier{MapperGL} only works in conjunction with
+  \textidentifier{CanvasGL} or one of its subclasses.
+\item[\vtkmrendering{MapperRayTracer}] Uses VTK-m's built in ray tracing
+  system to render the visible surface of a mesh.
+  \textidentifier{MapperRayTracer} only works in conjunction with
+  \textidentifier{CanvasRayTracer}.
+\item[\vtkmrendering{MapperVolume}] Uses VTK-m's built in ray tracing
+  system to render polyhedra as a translucent volume.
+  \textidentifier{MapperVolume} only works in conjunction with
+  \textidentifier{CanvasRayTracer}.
+\end{description}
+
+\index{mapper|)}
+\index{rendering!mapper|)}
+
+
+\section{Views}
 
 \index{rendering!view|(}
 \index{view|(}

@@ -135,15 +135,21 @@ int main(int argc, char *argv[])
   vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
   surfaceData = reader.ReadDataSet();
 
-  vtkm::rendering::MapperGL<> mapper;
-  vtkm::rendering::CanvasGL canvas;
-
+  ////
+  //// BEGIN-EXAMPLE ActorScene.cxx
+  ////
   vtkm::rendering::Actor actor(surfaceData.GetCellSet(),
                                surfaceData.GetCoordinateSystem(),
                                surfaceData.GetField("RandomPointScalars"));
 
   vtkm::rendering::Scene scene;
   scene.AddActor(actor);
+  ////
+  //// END-EXAMPLE ActorScene.cxx
+  ////
+
+  vtkm::rendering::MapperGL<> mapper;
+  vtkm::rendering::CanvasGL canvas;
 
   gViewPointer = new vtkm::rendering::View3D(scene, mapper, canvas);
 

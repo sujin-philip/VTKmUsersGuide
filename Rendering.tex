@@ -180,11 +180,19 @@ to respond to events and invoke the callbacks until the program is
 otherwise interrupted.
 
 Example~\ref{ex:BasicGlut} puts this all together to give a full example of
-a simple GLUT program rendering with VTK-m. The examples of the GLUT
-callbacks are straightforward. The VTK-m rendering classes used are
-documented in the following sections.
+a simple GLUT program rendering with VTK-m. The output of the program is
+shown in Figure~\ref{fig:BasicGlut}. The examples of the GLUT callbacks are
+straightforward. The VTK-m rendering classes used are documented in the
+following sections.
 
 \vtkmlisting[ex:BasicGlut]{A simple but full example of an application using GLUT and VTK-m together.}{BasicGlut.cxx}
+
+\begin{figure}[htb]
+  \fix{Add screen shot of cow.}
+  \caption{Output of the rendering program listed in
+    Example~\ref{ex:BasicGlut}.}
+  \label{fig:BasicGlut}
+\end{figure}
 
 \index{OpenGL|)}
 \index{GLUT|)}
@@ -232,6 +240,40 @@ buffer.
 
 \section{Scenes and Actors}
 
+\index{rendering!actor|(}
+\index{actor|(}
+
+The primary intent of the rendering package in VTK-m is to visually display
+the data that is loaded and processed. Data are represented in VTK-m by
+\vtkmcont{DataSet} objects. \textidentifier{DataSet} is presented in
+Chapters \ref{chap:FileIO} and \ref{chap:ProvidedFilters}. For now we treat
+\textidentifier{DataSet} mostly as an opaque object that can be passed
+around readers, writers, filters, and rendering units. Detailed
+documentation for \textidentifier{DataSet} is provided in
+Chapter~\ref{chap:DataSet}.
+
+To render a \textidentifier{DataSet}, the data are wrapped in a
+\vtkmrendering{Actor} class. The \textidentifier{Actor} holds the
+components of the \textidentifier{DataSet} to render (a cell set, a
+coordinate system, and a field). A color table can also be optionally be
+specified, but a default color table will be specified otherwise.
+
+\index{actor|)}
+\index{rendering!actor|)}
+
+\index{rendering!scene|(}
+\index{scene|(}
+
+\textidentifier{Actor}s are collected together in an object called
+\vtkmrendering{Scene}. An \textidentifier{Actor} is added to a
+\textidentifier{Scene} with the \textcode{AddActor} method. The following
+example demonstrates creating a \textidentifier{Scene} with one
+\textidentifier{Actor}.
+
+\index{scene|)}
+\index{rendering!scene|)}
+
+\vtkmlisting{Creating an \textidentifier{Actor} and adding it to a \textidentifier{Scene}.}{ActorScene.cxx}
 
 \section{Views and Mappers}
 
@@ -251,3 +293,13 @@ buffer.
 \index{rendering!camera|)}
 
 \index{rendering|)}
+
+
+\section{Color Tables}
+\label{sec:ColorTables}
+
+\index{rendering!color~tables|(}
+\index{color~tables|(}
+
+\index{color~tables|)}
+\index{rendering!color~tables|)}

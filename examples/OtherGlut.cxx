@@ -5,9 +5,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-////
-//// BEGIN-EXAMPLE BasicGlut.cxx
-////
 #include <vtkm/io/reader/VTKDataSetReader.h>
 
 #include <vtkm/rendering/Actor.h>
@@ -22,36 +19,41 @@
 #include <GL/glut.h>
 #endif
 
-namespace BasicGlutExample {
+namespace OtherGlutExample {
 
 vtkm::rendering::View3D *gViewPointer = NULL;
 
 int gButtonState[3] = { GLUT_UP, GLUT_UP, GLUT_UP };
 int gMousePositionX;
 int gMousePositionY;
-//// PAUSE-EXAMPLE
 bool gNoInteraction;
-//// RESUME-EXAMPLE
 
-////
-//// BEGIN-EXAMPLE PaintView.cxx
-////
+void SaveImage()
+{
+  std::cout << "Saving image." << std:: endl;
+
+  vtkm::rendering::Canvas &canvas = gViewPointer->GetCanvas();
+
+  ////
+  //// BEGIN-EXAMPLE SaveCanvasImage.cxx
+  ////
+  canvas.SaveAs("MyVis.ppm");
+  ////
+  //// END-EXAMPLE SaveCanvasImage.cxx
+  ////
+}
+
 void DisplayCallback()
 {
   gViewPointer->Paint();
   glutSwapBuffers();
-  //// PAUSE-EXAMPLE
   if (gNoInteraction)
   {
     delete gViewPointer;
     gViewPointer = NULL;
     exit(0);
   }
-  //// RESUME-EXAMPLE
 }
-////
-//// END-EXAMPLE PaintView.cxx
-////
 
 void WindowReshapeCallback(int width, int height)
 {
@@ -104,69 +106,54 @@ void KeyPressCallback(unsigned char key, int x, int y)
       gViewPointer = NULL;
       exit(0);
       break;
+    case 's':
+    case 'S':
+      SaveImage();
+      break;
   }
-  //// PAUSE-EXAMPLE
   (void)x;  (void)y;
-  //// RESUME-EXAMPLE
 }
 
 int main(int argc, char *argv[])
 {
   // Initialize GLUT window and callbacks
-  ////
-  //// BEGIN-EXAMPLE InitializeGlut.cxx
-  ////
   glutInit(&argc, argv);
   glutInitWindowSize(960, 600);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   glutCreateWindow("VTK-m Example");
-  ////
-  //// END-EXAMPLE InitializeGlut.cxx
-  ////
 
-  ////
-  //// BEGIN-EXAMPLE InitializeGlutCallbacks.cxx
-  ////
   glutDisplayFunc(DisplayCallback);
   glutReshapeFunc(WindowReshapeCallback);
   glutMouseFunc(MouseButtonCallback);
   glutMotionFunc(MouseMoveCallback);
   glutKeyboardFunc(KeyPressCallback);
-  ////
-  //// END-EXAMPLE InitializeGlutCallbacks.cxx
-  ////
 
   // Initialize VTK-m rendering classes
   vtkm::cont::DataSet surfaceData;
   vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
   surfaceData = reader.ReadDataSet();
 
-  ////
-  //// BEGIN-EXAMPLE ConstructView.cxx
-  ////
-  ////
-  //// BEGIN-EXAMPLE ActorScene.cxx
-  ////
   vtkm::rendering::Actor actor(surfaceData.GetCellSet(),
                                surfaceData.GetCoordinateSystem(),
                                surfaceData.GetField("RandomPointScalars"));
 
   vtkm::rendering::Scene scene;
   scene.AddActor(actor);
-  ////
-  //// END-EXAMPLE ActorScene.cxx
-  ////
 
   vtkm::rendering::MapperGL<> mapper;
   vtkm::rendering::CanvasGL canvas;
 
-  gViewPointer = new vtkm::rendering::View3D(scene, mapper, canvas);
+  gViewPointer =
+  ////
+  //// BEGIN-EXAMPLE ViewBackgroundColor.cxx
+  ////
+      new vtkm::rendering::View3D(
+        scene, mapper, canvas, vtkm::rendering::Color(1.0f, 1.0f, 1.0f));
+  ////
+  //// END-EXAMPLE ViewBackgroundColor.cxx
+  ////
   gViewPointer->Initialize();
-  ////
-  //// END-EXAMPLE ConstructView.cxx
-  ////
 
-  //// PAUSE-EXAMPLE
   if ((argc > 1) && (strcmp(argv[1], "--no-interaction") == 0))
   {
     gNoInteraction = true;
@@ -175,19 +162,16 @@ int main(int argc, char *argv[])
   {
     gNoInteraction = false;
   }
-  //// RESUME-EXAMPLE
+
   // Start the GLUT rendering system. This function typically does not return.
   glutMainLoop();
 
   return 0;
 }
-////
-//// END-EXAMPLE BasicGlut.cxx
-////
 
-} // namespace BasicGlutExample
+} // namespace OtherGlutExample
 
-int BasicGlut(int argc, char *argv[])
+int OtherGlut(int argc, char *argv[])
 {
-  return BasicGlutExample::main(argc, argv);
+  return OtherGlutExample::main(argc, argv);
 }

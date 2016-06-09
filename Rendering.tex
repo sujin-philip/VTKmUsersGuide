@@ -30,6 +30,7 @@ to have a fully featured rendering system.
 \end{didyouknow}
 
 \section{Creating a Rendering Canvas}
+\label{sec:Canvas}
 
 \index{rendering!canvas|(}
 \index{canvas|(}
@@ -206,6 +207,7 @@ following sections.
 
 \index{rendering!off~screen|(}
 \index{canvas!off~screen|(}
+\index{off~screen|(}
 
 Another use case for rendering in VTK-m is rendering to an off screen
 buffer. This is the preferred method when doing automated visualization
@@ -232,6 +234,30 @@ buffer.
   work with the \textidentifier{CanvasRayTracer}.
 \end{description}
 
+\index{canvas!off~screen!saving}
+\index{off~screen!saving}
+
+By their nature, when writing to an off screen canvas, you cannot directly
+see the result. Typically, programs using off screen rendering save
+rendered images as files to be viewed later. For convenience,
+\textidentifier{Canvas} has a method named \textcode{SaveAs} that will
+write the contents of the last saved image to a file. The files are written
+in \index{portable~pixel~map}\index{PPM} portable pixel map (PPM) format,
+which are also valid \index{portable~anymap~format}\index{PNM} portable
+anymap format (PNM) files. This is a very simple format that is easy to
+read and write. PPM files are supported by the
+ImageMagick\footnote{\url{http://imagemagick.org}} software suite as well
+as many other image software tools.
+
+\vtkmlisting{Saving an image rendered in a \textidentifier{Canvas} to a file.}{SaveCanvasImage.cxx}
+
+Alternately, the rendered image can be retrieved directly from the
+\textidentifier{Canvas} by first calling the \textcode{RefreshColorBuffer}
+method and then calling \textcode{GetColorBuffer}. This retrieves the raw
+image data as a \vtkmcont{ArrayHandle}. \textidentifier{ArrayHandle}s are
+documented later in Chapter~\ref{chap:ArrayHandle}.
+
+\index{off~screen|)}
 \index{canvas!off~screen|)}
 \index{rendering!off~screen|)}
 
@@ -240,6 +266,8 @@ buffer.
 
 
 \section{Scenes and Actors}
+\label{sec:Scene}
+\label{sec:Actor}
 
 \index{rendering!actor|(}
 \index{actor|(}
@@ -278,6 +306,7 @@ example demonstrates creating a \textidentifier{Scene} with one
 
 
 \section{Mappers}
+\label{sec:Mapper}
 
 \index{rendering!mapper|(}
 \index{mapper|(}
@@ -318,6 +347,48 @@ The following mappers are provided by VTK-m.
 
 \index{rendering!view|(}
 \index{view|(}
+
+A \keyterm{view} is a unit that collects all the structures needed to
+perform rendering. It contains everything needed to take a
+\textidentifier{Scene} (Section~\ref{sec:Scene}) and use a
+\textidentifier{Mapper} (Section~\ref{sec:Mapper}) to render it onto a
+\textidentifier{Canvas} (Section~\ref{sec:Canvas}). The view also annotates
+the image with spatial and scalar properties.
+
+The base class for all views is \vtkmrendering{View}. \textidentifier{View}
+is an abstract class, and you must choose one of the two provided
+subclasses, \vtkmrendering{View3D} and \vtkmrendering{View2D}, depending on
+the type of data being presented. (All three classes are defined in the
+\vtkmheader{vtkm/rendering}{View.h} header file.) Both
+\textidentifier{View3D} and \textidentifier{View2D} take a
+\textidentifier{Scene}, a \textidentifier{Mapper}, and a
+\textidentifier{Canvas} as arguments to their constructor.
+
+\vtkmlisting[ex:ConstructView]{Constructing a \textidentifier{View}.}{ConstructView.cxx}
+
+\index{color}
+The \textidentifier{View} constructors also take an optional fourth
+argument for the background color. The background color (like other colors)
+is specified using the \vtkmrendering{Color} helper class, which manages
+the red, green, and blue color channels as well as an optional alpha
+channel. These channel values are given as floating point values between 0
+and 1.
+
+\vtkmlisting{Creating a \textidentifier{View} with a background color.}{ViewBackgroundColor.cxx}
+
+\fix{This is currently not properly setting the background color.}
+
+Once the \textidentifier{View} is created but before it is used to render,
+the \textcode{Initialize} method should be called. This is demonstrated in
+Example~\ref{ex:ConstructView}.
+
+Once the \textcode{Initialize} method is called, the \textidentifier{View}
+is ready to render the scene. This happens by calling the \textcode{Paint}
+method, which will render the data into the contained canvas. When using
+GLUT, as in Example~\ref{ex:BasicGlut}, or with most other GUI-based
+systems, \textcode{Paint} is called in the display callback.
+
+\vtkmlisting{Using \textidentifier{Canvas}\textcode{::Paint} in a display callback.}{PaintView.cxx}
 
 \index{view|)}
 \index{rendering!view|)}

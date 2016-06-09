@@ -29,6 +29,7 @@ set(example_src
   ListTags.cxx
   Matrix.cxx
   NewtonsMethod.cxx
+  OtherGlut.cxx
   ProvidedFilters.cxx
   ScatterCounting.cxx
   ScatterUniform.cxx

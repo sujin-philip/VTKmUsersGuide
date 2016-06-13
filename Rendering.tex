@@ -397,10 +397,128 @@ systems, \textcode{Paint} is called in the display callback.
 \index{rendering!camera|(}
 \index{camera|(}
 
+The \vtkmrendering{View} uses an object called \vtkmrendering{Camera} to
+describe the vantage point from which to draw the geometry. The camera can
+be retrieved from the \textidentifier{View}'s \textcode{GetCamera} method.
+That retrieved camera can be directly manipulated or a new camera can be
+provided by calling \textcode{SetCamera} on the \textidentifier{View}.
+
+A \textidentifier{Camera} operates in one of two major modes: 2D mode or 3D
+mode. 2D mode is designed for looking at flat geometry (or close to flat
+geometry) that is parallel to the x-y plane. 3D mode provides the freedom
+to place the camera anywhere in 3D space. The different modes can be set
+with \textcode{SetModeTo2D} and \textcode{SetModeTo3D}, respectively. The
+interaction with the camera in these two modes is very different.
+
+\subsection{2D Camera Mode}
+
+\index{rendering!camera!2D|(}
+\index{camera!2D|(}
+
+\subsubsection{View Range}
+
+\index{rendering!camera!view~range|(}
+\index{camera!view~range|(}
+
+\fix{Do this}
+
+\index{camera!view~range|)}
+\index{rendering!camera!view~range|)}
+
+\subsubsection{Pan}
+
+\index{rendering!camera!pan|(}
+\index{camera!pan|(}
+
+\fix{Do this}
+
+\index{camera!pan|)}
+\index{rendering!camera!pan|)}
+
+\subsubsection{Zoom}
+
+\index{rendering!camera!zoom|(}
+\index{camera!zoom|(}
+
+\fix{Do this}
+
+\index{camera!zoom|)}
+\index{rendering!camera!zoom|)}
+
+\index{camera!2D|)}
+\index{rendering!camera!2D|)}
+
+\subsection{3D Camera Mode}
+
+\index{rendering!camera!3D|(}
+\index{camera!3D|(}
+
+\subsubsection{Position and Orientation}
+
+\fix{ClippingRange}
+\fix{Position}
+\fix{LookAt (a.k.a. focal point)}
+\fix{ViewUp}
+\fix{FieldOfView}
+
+\subsubsection{Movement}
+
+\fix{Roll}
+\fix{Azimuth}
+\fix{Elevation}
+\fix{Dolly}
+
+\subsubsection{Pan}
+
+\index{rendering!camera!pan|(}
+\index{camera!pan|(}
+
+\fix{Do this}
+
+\index{camera!pan|)}
+\index{rendering!camera!pan|)}
+
+\subsubsection{Zoom}
+
+\index{rendering!camera!zoom|(}
+\index{camera!zoom|(}
+
+\fix{Do this}
+\fix{Note this is different than dolly}
+
+\index{camera!zoom|)}
+\index{rendering!camera!zoom|)}
+
+\subsubsection{Interactive Rotations}
+
+\index{rendering!camera!mouse|(}
+\index{camera!mouse|(}
+\index{mouse~rotation|(}
+
+\fix{TrackballRotate}
+
+\index{mouse~rotation|)}
+\index{camera!mouse|)}
+\index{rendering!camera!mouse|)}
+
+\index{camera!3D|)}
+\index{rendering!camera!3D|)}
+
 \index{camera|)}
 \index{rendering!camera|)}
 
 \index{rendering|)}
+
+\subsubsection{Reset}
+
+\index{rendering!camera!reset|(}
+\index{camera!reset|(}
+
+\fix{ResetToBounds}
+\fix{Add example to reset down axis}
+
+\index{camera!reset|)}
+\index{rendering!camera!reset|)}
 
 
 \section{Color Tables}

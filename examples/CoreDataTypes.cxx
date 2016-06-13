@@ -1,3 +1,4 @@
+#include <vtkm/Range.h>
 #include <vtkm/Types.h>
 
 #include <vtkm/testing/Testing.h>
@@ -98,6 +99,111 @@ void EquilateralTriangle()
                    "Bad edge length.");
 }
 
+void UsingRange()
+{
+  ////
+  //// BEGIN-EXAMPLE UsingRange.cxx
+  ////
+  vtkm::Range range;                      // default constructor is empty range
+  bool b1 = range.IsNonEmpty();           // b1 is false
+
+  range.Include(0.5);                     // range now is [0.5 .. 0.5]
+  bool b2 = range.IsNonEmpty();           // b2 is true
+  bool b3 = range.Contains(0.5);          // b3 is true
+  bool b4 = range.Contains(0.6);          // b4 is false
+
+  range.Include(2.0);                     // range is now [0.5 .. 2]
+  bool b5 = range.Contains(0.5);          // b3 is true
+  bool b6 = range.Contains(0.6);          // b4 is true
+
+  range.Include(vtkm::Range(-1, 1));      // range is now [-1 .. 2]
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(test_equal(range, vtkm::Range(-1,2)), "Bad range");
+  //// RESUME-EXAMPLE
+
+  range.Include(vtkm::Range(3, 4));       // range is now [-1 .. 4]
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(test_equal(range, vtkm::Range(-1,4)), "Bad range");
+  //// RESUME-EXAMPLE
+
+  vtkm::Float64 lower = range.Min;        // lower is -1
+  vtkm::Float64 upper = range.Max;        // upper is 4
+  vtkm::Float64 length = range.Length();  // length is 5
+  vtkm::Float64 center = range.Center();  // center is 1.5
+  ////
+  //// END-EXAMPLE UsingRange.cxx
+  ////
+
+  VTKM_TEST_ASSERT(!b1, "Bad non empty.");
+  VTKM_TEST_ASSERT(b2,  "Bad non empty.");
+  VTKM_TEST_ASSERT(b3,  "Bad contains.");
+  VTKM_TEST_ASSERT(!b4, "Bad contains.");
+  VTKM_TEST_ASSERT(b5,  "Bad contains.");
+  VTKM_TEST_ASSERT(b6,  "Bad contains.");
+
+  VTKM_TEST_ASSERT(test_equal(lower, -1), "Bad lower");
+  VTKM_TEST_ASSERT(test_equal(upper, 4), "Bad upper");
+  VTKM_TEST_ASSERT(test_equal(length, 5), "Bad length");
+  VTKM_TEST_ASSERT(test_equal(center, 1.5), "Bad center");
+}
+
+void UsingBounds()
+{
+  ////
+  //// BEGIN-EXAMPLE UsingBounds.cxx
+  ////
+  vtkm::Bounds bounds;                      // default constructor makes empty
+  bool b1 = bounds.IsNonEmpty();            // b1 is false
+
+  bounds.Include(vtkm::make_Vec(0.5, 2.0, 0.0));    // bounds contains only
+                                                    // the point [0.5, 2, 0]
+  bool b2 = bounds.IsNonEmpty();                            // b2 is true
+  bool b3 = bounds.Contains(vtkm::make_Vec(0.5, 2.0, 0.0)); // b3 is true
+  bool b4 = bounds.Contains(vtkm::make_Vec(1, 1, 1));       // b4 is false
+  bool b5 = bounds.Contains(vtkm::make_Vec(0, 0, 0));       // b5 is false
+
+  bounds.Include(vtkm::make_Vec(4, -1, 2)); // bounds is region [0.5 .. 4] in X,
+                                            //                  [-1 .. 2] in Y,
+                                            //              and [0 .. 2] in Z
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0.5, 4, -1, 2, 0, 2)), "");
+  //// RESUME-EXAMPLE
+  bool b6 = bounds.Contains(vtkm::make_Vec(0.5, 2.0, 0.0)); // b6 is true
+  bool b7 = bounds.Contains(vtkm::make_Vec(1, 1, 1));       // b7 is true
+  bool b8 = bounds.Contains(vtkm::make_Vec(0, 0, 0));       // b8 is false
+
+  vtkm::Bounds otherBounds(vtkm::make_Vec(0, 0, 0), vtkm::make_Vec(3, 3, 3));
+                                // otherBounds is region [0 .. 3] in X, Y, and Z
+  bounds.Include(otherBounds);  // bounds is now region [0 .. 4] in X,
+                                //                      [-1 .. 3] in Y,
+                                //                  and [0 .. 3] in Z
+  //// PAUSE-EXAMPLE
+  VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0, 4, -1, 3, 0, 3)), "");
+  //// RESUME-EXAMPLE
+
+  vtkm::Vec<vtkm::Float64,3> lower(bounds.X.Min, bounds.Y.Min, bounds.Z.Min);
+                                                        // lower is [0, -1, 0]
+  vtkm::Vec<vtkm::Float64,3> upper(bounds.X.Max, bounds.Y.Max, bounds.Z.Max);
+                                                        // upper is [4, 3, 3]
+
+  vtkm::Vec<vtkm::Float64,3> center = bounds.Center();  // center is [2, 1, 1.5]
+  ////
+  //// END-EXAMPLE UsingBounds.cxx
+  ////
+
+  VTKM_TEST_ASSERT(!b1, "Bad non empty.");
+  VTKM_TEST_ASSERT(b2,  "Bad non empty.");
+  VTKM_TEST_ASSERT(b3,  "Bad contains.");
+  VTKM_TEST_ASSERT(!b4, "Bad contains.");
+  VTKM_TEST_ASSERT(!b5,  "Bad contains.");
+  VTKM_TEST_ASSERT(b6,  "Bad contains.");
+  VTKM_TEST_ASSERT(b7,  "Bad contains.");
+  VTKM_TEST_ASSERT(!b8,  "Bad contains.");
+  VTKM_TEST_ASSERT(test_equal(lower, vtkm::make_Vec(0, -1, 0)), "");
+  VTKM_TEST_ASSERT(test_equal(upper, vtkm::make_Vec(4, 3, 3)), "");
+  VTKM_TEST_ASSERT(test_equal(center, vtkm::make_Vec(2.0, 1.0, 1.5)), "");
+}
+
 
 void Test()
 {
@@ -105,6 +211,8 @@ void Test()
   VectorOperations();
   LongerVector();
   EquilateralTriangle();
+  UsingRange();
+  UsingBounds();
 }
 
 } // anonymous namespace

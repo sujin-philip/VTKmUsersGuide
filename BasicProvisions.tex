@@ -463,6 +463,7 @@ the state of a polygon.
 
 
 \subsection{Pair}
+\label{sec:Pair}
 
 VTK-m defines a \vtkm{Pair}\tparams{T1,T2} templated object that
 behaves just like \textcode{std:\colonhyp{}pair} from the standard template
@@ -473,6 +474,79 @@ always work in the execution environment.
 The VTK-m version of \vtkm{Pair} supports the same types, fields, and
 operations as the STL version. VTK-m also provides a \vtkm{make\_Pair}
 function for convenience.
+
+\subsection{Range}
+\label{sec:Range}
+
+VTK-m provides a convenience structure named \vtkm{Range} to help manage a
+range of values. The \textidentifier{Range} \textcode{struct} contains two
+data members, \textcode{Min} and \textcode{Max}, which represent the ends
+of the range of numbers. \textcode{Min} and \textcode{Max} are both of type
+\vtkm{Float64}. \textcode{Min} and \textcode{Max} can be directly accessed,
+but \textidentifier{Range} also comes with the following helper functions
+to make it easier to build and use ranges. Note that all of these functions
+treat the minimum and maximum value as inclusive to the range.
+
+\begin{description}
+\item[\textcode{IsNonEmpty}] Returns true if the range covers at least one
+  value.
+\item[\textcode{Contains}] Takes a single number and returns true if that
+  number is contained within the range.
+\item[\textcode{Length}] Returns the distance between \textcode{Min} and
+  \textcode{Max}. Empty ranges return a length of 0. Note that if the range
+  is non-empty and the length is 0, then \textcode{Min} and \text{Max} must
+  be equal, and the range contains exactly one number.
+\item[\textcode{Center}] Returns the number equidistant to \textcode{Min}
+  and \textcode{Max}. If the range is empty, NaN is returned.
+\item[\textcode{Include}] Takes either a single number or another range and
+  modifies this range to include the given number or range. If necessary,
+  the range is grown just enough to encompass the given argument. If the
+  argument is already in the range, nothing changes.
+\item[\textcode{Union}] A nondestructive version of \textcode{Include},
+  which builds a new \textidentifier{Range} that is the union of this range
+  and the argument. The \textcode{+} operator is also overloaded to compute
+  the union.
+\end{description}
+
+The following example demonstrates the operation of \vtkm{Range}.
+
+\vtkmlisting{Using \protect\vtkm{Range}.}{UsingRange.cxx}
+
+\subsection{Bounds}
+\label{sec:Bounds}
+
+VTK-m provides a convenience structure named \vtkm{Bounds} to help manage
+an axis-aligned region in 3D space. Among other things, this structure is
+often useful for representing a bounding box for geometry. The
+\textidentifier{Bounds} \textcode{struct} contains three data members,
+\textcode{X}, \textcode{Y}, and \textcode{Z}, which represent the range of
+the bounds along each respective axis. All three of these members are of
+type \vtkm{Range}, which is discussed previously in
+Section~\ref{sec:Range}. \textcode{X}, \textcode{Y}, and \textcode{Z} can
+be directly accessed, but \textidentifier{Bounds} also comes with the
+following helper functions to make it easier to build and use ranges.
+
+\begin{description}
+\item[\textcode{IsNonEmpty}] Returns true if the bounds cover at least one
+  value.
+\item[\textcode{Contains}] Takes a \vtkm{Vec} of size 3 and returns true if
+  those point coordinates are contained within the range.
+\item[\textcode{Center}] Returns the point at the center of the range as a
+  \vtkm{Vec}\textcode{<}\vtkm{Float64}\textcode{,3>}.
+\item[\textcode{Include}] Takes either a \vtkm{Vec} of size 3 or another
+  bounds and modifies this bounds to include the given point or bounds. If
+  necessary, the bounds are grown just enough to encompass the given
+  argument. If the argument is already in the bounds, nothing changes.
+\item[\textcode{Union}] A nondestructive version of \textcode{Include},
+  which builds a new \textidentifier{Bounds} that is the union of this
+  bounds and the argument. The \textcode{+} operator is also overloaded to
+  compute the union.
+\end{description}
+
+The following example demonstrates the operation of \vtkm{Bounds}.
+
+\vtkmlisting{Using \protect\vtkm{Bounds}.}{UsingBounds.cxx}
+
 
 \section{Traits}
 \label{sec:Traits}

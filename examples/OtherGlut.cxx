@@ -67,27 +67,98 @@ void MouseButtonCallback(int buttonIndex, int state, int x, int y)
   gMousePositionY = y;
 }
 
+////
+//// BEGIN-EXAMPLE MouseRotate.cxx
+////
+void DoMouseRotate(vtkm::rendering::View &view,
+                   vtkm::Id mouseStartX,
+                   vtkm::Id mouseStartY,
+                   vtkm::Id mouseEndX,
+                   vtkm::Id mouseEndY)
+{
+  vtkm::Id screenWidth = view.GetCanvas().GetWidth();
+  vtkm::Id screenHeight = view.GetCanvas().GetHeight();
+
+  // Convert the mouse position coordinates, given in pixels from 0 to
+  // width/height, to normalized screen coordinates from -1 to 1. Note that y
+  // screen coordinates are usually given from the top down whereas our
+  // geometry transforms are given from bottom up, so you have to reverse the y
+  // coordiantes.
+  vtkm::Float32 startX = (2.0f*mouseStartX)/screenWidth - 1.0f;
+  vtkm::Float32 startY = -((2.0f*mouseStartY)/screenHeight - 1.0f);
+  vtkm::Float32 endX = (2.0f*mouseEndX)/screenWidth - 1.0f;
+  vtkm::Float32 endY = -((2.0f*mouseEndY)/screenHeight - 1.0f);
+
+  view.GetCamera().TrackballRotate(startX, startY, endX, endY);
+}
+////
+//// END-EXAMPLE MouseRotate.cxx
+////
+
+////
+//// BEGIN-EXAMPLE MousePan.cxx
+////
+void DoMousePan(vtkm::rendering::View &view,
+                vtkm::Id mouseStartX,
+                vtkm::Id mouseStartY,
+                vtkm::Id mouseEndX,
+                vtkm::Id mouseEndY)
+{
+  vtkm::Id screenWidth = view.GetCanvas().GetWidth();
+  vtkm::Id screenHeight = view.GetCanvas().GetHeight();
+
+  // Convert the mouse position coordinates, given in pixels from 0 to
+  // width/height, to normalized screen coordinates from -1 to 1. Note that y
+  // screen coordinates are usually given from the top down whereas our
+  // geometry transforms are given from bottom up, so you have to reverse the y
+  // coordiantes.
+  vtkm::Float32 startX = (2.0f*mouseStartX)/screenWidth - 1.0f;
+  vtkm::Float32 startY = -((2.0f*mouseStartY)/screenHeight - 1.0f);
+  vtkm::Float32 endX = (2.0f*mouseEndX)/screenWidth - 1.0f;
+  vtkm::Float32 endY = -((2.0f*mouseEndY)/screenHeight - 1.0f);
+
+  view.GetCamera().Pan(endX-startX, endY-startY);
+}
+////
+//// END-EXAMPLE MousePan.cxx
+////
+
+////
+//// BEGIN-EXAMPLE MouseZoom.cxx
+////
+void DoMouseZoom(vtkm::rendering::View &view,
+                 vtkm::Id mouseStartY,
+                 vtkm::Id mouseEndY)
+{
+  vtkm::Id screenHeight = view.GetCanvas().GetHeight();
+
+  // Convert the mouse position coordinates, given in pixels from 0 to height,
+  // to normalized screen coordinates from -1 to 1. Note that y screen
+  // coordinates are usually given from the top down whereas our geometry
+  // transforms are given from bottom up, so you have to reverse the y
+  // coordiantes.
+  vtkm::Float32 startY = -((2.0f*mouseStartY)/screenHeight - 1.0f);
+  vtkm::Float32 endY = -((2.0f*mouseEndY)/screenHeight - 1.0f);
+
+  view.GetCamera().Zoom(endY-startY);
+}
+////
+//// END-EXAMPLE MouseZoom.cxx
+////
+
 void MouseMoveCallback(int x, int y)
 {
-  vtkm::Int32 width = gViewPointer->GetCanvas().GetWidth();
-  vtkm::Int32 height = gViewPointer->GetCanvas().GetHeight();
-
-  vtkm::Float32 lastX = (2.0f*gMousePositionX)/width - 1.0f;
-  vtkm::Float32 lastY = 1.0f - (2.0f*gMousePositionY)/height;
-  vtkm::Float32 nextX = (2.0f*x)/width - 1.0f;
-  vtkm::Float32 nextY = 1.0f - (2.0f*y)/height;
-
   if (gButtonState[0] == GLUT_DOWN)
   {
-    gViewPointer->GetCamera().TrackballRotate(lastX, lastY, nextX, nextY);
+    DoMouseRotate(*gViewPointer, gMousePositionX, gMousePositionY, x, y);
   }
   else if (gButtonState[1] == GLUT_DOWN)
   {
-    gViewPointer->GetCamera().Pan(nextX-lastX, nextY-lastY);
+    DoMousePan(*gViewPointer, gMousePositionX, gMousePositionY, x, y);
   }
   else if (gButtonState[2] == GLUT_DOWN)
   {
-    gViewPointer->GetCamera().Zoom(nextY-lastY);
+    DoMouseZoom(*gViewPointer, gMousePositionY, y);
   }
 
   gMousePositionX = x;

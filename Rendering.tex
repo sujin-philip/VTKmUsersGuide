@@ -415,12 +415,35 @@ interaction with the camera in these two modes is very different.
 \index{rendering!camera!2D|(}
 \index{camera!2D|(}
 
+The 2D camera is restricted to looking at some region of the x-y plane.
+
 \subsubsection{View Range}
 
 \index{rendering!camera!view~range|(}
 \index{camera!view~range|(}
 
-\fix{Do this}
+The vantage point of a 2D camera can be specified by simply giving the
+region in the x-y plane to look at. This region is specified by calling
+\textcode{SetViewRange2D} on \textidentifier{Camera}. This method takes the
+left, right, bottom, and top of the region to view. Typically these are set
+to the range of the geometry in world space as shown in
+Figure~\ref{fig:CameraViewRange2D}.
+
+\begin{figure}[htb]
+  \centering
+  \fix{Make this.}
+  \caption{The view range bounds to give a \textidentifier{Camera}.}
+  \label{fig:CameraViewRange2D}
+\end{figure}
+
+There are 3 overloaded versions of the \textcode{SetViewRange2D} method.
+The first version takes the 4 range values, left, right, bottom, and top,
+as separate arguments in that order. The second version takes two
+\vtkm{Range} objects specifying the range int the x and y directions,
+respectively. The third version trakes a single \vtkm{Bounds} object, which
+completely specifies the spatial range. (The range in z is ignored.) The
+\textidentifier{Range} and \textidentifier{Bounds} objects are documented
+later in Sections \ref{sec:Range} and \ref{sec:Bounds}, respectively.
 
 \index{camera!view~range|)}
 \index{rendering!camera!view~range|)}
@@ -430,7 +453,20 @@ interaction with the camera in these two modes is very different.
 \index{rendering!camera!pan|(}
 \index{camera!pan|(}
 
-\fix{Do this}
+A camera pan moves the viewpoint left, right, up, or down. A camera pan is
+performed by calling the \textcode{Pan} method on \textidentifier{Camera}.
+\textcode{Pan} takes two arguments: the amount to pan in x and the amount
+to pan in y.
+
+The pan is given with respect to the projected space. So a pan of $1$ in
+the x direction moves the camera to focus on the right edge of the image
+whereas a pan of $-1$ in the x direction moves the camera to focus on the
+left edge of the image. When using \textcode{Pan} to respond to mouse
+movements, a natural pan will divide the distance traveled by the mouse
+pointer by the width and height of the screen as demonstrated in the
+following example.
+
+\vtkmlisting{Pan the view based on mouse movements.}{MousePan.cxx}
 
 \index{camera!pan|)}
 \index{rendering!camera!pan|)}
@@ -440,7 +476,18 @@ interaction with the camera in these two modes is very different.
 \index{rendering!camera!zoom|(}
 \index{camera!zoom|(}
 
-\fix{Do this}
+A camera zoom draws the geometry larger or smaller. A camera zoom is
+performed by calling the \textcode{Zoom} method on \textidentifier{Camera}.
+\textcode{Zoom} takes a single argument specifying the zoom factor. A
+positive number draws the geometry larger (zoom in), and larger zoom factor
+results in larger geometry. Likewise, a negative number draws the geometry
+smaller (zoom out). A zoom factor of 0 has no effect.
+
+When using \textcode{Zoom} to respond to mouse movements, a natural zoom
+will divide the distance traveled by the mouse pointer by the width or
+height of the screen as demonstrated in the following example.
+
+\vtkmlisting{Zoom the view based on mouse movements.}{MouseZoom.cxx}
 
 \index{camera!zoom|)}
 \index{rendering!camera!zoom|)}
@@ -516,6 +563,7 @@ interaction with the camera in these two modes is very different.
 
 \fix{ResetToBounds}
 \fix{Add example to reset down axis}
+\fix{Also available for 2D cameras}
 
 \index{camera!reset|)}
 \index{rendering!camera!reset|)}

@@ -11,6 +11,7 @@ set(images
   images/KitwareLogo.png
   images/ArrayHandleStorage.pdf
   images/BasicGlut.png
+  images/CameraViewRange2D.pdf
   images/CellConnectionsHexahedron.pdf
   images/CellConnectionsLine.pdf
   images/CellConnectionsPolygon.pdf

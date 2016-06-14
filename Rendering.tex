@@ -500,13 +500,91 @@ height of the screen as demonstrated in the following example.
 \index{rendering!camera!3D|(}
 \index{camera!3D|(}
 
+The 3D camera is a free-form camera that can be placed anywhere in 3D space
+and can look in any direction. The projection of the 3D camera is based on
+the \index{pinhole~camera}\index{camera!pinhole} pinhole camera model in
+which all viewing rays intersect a single point. This single point is the
+camera's position.
+
 \subsubsection{Position and Orientation}
 
-\fix{ClippingRange}
-\fix{Position}
-\fix{LookAt (a.k.a. focal point)}
-\fix{ViewUp}
-\fix{FieldOfView}
+\index{rendering!camera!position}
+\index{camera!position}
+\index{rendering!camera!look~at}
+\index{camera!look~at}
+\index{look~at}
+\index{rendering!camera!focal~point}
+\index{camera!focal~point}
+\index{focal~point}
+
+The position of the camera, which is the point where the observer is
+viewing the scene, can be set with the \textcode{SetPosition} method of
+\textidentifier{Camera}. The direction the camera is facing is specified by
+giving a position to focus on. This is called either the ``look at'' point
+or the focal point and is specified with the \textcode{SetLookAt} method of
+\textidentifier{Camera}. Figure~\ref{fig:CameraPositionOrientation3D} shows
+the relationship between the position and look at points.
+
+\begin{figure}[htb]
+  \centering
+  \fix{ClippingRange}
+  \fix{Position}
+  \fix{LookAt (a.k.a. focal point)}
+  \fix{ViewUp}
+  \fix{FieldOfView}
+  \caption{The position and orientation parameters for a
+    \textidentifier{Camera}.}
+  \label{fig:CameraPositionOrientation3D}
+\end{figure}
+
+\index{rendering!camera!view~up}
+\index{rendering!camera!up}
+\index{camera!view~up}
+\index{camera!up}
+\index{view~up}
+
+In addition to specifying the direction to point the camera, the camera
+must also know which direction is considered ``up.'' This is specified with
+the view up vector using the \textcode{SetViewUp} method in
+\textidentifier{Camera}. The view up vector points from the camera position
+(in the center of the image) to the top of the image. The view up vector in
+relation to the camera position and orientation is shown in
+Figure~\ref{fig:CameraPositionOrientation3D}.
+
+\index{rendering!camera!field~of~view}
+\index{camera!field~of~view}
+\index{field~of~view}
+
+Another important parameter for the camera is its field of view. The field
+of view specifies how wide of a region the camera can see. It is specified
+by giving the angle in degrees of the cone of visible region emanating from
+the pinhole of the camera to the \textcode{SetFieldOfView} method in the
+\textidentifier{Camera}. The field of view angle in relation to the camera
+orientation is shown in Figure~\ref{fig:CameraPositionOrientation3D}. A
+field of view angle of $60^{\circ}$ usually works well.
+
+\index{rendering!camera!clipping~range}
+\index{camera!clipping~range}
+\index{clipping~range}
+\index{rendering!camera!near~clip~plane}
+\index{camera!near~clip~plane}
+\index{near~clip~plane}
+\index{rendering!camera!far~clip~plane}
+\index{camera!far~clip~plane}
+\index{far~clip~plane}
+
+Finally, the camera must specify a clipping region that defines the valid
+range of depths for the object. This is a pair of planes parallel to the
+image that all visible data must lie in. Each of these planes is defined
+simply by their distance to the camera position. The near clip plane is
+closer to the camera and must be in front of all geometry. The far clip
+plane is further from the camera and must be behind all geometry. The
+distance to both the near and far planes are specified with the
+\textcode{SetClippingRange} method in \textidentifier{Camera}.
+Figure~\ref{fig:CameraPositionOrientation3D} shows the clipping planes in
+relationship to the camera position and orientation.
+
+\vtkmlisting{Directly setting \protect\vtkmrendering{Camera} position and orientation.}{CameraPositionOrientation.cxx}
 
 \subsubsection{Movement}
 

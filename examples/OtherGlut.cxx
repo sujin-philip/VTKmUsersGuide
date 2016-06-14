@@ -28,21 +28,6 @@ int gMousePositionX;
 int gMousePositionY;
 bool gNoInteraction;
 
-void SaveImage()
-{
-  std::cout << "Saving image." << std:: endl;
-
-  vtkm::rendering::Canvas &canvas = gViewPointer->GetCanvas();
-
-  ////
-  //// BEGIN-EXAMPLE SaveCanvasImage.cxx
-  ////
-  canvas.SaveAs("MyVis.ppm");
-  ////
-  //// END-EXAMPLE SaveCanvasImage.cxx
-  ////
-}
-
 void DisplayCallback()
 {
   gViewPointer->Paint();
@@ -167,6 +152,50 @@ void MouseMoveCallback(int x, int y)
   glutPostRedisplay();
 }
 
+void SaveImage()
+{
+  std::cout << "Saving image." << std:: endl;
+
+  vtkm::rendering::Canvas &canvas = gViewPointer->GetCanvas();
+
+  ////
+  //// BEGIN-EXAMPLE SaveCanvasImage.cxx
+  ////
+  canvas.SaveAs("MyVis.ppm");
+  ////
+  //// END-EXAMPLE SaveCanvasImage.cxx
+  ////
+}
+
+void ResetCamera(vtkm::rendering::View &view)
+{
+  vtkm::Bounds bounds = view.GetScene().GetSpatialBounds();
+  view.GetCamera().ResetToBounds(bounds);
+  //// PAUSE-EXAMPLE
+  std::cout << "Position:  " << view.GetCamera().GetPosition() << std::endl;
+  std::cout << "LookAt:    " << view.GetCamera().GetLookAt() << std::endl;
+  std::cout << "ViewUp:    " << view.GetCamera().GetViewUp() << std::endl;
+  std::cout << "FOV:       " << view.GetCamera().GetFieldOfView() << std::endl;
+  std::cout << "ClipRange: " << view.GetCamera().GetClippingRange() << std::endl;
+  //// RESUME-EXAMPLE
+}
+
+void ChangeCamera(vtkm::rendering::Camera &camera)
+{
+  // Just set some camera parameters for demonstration purposes.
+  ////
+  //// BEGIN-EXAMPLE CameraPositionOrientation.cxx
+  ////
+  camera.SetPosition(vtkm::make_Vec(10.0, 6.0, 6.0));
+  camera.SetLookAt(vtkm::make_Vec(0.0, 0.0, 0.0));
+  camera.SetViewUp(vtkm::make_Vec(0.0, 1.0, 0.0));
+  camera.SetFieldOfView(60.0);
+  camera.SetClippingRange(0.1, 100.0);
+  ////
+  //// END-EXAMPLE CameraPositionOrientation.cxx
+  ////
+}
+
 void KeyPressCallback(unsigned char key, int x, int y)
 {
   switch (key)
@@ -181,7 +210,16 @@ void KeyPressCallback(unsigned char key, int x, int y)
     case 'S':
       SaveImage();
       break;
+    case 'r':
+    case 'R':
+      ResetCamera(*gViewPointer);
+      break;
+    case 'c':
+    case 'C':
+      ChangeCamera(gViewPointer->GetCamera());
+      break;
   }
+  glutPostRedisplay();
   (void)x;  (void)y;
 }
 

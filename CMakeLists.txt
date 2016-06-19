@@ -12,6 +12,8 @@ set(images
   images/ArrayHandleStorage.pdf
   images/BasicGlut.png
   images/CameraViewRange2D.pdf
+  images/CameraPositionOrientation.pdf
+  images/CameraMovement.pdf
   images/CellConnectionsHexahedron.pdf
   images/CellConnectionsLine.pdf
   images/CellConnectionsPolygon.pdf

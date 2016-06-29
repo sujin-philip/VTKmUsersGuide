@@ -167,6 +167,9 @@ void SaveImage()
   ////
 }
 
+////
+//// BEGIN-EXAMPLE ResetCamera.cxx
+////
 void ResetCamera(vtkm::rendering::View &view)
 {
   vtkm::Bounds bounds = view.GetScene().GetSpatialBounds();
@@ -179,6 +182,9 @@ void ResetCamera(vtkm::rendering::View &view)
   std::cout << "ClipRange: " << view.GetCamera().GetClippingRange() << std::endl;
   //// RESUME-EXAMPLE
 }
+////
+//// END-EXAMPLE ResetCamera.cxx
+////
 
 void ChangeCamera(vtkm::rendering::Camera &camera)
 {
@@ -193,6 +199,29 @@ void ChangeCamera(vtkm::rendering::Camera &camera)
   camera.SetClippingRange(0.1, 100.0);
   ////
   //// END-EXAMPLE CameraPositionOrientation.cxx
+  ////
+}
+
+void ObliqueCamera(vtkm::rendering::View &view)
+{
+  ////
+  //// BEGIN-EXAMPLE AxisAlignedCamera.cxx
+  ////
+  view.GetCamera().SetPosition(vtkm::make_Vec(0.0, 0.0, 0.0));
+  view.GetCamera().SetLookAt(vtkm::make_Vec(0.0, 0.0, -1.0));
+  view.GetCamera().SetViewUp(vtkm::make_Vec(0.0, 1.0, 0.0));
+  vtkm::Bounds bounds = view.GetScene().GetSpatialBounds();
+  view.GetCamera().ResetToBounds(bounds);
+  ////
+  //// END-EXAMPLE AxisAlignedCamera.cxx
+  ////
+  ////
+  //// BEGIN-EXAMPLE CameraMovement.cxx
+  ////
+  view.GetCamera().Azimuth(45.0);
+  view.GetCamera().Elevation(45.0);
+  ////
+  //// END-EXAMPLE CameraMovement.cxx
   ////
 }
 
@@ -218,6 +247,9 @@ void KeyPressCallback(unsigned char key, int x, int y)
     case 'C':
       ChangeCamera(gViewPointer->GetCamera());
       break;
+    case 'o':
+    case 'O':
+      ObliqueCamera(*gViewPointer);
   }
   glutPostRedisplay();
   (void)x;  (void)y;

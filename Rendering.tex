@@ -615,7 +615,7 @@ Figure~\ref{fig:CameraMovement} shows the relative movements of
   \label{fig:CameraMovement}
 \end{figure}
 
-\fix{Add example code.}
+\vtkmlisting{Moving the camera around the look at point.}{CameraMovement.cxx}
 
 \begin{commonerrors}
   The \textcode{Elevation} and \textcode{Azimuth} methods change the
@@ -625,10 +625,19 @@ Figure~\ref{fig:CameraMovement} shows the relative movements of
   elevation is raised or lowered by about 90 degrees.
 \end{commonerrors}
 
-\fix{Roll}
-\fix{Azimuth}
-\fix{Elevation}
-\fix{Dolly}
+In addition to rotating the camera around the look at point, you can move
+the camera closer or further from the look at point. This is done with the
+\textcode{Dolly} method. The \textcode{Dolly} method takes a single value
+that is the factor to scale the distance between camera and look at point.
+Values greater than one move the camera away, values less than one move the
+camera closer. The direction of dolly movement is shown in
+Figure~\ref{fig:CameraMovement}.
+
+Finally, the \textcode{Roll} method rotates the camera around the viewing
+direction. It has the effect of rotating the rendered image. The
+\textcode{Roll} method takes a single value that is the angle to rotate in
+degrees. The direction of roll movement is shown in
+Figure~\ref{fig:CameraMovement}.
 
 \subsubsection{Pan}
 
@@ -679,6 +688,10 @@ Figure~\ref{fig:CameraMovement} shows the relative movements of
 \fix{ResetToBounds}
 \fix{Add example to reset down axis}
 \fix{Also available for 2D cameras}
+
+\vtkmlisting{Resetting a \textidentifier{Camera} to view geometry.}{ResetCamera.cxx}
+
+\vtkmlisting{Resetting a \textidentifier{Camera} to be axis aligned.}{AxisAlignedCamera.cxx}
 
 \index{camera!reset|)}
 \index{rendering!camera!reset|)}

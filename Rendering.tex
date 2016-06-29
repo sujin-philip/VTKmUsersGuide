@@ -639,12 +639,58 @@ direction. It has the effect of rotating the rendered image. The
 degrees. The direction of roll movement is shown in
 Figure~\ref{fig:CameraMovement}.
 
+\subsubsection{Interactive Rotations}
+
+\index{rendering!camera!mouse|(}
+\index{camera!mouse|(}
+\index{mouse~rotation|(}
+
+A common and important mode of interaction with 3D views is to allow the
+user to rotate the object under inspection by dragging the mouse. To
+facilitate this type of interactive rotation, \vtkmrendering{Camera}
+provides a convenience method named \textcode{TrackballRotate}. The
+\textcode{TrackballRotate} method takes a start and end position of the
+mouse on the image and rotates viewpoint as if the user grabbed a point on
+a sphere centered in the image at the start position and moved under the
+end position.
+
+The \textcode{TrackballRotate} method is typically called from within a
+mouse movement callback. The callback must record the pixel position from
+the last event and the new pixel position of the mouse. Those pixel
+positions must be normalized to the range -1 to 1 where the position
+(-1,-1) refers to the lower left of the image and (1,1) refers to the upper
+right of the image. The following example demonstrates the typical
+operations used to establish rotations when dragging the mouse.
+
+\vtkmlisting{Interactive rotations through mouse dragging with \textidentifier{Camera}\textcode{::TrackballRotate}.}{MouseRotate.cxx}
+
+\index{mouse~rotation|)}
+\index{camera!mouse|)}
+\index{rendering!camera!mouse|)}
+
 \subsubsection{Pan}
 
 \index{rendering!camera!pan|(}
 \index{camera!pan|(}
 
-\fix{Do this}
+A camera pan moves the viewpoint left, right, up, or down. A camera pan is
+performed by calling the \textcode{Pan} method on \textidentifier{Camera}.
+\textcode{Pan} takes two arguments: the amount to pan in x and the amount
+to pan in y.
+
+The pan is given with respect to the projected space. So a pan of $1$ in
+the x direction moves the camera to focus on the right edge of the image
+whereas a pan of $-1$ in the x direction moves the camera to focus on the
+left edge of the image. When using \textcode{Pan} to respond to mouse
+movements, a natural pan will divide the distance traveled by the mouse
+pointer by the width and height of the screen as demonstrated in the
+following example.
+
+\vtkmlisting{Pan the view based on mouse movements.}{MousePan.cxx}
+
+\textcode{Pan} operates in image space, not world space. Panning does not
+change the camera position or orientation. Thus the look at point will be
+off center with respect to the image.
 
 \index{camera!pan|)}
 \index{rendering!camera!pan|)}
@@ -654,23 +700,25 @@ Figure~\ref{fig:CameraMovement}.
 \index{rendering!camera!zoom|(}
 \index{camera!zoom|(}
 
-\fix{Do this}
-\fix{Note this is different than dolly}
+A camera zoom draws the geometry larger or smaller. A camera zoom is
+performed by calling the \textcode{Zoom} method on \textidentifier{Camera}.
+\textcode{Zoom} takes a single argument specifying the zoom factor. A
+positive number draws the geometry larger (zoom in), and larger zoom factor
+results in larger geometry. Likewise, a negative number draws the geometry
+smaller (zoom out). A zoom factor of 0 has no effect.
+
+When using \textcode{Zoom} to respond to mouse movements, a natural zoom
+will divide the distance traveled by the mouse pointer by the width or
+height of the screen as demonstrated in the following example.
+
+\vtkmlisting{Zoom the view based on mouse movements.}{MouseZoom.cxx}
+
+\textcode{Zoom} operates in image space, not world space. Zooming differs
+from \textcode{Dolly} in that the reported position of the camera does not
+change. Instead, the image gets magnified or shrunk.
 
 \index{camera!zoom|)}
 \index{rendering!camera!zoom|)}
-
-\subsubsection{Interactive Rotations}
-
-\index{rendering!camera!mouse|(}
-\index{camera!mouse|(}
-\index{mouse~rotation|(}
-
-\fix{TrackballRotate}
-
-\index{mouse~rotation|)}
-\index{camera!mouse|)}
-\index{rendering!camera!mouse|)}
 
 \index{camera!3D|)}
 \index{rendering!camera!3D|)}

@@ -1,4 +1,5 @@
 #include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ArrayHandleCounting.h>
 #include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/DynamicArrayHandle.h>
@@ -147,8 +148,8 @@ void QueryCastDynamicArrayHandle()
 
   // This returns false
   bool isErrorStorage = dynamicHandle.IsTypeAndStorage<
-                            vtkm::Float32,
-                            vtkm::cont::internal::StorageTagError>();
+      vtkm::Float32,
+      typename vtkm::cont::ArrayHandleCounting<vtkm::Float32>::StorageTag>();
   ////
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////

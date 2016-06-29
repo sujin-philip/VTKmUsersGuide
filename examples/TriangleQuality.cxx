@@ -26,13 +26,13 @@ vtkm::cont::ArrayHandle<vtkm::Float32> GetTriangleQualityTable()
   // purposes.
   static vtkm::Float32 triangleQualityBuffer[TRIANGLE_QUALITY_TABLE_SIZE] = {
     0, 0,        0,        0,        0,        0,        0,        0,
-    0, 0,        0,        0,        0,        0,        0,        0.244311,
-    0, 0,        0,        0,        0,        0,        0.432985, 0.470588,
-    0, 0,        0,        0,        0,        0.542168, 0.659231, 0.664078,
-    0, 0,        0,        0,        0.579721, 0.754247, 0.821543, 0.815365,
-    0, 0,        0,        0.542168, 0.754247, 0.874598, 0.925667, 0.920712,
-    0, 0,        0.432985, 0.659231, 0.821543, 0.925667, 0.976641, 0.980996,
-    0, 0.244311, 0.470588, 0.664078, 0.815365, 0.920712, 0.980996, 1
+    0, 0,        0,        0,        0,        0,        0,        0.24431f,
+    0, 0,        0,        0,        0,        0,        0.43298f, 0.47059f,
+    0, 0,        0,        0,        0,        0.54217f, 0.65923f, 0.66408f,
+    0, 0,        0,        0,        0.57972f, 0.75425f, 0.82154f, 0.81536f,
+    0, 0,        0,        0.54217f, 0.75425f, 0.87460f, 0.92567f, 0.92071f,
+    0, 0,        0.43298f, 0.65923f, 0.82154f, 0.92567f, 0.97664f, 0.98100f,
+    0, 0.24431f, 0.47059f, 0.66408f, 0.81536f, 0.92071f, 0.98100f, 1
   };
 
   return vtkm::cont::make_ArrayHandle(triangleQualityBuffer,
@@ -320,8 +320,8 @@ vtkm::cont::DataSet BuildDataSet()
 
   for (vtkm::Id row = 0; row < NUM_ROWS; row++)
   {
-    dataSetBuilder.AddPoint(0, row*row, 0);
-    dataSetBuilder.AddPoint(1, row*row, 0);
+    dataSetBuilder.AddPoint(0, static_cast<vtkm::Float32>(row*row), 0);
+    dataSetBuilder.AddPoint(1, static_cast<vtkm::Float32>(row*row), 0);
   }
 
   for (vtkm::Id row = 0; row < NUM_ROWS-1; row++)

@@ -58,7 +58,22 @@ private:
       fieldAverage = fieldAverage + inputCellField[cellIndex];
     }
 
+    //// PAUSE-EXAMPLE
+    // The following line can create a warning when converting numCells to a
+    // float. However, casting it is tricky since OutputFieldType could be
+    // a vector, and that would unnecessarily complicate this example. Instead,
+    // just suppress the warning.
+#ifdef VTKM_MSVC
+#pragma warning(push)
+#pragma warning(disable:4244)
+#endif
+    //// RESUME-EXAMPLE
     fieldAverage = fieldAverage / OutputFieldType(numCells);
+    //// PAUSE-EXAMPLE
+#ifdef VTKM_MSVC
+#pragma warning(pop)
+#endif
+    //// RESUME-EXAMPLE
   }
 
   template<typename T1, typename T2, typename T3>
@@ -146,7 +161,7 @@ void Test()
         "Result field has wrong association.");
 
   const vtkm::Id numPoints = 18;
-  vtkm::Float32 expectedData[numPoints] = {
+  vtkm::Float64 expectedData[numPoints] = {
     100.1, 100.15, 100.2, 100.1, 100.15, 100.2,
     100.2, 100.25, 100.3, 100.2, 100.25, 100.3,
     100.3, 100.35, 100.4, 100.3, 100.35, 100.4

@@ -67,8 +67,8 @@ void MouseButtonCallback(int buttonIndex, int state, int x, int y)
 
 void MouseMoveCallback(int x, int y)
 {
-  vtkm::Int32 width = gViewPointer->GetCanvas().GetWidth();
-  vtkm::Int32 height = gViewPointer->GetCanvas().GetHeight();
+  vtkm::Id width = gViewPointer->GetCanvas().GetWidth();
+  vtkm::Id height = gViewPointer->GetCanvas().GetHeight();
 
   vtkm::Float32 lastX = (2.0f*gMousePositionX)/width - 1.0f;
   vtkm::Float32 lastY = 1.0f - (2.0f*gMousePositionY)/height;
@@ -138,8 +138,20 @@ int main(int argc, char *argv[])
 
   // Initialize VTK-m rendering classes
   vtkm::cont::DataSet surfaceData;
-  vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
-  surfaceData = reader.ReadDataSet();
+  try
+  {
+    vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
+    surfaceData = reader.ReadDataSet();
+  }
+  catch (vtkm::io::ErrorIO &error)
+  {
+    std::cout << "Could not read file:" << std::endl
+              << error.GetMessage() << std::endl;
+  }
+  catch (...)
+  {
+    throw;
+  }
 
   ////
   //// BEGIN-EXAMPLE ConstructView.cxx

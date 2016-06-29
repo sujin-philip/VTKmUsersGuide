@@ -584,6 +584,47 @@ relationship to the camera position and orientation.
 
 \subsubsection{Movement}
 
+In addition to specifically setting the position and orientation of the
+camera, \vtkmrendering{Camera} contains several convenience methods that
+move the camera relative to its position and look at point.
+
+\index{rendering!camera!elevation}
+\index{camera!elevation}
+\index{elevation}
+
+\index{rendering!camera!azimuth}
+\index{camera!azimuth}
+\index{azimuth}
+
+Two such methods are elevation and azimuth, which move the camera around
+the sphere centered at the look at point. \textcode{Elevation} raises or
+lowers the camera. Positive values raise the camera up (in the direction of
+the view up vector) whereas negative values lower the camera down.
+\textcode{Azimuth} moves the camera around the look at point to the left or
+right. Positive values move the camera to the right whereas negative values
+move the camera to the left. Both \textcode{Elevation} and
+\textcode{Azimuth} specify the amount of rotation in terms of degrees.
+Figure~\ref{fig:CameraMovement} shows the relative movements of
+\textcode{Elevation} and \textcode{Azimuth}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics{images/CameraMovement}
+  \caption{\textidentifier{Camera} movement functions relative to position
+    and orientation.}
+  \label{fig:CameraMovement}
+\end{figure}
+
+\fix{Add example code.}
+
+\begin{commonerrors}
+  The \textcode{Elevation} and \textcode{Azimuth} methods change the
+  position of the camera, but not the view up vector. This can cause some
+  wild camera orientation changes when the direction of the camera view is
+  near parallel to the view up vector, which often happens when the
+  elevation is raised or lowered by about 90 degrees.
+\end{commonerrors}
+
 \fix{Roll}
 \fix{Azimuth}
 \fix{Elevation}

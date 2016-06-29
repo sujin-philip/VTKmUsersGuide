@@ -60,7 +60,8 @@ void Run()
 
   vtkm::cont::printSummary_ArrayHandle(outArray, std::cout);
   std::cout << std::endl;
-  VTKM_TEST_ASSERT(outArray.GetNumberOfValues(), "Wrong sized array.");
+  VTKM_TEST_ASSERT(outArray.GetNumberOfValues() == ARRAY_SIZE*2,
+                   "Wrong sized array.");
   for (vtkm::Id index = 0; index < ARRAY_SIZE; index++)
   {
     vtkm::Id v0 = outArray.GetPortalConstControl().Get(2*index+0);

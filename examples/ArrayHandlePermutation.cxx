@@ -54,7 +54,7 @@ void Test()
   typedef vtkm::cont::ArrayHandle<vtkm::Id> IdArrayType;
   typedef IdArrayType::PortalControl IdPortalType;
 
-  typedef vtkm::cont::ArrayHandle<vtkm::Float32> ValueArrayType;
+  typedef vtkm::cont::ArrayHandle<vtkm::Float64> ValueArrayType;
   typedef ValueArrayType::PortalControl ValuePortalType;
 
   // Create array with values [0.0, 0.1, 0.2, 0.3]

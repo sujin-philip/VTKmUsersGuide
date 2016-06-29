@@ -14,24 +14,24 @@ namespace {
 //// RESUME-EXAMPLE
 
 template<typename T>
-T Remainder(const T &numerator, const T &denominator);
+T AnyRemainder(const T &numerator, const T &denominator);
 
 namespace detail {
 
 template<typename T>
-T RemainderImpl(const T &numerator,
-                const T &denominator,
-                vtkm::TypeTraitsIntegerTag,
-                vtkm::TypeTraitsScalarTag)
+T AnyRemainderImpl(const T &numerator,
+                   const T &denominator,
+                   vtkm::TypeTraitsIntegerTag,
+                   vtkm::TypeTraitsScalarTag)
 {
   return numerator % denominator;
 }
 
 template<typename T>
-T RemainderImpl(const T &numerator,
-                const T &denominator,
-                vtkm::TypeTraitsRealTag,
-                vtkm::TypeTraitsScalarTag)
+T AnyRemainderImpl(const T &numerator,
+                   const T &denominator,
+                   vtkm::TypeTraitsRealTag,
+                   vtkm::TypeTraitsScalarTag)
 {
   // The VTK-m math library contains a Remainder function that operates on
   // floating point numbers.
@@ -39,10 +39,10 @@ T RemainderImpl(const T &numerator,
 }
 
 template<typename T, typename NumericTag>
-T RemainderImpl(const T &numerator,
-                const T &denominator,
-                NumericTag,
-                vtkm::TypeTraitsVectorTag)
+T AnyRemainderImpl(const T &numerator,
+                   const T &denominator,
+                   NumericTag,
+                   vtkm::TypeTraitsVectorTag)
 {
   T result;
   for (int componentIndex = 0;
@@ -50,7 +50,7 @@ T RemainderImpl(const T &numerator,
        componentIndex++)
   {
     result[componentIndex] =
-        Remainder(numerator[componentIndex], denominator[componentIndex]);
+        AnyRemainder(numerator[componentIndex], denominator[componentIndex]);
   }
   return result;
 }
@@ -58,12 +58,13 @@ T RemainderImpl(const T &numerator,
 } // namespace detail
 
 template<typename T>
-T Remainder(const T &numerator, const T &denominator)
+T AnyRemainder(const T &numerator, const T &denominator)
 {
-  return detail::RemainderImpl(numerator,
-                               denominator,
-                               typename vtkm::TypeTraits<T>::NumericTag(),
-                               typename vtkm::TypeTraits<T>::DimensionalityTag());
+  return detail::AnyRemainderImpl(
+        numerator,
+        denominator,
+        typename vtkm::TypeTraits<T>::NumericTag(),
+        typename vtkm::TypeTraits<T>::DimensionalityTag());
 }
 ////
 //// END-EXAMPLE TypeTraits.cxx
@@ -71,17 +72,17 @@ T Remainder(const T &numerator, const T &denominator)
 
 void TryRemainder()
 {
-  vtkm::Id m1 = Remainder(7, 3);
+  vtkm::Id m1 = AnyRemainder(7, 3);
   VTKM_TEST_ASSERT(m1 == 1, "Got bad remainder");
 
-  vtkm::Float32 m2 = Remainder(7.0, 3.0);
+  vtkm::Float32 m2 = AnyRemainder(7.0f, 3.0f);
   VTKM_TEST_ASSERT(test_equal(m2, 1), "Got bad remainder");
 
-  vtkm::Id3 m3 = Remainder(vtkm::Id3(10, 9, 8), vtkm::Id3(7, 6, 5));
+  vtkm::Id3 m3 = AnyRemainder(vtkm::Id3(10, 9, 8), vtkm::Id3(7, 6, 5));
   VTKM_TEST_ASSERT(test_equal(m3, vtkm::Id3(3, 3, 3)), "Got bad remainder");
 
   vtkm::Vec<vtkm::Float32,3> m4 =
-      Remainder(vtkm::make_Vec(10, 9, 8), vtkm::make_Vec(7, 6, 5));
+      AnyRemainder(vtkm::make_Vec(10, 9, 8), vtkm::make_Vec(7, 6, 5));
   VTKM_TEST_ASSERT(test_equal(m4, vtkm::make_Vec(3, 3, 3)), "Got bad remainder");
 }
 

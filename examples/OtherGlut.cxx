@@ -239,8 +239,20 @@ int main(int argc, char *argv[])
 
   // Initialize VTK-m rendering classes
   vtkm::cont::DataSet surfaceData;
-  vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
-  surfaceData = reader.ReadDataSet();
+  try
+  {
+    vtkm::io::reader::VTKDataSetReader reader("data/cow.vtk");
+    surfaceData = reader.ReadDataSet();
+  }
+  catch (vtkm::io::ErrorIO &error)
+  {
+    std::cout << "Could not read file:" << std::endl
+              << error.GetMessage() << std::endl;
+  }
+  catch (...)
+  {
+    throw;
+  }
 
   vtkm::rendering::Actor actor(surfaceData.GetCellSet(),
                                surfaceData.GetCoordinateSystem(),

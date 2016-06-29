@@ -44,7 +44,9 @@ set(example_src
 
 # Set up compiling and testing of examples.
 if (BUILD_EXAMPLES)
-  find_package(VTKm REQUIRED)
+  find_package(VTKm REQUIRED
+    COMPONENTS Serial TBB
+    )
   include_directories(${VTKm_INCLUDE_DIRS})
 
   find_package(OpenGL REQUIRED)
@@ -67,10 +69,17 @@ if (BUILD_EXAMPLES)
       )
   endforeach()
 
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E
-      create_symlink ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data
-    )
+  if(NOT WIN32)
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E
+        create_symlink ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data
+      )
+  else()
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E
+        copy_directory ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data
+      )
+  endif()
 endif()
 
 include(ExtractExample.cmake)

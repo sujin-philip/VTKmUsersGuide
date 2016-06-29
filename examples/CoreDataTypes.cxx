@@ -54,7 +54,7 @@ void LongerVector()
   ////
   //// BEGIN-EXAMPLE LongerVector.cxx
   ////
-  vtkm::Vec<vtkm::Float32, 5> A(2); // A is (2, 2, 2, 2, 2)
+  vtkm::Vec<vtkm::Float64, 5> A(2); // A is (2, 2, 2, 2, 2)
   for (vtkm::IdComponent index = 1; index < A.NUM_COMPONENTS; index++)
   {
     A[index] = A[index-1] * 1.5;

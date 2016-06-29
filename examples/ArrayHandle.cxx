@@ -14,7 +14,7 @@ namespace {
 
 vtkm::Float32 TestValue(vtkm::Id index)
 {
-  return 1 + 0.001 * index;
+  return static_cast<vtkm::Float32>(1 + 0.001 * index);
 }
 
 void CheckArrayValues(const vtkm::cont::ArrayHandle<vtkm::Float32> &array,

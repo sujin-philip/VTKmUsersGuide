@@ -178,7 +178,7 @@ void TestPrefixSum()
   DoPrefixSum(&array);
   for (vtkm::Id index = 0; index < 10; index++)
   {
-    VTKM_TEST_ASSERT(array.Array[index] = index+1, "Got bad prefix sum.");
+    VTKM_TEST_ASSERT(array.Array[index] == index+1, "Got bad prefix sum.");
   }
 }
 

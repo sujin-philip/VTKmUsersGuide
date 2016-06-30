@@ -733,11 +733,32 @@ change. Instead, the image gets magnified or shrunk.
 \index{rendering!camera!reset|(}
 \index{camera!reset|(}
 
-\fix{ResetToBounds}
-\fix{Add example to reset down axis}
-\fix{Also available for 2D cameras}
+Setting a specific camera position and orientation can be frustrating,
+particularly when the size, shape, and location of the geometry is not
+known a priori. Typically this involves querying the data and finding a
+good camera orientation.
+
+To make this process simpler, \vtkmrendering{Camera} has a convenience
+method named \textcode{ResetToBounds} that automatically positions the
+camera based on the spatial bounds of the geometry. The most expedient
+method to find the spatial bounds of the geometry being rendered is to get
+the \vtkmrendering{Scene} object and call \textcode{GetSpatialBounds}. The
+\textidentifier{Scene} object can be retrieved from the
+\vtkmrendering{View}, which, as described in Section~\ref{sec:View}, is the
+central object for managing rendering.
 
 \vtkmlisting{Resetting a \textidentifier{Camera} to view geometry.}{ResetCamera.cxx}
+
+The \textcode{ResetToBounds} method operates by placing the look at point
+in the center of the bounds and then placing the position of the camera
+relative to that look at point. The position is such that the view
+direction is the same as before the call to \textcode{ResetToBounds} and
+the distance between the camera position and look at point has the bounds
+roughly fill the rendered image. This behavior is a convenient way to
+update the camera to make the geometry most visible while still preserving
+the viewing position. If you want to reset the camera to a new viewing
+angle, it is best to set the camera to be pointing in the right direction
+and then calling \textcode{ResetToBounds} to adjust the position.
 
 \vtkmlisting{Resetting a \textidentifier{Camera} to be axis aligned.}{AxisAlignedCamera.cxx}
 

@@ -16,6 +16,7 @@ set(example_src
   BasicGlut.cxx
   CellOperations.cxx
   CellShapes.cxx
+  ColorTables.cxx
   CoreDataTypes.cxx
   CustomDeviceAdapter.cxx
   DataSetCreation.cxx

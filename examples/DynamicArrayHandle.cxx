@@ -149,7 +149,7 @@ void QueryCastDynamicArrayHandle()
   // This returns false
   bool isErrorStorage = dynamicHandle.IsTypeAndStorage<
       vtkm::Float32,
-      typename vtkm::cont::ArrayHandleCounting<vtkm::Float32>::StorageTag>();
+      vtkm::cont::ArrayHandleCounting<vtkm::Float32>::StorageTag>();
   ////
   //// END-EXAMPLE QueryDynamicArrayHandle.cxx
   ////

@@ -344,6 +344,7 @@ The following mappers are provided by VTK-m.
 
 
 \section{Views}
+\label{sec:View}
 
 \index{rendering!view|(}
 \index{view|(}
@@ -771,6 +772,21 @@ and then calling \textcode{ResetToBounds} to adjust the position.
 
 \index{rendering!color~tables|(}
 \index{color~tables|(}
+
+\index{pseudocolor}
+An important feature of VTK-m's rendering units is the ability to
+pseudocolor objects based on scalar data. This technique maps each scalar
+to a potentially unique color. This mapping from scalars to colors is
+defined by a \vtkmrendering{ColorTable} object. A
+\textidentifier{ColorTable} can be specified as an optional argument when
+constructing a \vtkmrendering{Actor}. (Use of \textidentifier{Actor}s is
+discussed in Section~\ref{sec:Actor}.)
+
+\vtkmlisting{Specifying a \textidentifier{ColorTable} for an \textidentifier{Actor}.}{SpecifyColorTable.cxx}
+
+The easiest way to create a \textidentifier{ColorTable} is to provide the
+name of one of the many predefined sets of color provided by VTK-m. A list
+of all available predefined color tables is provided below.
 
 \index{color~tables|)}
 \index{rendering!color~tables|)}

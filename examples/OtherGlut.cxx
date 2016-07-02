@@ -286,9 +286,16 @@ int main(int argc, char *argv[])
     throw;
   }
 
+  ////
+  //// BEGIN-EXAMPLE SpecifyColorTable.cxx
+  ////
   vtkm::rendering::Actor actor(surfaceData.GetCellSet(),
                                surfaceData.GetCoordinateSystem(),
-                               surfaceData.GetField("RandomPointScalars"));
+                               surfaceData.GetField("RandomPointScalars"),
+                               vtkm::rendering::ColorTable("thermal"));
+  ////
+  //// END-EXAMPLE SpecifyColorTable.cxx
+  ////
 
   vtkm::rendering::Scene scene;
   scene.AddActor(actor);

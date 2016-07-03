@@ -788,5 +788,96 @@ The easiest way to create a \textidentifier{ColorTable} is to provide the
 name of one of the many predefined sets of color provided by VTK-m. A list
 of all available predefined color tables is provided below.
 
+% Insert an inline table
+\newlength{\fontdrop}		% Set length to drop below baseline so that
+\settodepth{\fontdrop}{()}	% we can drop the image to fill the actual line
+\newcommand*{\includecolortable}[1]{%
+  \raisebox{-\fontdrop}{\includegraphics[height=10pt,width=1in]{images/ColorTables/#1}}%
+}
+\newcommand*{\ctcolumns}[1]{%
+  \includecolortable{#1} & #1 & %
+}
+
+\begin{longtabu} to \textwidth {llX}
+  \ctcolumns{cool2warm} A color table designed to be perceptually even, to
+  work well on shaded 3D surfaces, and to generally perform well across
+  many uses. This is also the default color map and will be used if no
+  \textidentifier{ColorTable} is given to an \textidentifier{Actor} or if
+  ``default'' is specified. % \index{rendering!color~tables!default}
+  \index{color~tables!default} \\
+  \ctcolumns{blue} A monochromatic blue color map. \\
+  \ctcolumns{orange} A monochromatic orange color map. \\
+  \ctcolumns{temperature} A very saturated diverging color map. \\
+  \ctcolumns{rainbow} There have been many scientific perceptual studies on
+  the effectiveness of different color maps, and this rainbow color map is
+  by far the most studied. These perceptual studies uniformly agree that
+  this rainbow color map is terrible. Never use it.\\
+  \ctcolumns{levels} A map of 5 distinct colors. \\
+  \ctcolumns{dense} This is similar to the rainbow color map but with an
+  intentional variation in brightness. This probably makes the map more
+  effective, but not by much. \\
+  \ctcolumns{sharp} A map of 11 fairly distinct colos. \\
+  \ctcolumns{thermal} A diverging color map of heat-based colors. \\
+  \ctcolumns{IsoL} An isoluminant (constant brightness) color map of
+  varying hues. Isoluminant color maps are sometimes recommended for 3D
+  surfaces, but they have poor perceptual resolution. \\
+  \ctcolumns{CubicYF} A modification to the rainbow color map to make it
+  more perceptually uniform. This corrects some (but not all) of the
+  problems with the rainbow color map. \\
+  \ctcolumns{CubicL} Similar to CubicYF but extends the hues to red at the
+  expense of some perceptual non-linearity. \\
+  \ctcolumns{LinearL} Runs throught the same hues as the rainbow color map
+  but also adjusts the brightness from minimum (black) to maximum (white)
+  in a perceptually linear manner. This is sometimes referred to as the
+  Kindlmann color map. \\
+  \ctcolumns{LinLhot} Based on the colors for black body radiation, but
+  modified to be perceptually linear. \\
+  \ctcolumns{PuRd} A sequential color map from unsaturated purple to red. \\
+  \ctcolumns{Blues} A sequential color map of blue varied by saturation. \\
+  \ctcolumns{BuGn} A sequential color map from unsaturated blue to green. \\
+  \ctcolumns{BuPu} A sequential color map from unsaturated blue to purple. \\
+  \ctcolumns{GnBu} A sequential color map from unsaturated green to blue. \\
+  \ctcolumns{Greens} A sequential color map of green varied by saturation. \\
+  \ctcolumns{Greys} A sequential color map of grays of different lightness. \\
+  \ctcolumns{Oranges} A sequential color map of orange varied by saturation. \\
+  \ctcolumns{OrRd} A sequential color map from unsaturated orange to red. \\
+  \ctcolumns{PuBu} A sequential color map from unsaturated purple to blue. \\
+  \ctcolumns{PuBuGn} A sequential color map from unsaturated purple to blue
+  to green. \\
+  \ctcolumns{PuRd} A sequential color map from unsaturated purple to red. \\
+  \ctcolumns{Purples} A sequential color map of purple varied by saturation. \\
+  \ctcolumns{RdPu} A sequential color map from unsaturated red tu purple. \\
+  \ctcolumns{Reds} A sequential color map of red varied by saturation. \\
+  \ctcolumns{YlGnBu} A sequential color map from yellow to green to blue. \\
+  \ctcolumns{YlGn} A sequential color map from yellow to green. \\
+  \ctcolumns{YlOrBr} A sequential color map from yellow to orange to brown. \\
+  \ctcolumns{YlOrRd} A sequential color map from yellow to orange to red. \\
+  \ctcolumns{BrBG} A diverging color map from brown to greenish blue. \\
+  \ctcolumns{PiYG} A diverging color map from pink to yellowish green. \\
+  \ctcolumns{PRGn} A diverging color map from purple to green. \\
+  \ctcolumns{PuOr} A diverging color map from orange to purple. \\
+  \ctcolumns{RdBu} A diverging color map from red to blue. \\
+  \ctcolumns{RdGy} A diverging color map from red to gray. \\
+  \ctcolumns{RdYlBu} A diverging color map from red to blue through yellow. \\
+  \ctcolumns{RdYlGn} A diverging color map from red to green through yellow. \\
+  \ctcolumns{Spectral} A diverging color map incorporating most of the
+  spectral hues. \\
+  \ctcolumns{Dark2} A collection of 8 distinct dark colors. \\
+  \ctcolumns{Paired} A collection of 12 distinct colors paired into light
+  and dark versions of 6 different hues. \\
+  \ctcolumns{Pastel1} A collection of 9 distinct pastel (light) colors. \\
+  \ctcolumns{Pastel2} A collection of 8 distinct pastel (light) colors. \\
+  \ctcolumns{Set1} A collection of 9 distinct colors. \\
+  \ctcolumns{Set2} A collection of 8 distinct colors. \\
+  \ctcolumns{Set3} A collection of 12 distinct colors. \\
+  \ctcolumns{Accent} A collection of 8 colors. \\
+\end{longtabu}
+
+\fix{There is more functionality to document in
+  \textidentifier{ColorTable}. In particular, building color tables by
+  adding control points. However, I am not bothering to document that right
+  now because (1) I don't think many people will use it and (2) it is
+  pretty clear from the Doxygen.}
+
 \index{color~tables|)}
 \index{rendering!color~tables|)}

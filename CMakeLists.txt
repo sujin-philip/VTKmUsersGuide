@@ -72,6 +72,7 @@ add_subdirectory(examples)
 set(add_latex_document_args
   INPUTS ${input_docs}
   IMAGES ${images}
+  IMAGE_DIRS images/ColorTables
   DEPENDS example-listings
   USE_INDEX
   )

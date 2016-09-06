@@ -14,7 +14,7 @@
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/CanvasGL.h>
 #include <vtkm/rendering/MapperGL.h>
-#include <vtkm/rendering/View.h>
+#include <vtkm/rendering/View3D.h>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
   //// END-EXAMPLE ActorScene.cxx
   ////
 
-  vtkm::rendering::MapperGL<> mapper;
+  vtkm::rendering::MapperGL mapper;
   vtkm::rendering::CanvasGL canvas;
 
   gViewPointer = new vtkm::rendering::View3D(scene, mapper, canvas);

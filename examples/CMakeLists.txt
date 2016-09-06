@@ -46,7 +46,7 @@ set(example_src
 # Set up compiling and testing of examples.
 if (BUILD_EXAMPLES)
   find_package(VTKm REQUIRED
-    COMPONENTS Serial TBB
+    COMPONENTS Serial TBB Rendering
     )
   include_directories(${VTKm_INCLUDE_DIRS})
 

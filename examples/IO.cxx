@@ -43,8 +43,8 @@ void TestIO()
   std::cout << "Reading data" << std::endl;
   vtkm::cont::DataSet readData = OpenDataFromVTKFile();
 
-  const vtkm::cont::CellSet &createdCellSet = createdData.GetCellSet().GetCellSet();
-  const vtkm::cont::CellSet &readCellSet = readData.GetCellSet().GetCellSet();
+  const vtkm::cont::CellSet &createdCellSet = createdData.GetCellSet().CastToBase();
+  const vtkm::cont::CellSet &readCellSet = readData.GetCellSet().CastToBase();
   VTKM_TEST_ASSERT(
         createdCellSet.GetNumberOfCells() == readCellSet.GetNumberOfCells(),
         "Createded and read data do not match.");

@@ -96,7 +96,7 @@ void CreateRectilinearGrid()
   //// END-EXAMPLE CreateRectilinearGrid.cxx
   ////
 
-  vtkm::Id numPoints =  dataSet.GetCellSet().GetCellSet().GetNumberOfPoints();
+  vtkm::Id numPoints =  dataSet.GetCellSet().GetNumberOfPoints();
   std::cout << "Num points: " << numPoints << std::endl;
   VTKM_TEST_ASSERT(numPoints == 4080501, "Got wrong number of points.");
 

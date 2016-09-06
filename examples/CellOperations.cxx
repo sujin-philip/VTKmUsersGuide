@@ -56,7 +56,7 @@ void TryCellCenters()
   std::cout << std::endl;
 
   VTKM_TEST_ASSERT(centers.GetNumberOfValues() ==
-                   dataSet.GetCellSet().GetCellSet().GetNumberOfCells(),
+                   dataSet.GetCellSet().GetNumberOfCells(),
                    "Bad number of cells.");
   VTKM_TEST_ASSERT(test_equal(60.1875, centers.GetPortalConstControl().Get(0)),
                    "Bad first value.");
@@ -117,7 +117,7 @@ void TryCellDerivatives()
   std::cout << std::endl;
 
   VTKM_TEST_ASSERT(derivatives.GetNumberOfValues() ==
-                   dataSet.GetCellSet().GetCellSet().GetNumberOfCells(),
+                   dataSet.GetCellSet().GetNumberOfCells(),
                    "Bad number of cells.");
   VTKM_TEST_ASSERT(test_equal(vtkm::make_Vec(10.025,30.075,60.125),
                               derivatives.GetPortalConstControl().Get(0)),

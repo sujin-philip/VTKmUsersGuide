@@ -57,11 +57,11 @@ However, it is also possible to query the types and cast to a concrete
 
 \index{dynamic~array~handle!query}
 You can query the component type and storage type using the
-\textcode{IsArrayHandleType}, \textcode{IsSameType}, and
-\textcode{IsTypeAndStorage} methods. \textcode{IsArrayHandleType} takes an
+\textcode{IsType}, \textcode{IsSameType}, and
+\textcode{IsTypeAndStorage} methods. \textcode{IsType} takes an
 example array handle type and returns whether the underlying array matches
 the given static array type. \textcode{IsSameType} behaves the same as
-\textcode{IsArrayHandleType} but accepts an instances of an
+\textcode{IsType} but accepts an instance of an
 \textidentifier{ArrayHandle} object to automatically resolve the template
 parameters. \textcode{IsTypeAndStorage} takes an example
 component type and an example storage type as arguments and returns whether

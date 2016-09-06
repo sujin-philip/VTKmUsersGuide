@@ -136,7 +136,7 @@ void QueryCastDynamicArrayHandle()
 
   // This returns false
   bool isIdArray =
-      dynamicHandle.IsArrayHandleType<vtkm::cont::ArrayHandle<vtkm::Id> >();
+      dynamicHandle.IsType<vtkm::cont::ArrayHandle<vtkm::Id> >();
 
   // This returns true
   bool isFloat32 =

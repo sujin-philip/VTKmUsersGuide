@@ -1,6 +1,6 @@
 # File: UseLATEX.cmake
 # CMAKE commands to actually use the LaTeX compiler
-# Version: 2.2.1
+# Version: 2.3.1
 # Author: Kenneth Moreland <kmorel@sandia.gov>
 #
 # Copyright 2004, 2015 Sandia Corporation.
@@ -47,6 +47,7 @@
 #                    [CONFIGURE] <tex_files>
 #                    [DEPENDS] <tex_files>
 #                    [MULTIBIB_NEWCITES] <suffix_list>
+#                    [USE_BIBLATEX]
 #                    [USE_INDEX]
 #                    [INDEX_NAMES <index_names>]
 #                    [USE_GLOSSARY] [USE_NOMENCL]
@@ -97,6 +98,10 @@
 #       are added as dependencies to targets named dvi, pdf, safepdf, ps,
 #       html, and auxclean, respectively.
 #
+#       USE_BIBLATEX enables the use of biblatex/biber as an alternative to
+#       bibtex. Bibtex remains the default if USE_BIBLATEX is not
+#       specified.
+#
 #       If the argument USE_INDEX is given, then commands to build an index
 #       are made. If the argument INDEX_NAMES is given, an index file is
 #       generated for each name in this list. See the LaTeX package multind
@@ -109,6 +114,14 @@
 #       in the multibib package.
 #
 # History:
+#
+#
+# 2.3.1 Support use of magick command instead of convert command for
+#       ImageMagick 7.
+#
+# 2.3.0 Add USE_BIBLATEX option to support the biblatex package, which
+#       requires using the program biber as a replacement for bibtex
+#       (thanks to David Tracey).
 #
 # 2.2.1 Add STRINGS property to LATEX_DEFAULT_BUILD to make it easier to
 #       select the default build in the CMake GUI.
@@ -630,6 +643,7 @@ function(latex_setup_variables)
     LATEX_COMPILER
     PDFLATEX_COMPILER
     BIBTEX_COMPILER
+    BIBER_COMPILER
     MAKEINDEX_COMPILER
     XINDY_COMPILER
     DVIPS_CONVERTER
@@ -641,6 +655,7 @@ function(latex_setup_variables)
   latex_needit(LATEX_COMPILER latex)
   latex_wantit(PDFLATEX_COMPILER pdflatex)
   latex_needit(BIBTEX_COMPILER bibtex)
+  latex_wantit(BIBER_COMPILER biber)
   latex_needit(MAKEINDEX_COMPILER makeindex)
   latex_wantit(DVIPS_CONVERTER dvips)
   latex_wantit(PS2PDF_CONVERTER ps2pdf)
@@ -671,6 +686,8 @@ function(latex_setup_variables)
     CACHE STRING "latex/pdflatex flags used to create synctex file.")
   set(BIBTEX_COMPILER_FLAGS ""
     CACHE STRING "Flags passed to bibtex.")
+  set(BIBER_COMPILER_FLAGS ""
+    CACHE STRING "Flags passed to biber.")
   set(MAKEINDEX_COMPILER_FLAGS ""
     CACHE STRING "Flags passed to makeindex.")
   set(MAKEGLOSSARIES_COMPILER_FLAGS ""
@@ -690,6 +707,7 @@ function(latex_setup_variables)
     PDFLATEX_COMPILER_FLAGS
     LATEX_SYNCTEX_FLAGS
     BIBTEX_COMPILER_FLAGS
+    BIBER_COMPILER_FLAGS
     MAKEINDEX_COMPILER_FLAGS
     MAKEGLOSSARIES_COMPILER_FLAGS
     MAKENOMENCLATURE_COMPILER_FLAGS
@@ -702,6 +720,7 @@ function(latex_setup_variables)
   separate_arguments(PDFLATEX_COMPILER_FLAGS)
   separate_arguments(LATEX_SYNCTEX_FLAGS)
   separate_arguments(BIBTEX_COMPILER_FLAGS)
+  separate_arguments(BIBER_COMPILER_FLAGS)
   separate_arguments(MAKEINDEX_COMPILER_FLAGS)
   separate_arguments(MAKEGLOSSARIES_COMPILER_FLAGS)
   separate_arguments(MAKENOMENCLATURE_COMPILER_FLAGS)
@@ -710,7 +729,8 @@ function(latex_setup_variables)
   separate_arguments(PDFTOPS_CONVERTER_FLAGS)
   separate_arguments(LATEX2HTML_CONVERTER_FLAGS)
 
-  find_program(IMAGEMAGICK_CONVERT convert
+  find_program(IMAGEMAGICK_CONVERT
+    NAMES magick convert
     DOC "The convert program that comes with ImageMagick (available at http://www.imagemagick.org)."
     )
   mark_as_advanced(IMAGEMAGICK_CONVERT)
@@ -873,7 +893,7 @@ function(latex_add_convert_command
     if(IMAGEMAGICK_CONVERT)
       string(TOLOWER ${IMAGEMAGICK_CONVERT} IMAGEMAGICK_CONVERT_LOWERCASE)
       if(${IMAGEMAGICK_CONVERT_LOWERCASE} MATCHES "system32[/\\\\]convert\\.exe")
-        message(SEND_ERROR "IMAGEMAGICK_CONVERT set to Window's convert.exe for changing file systems rather than ImageMagick's convert for changing image formats.  Please make sure ImageMagick is installed (available at http://www.imagemagick.org) and its convert program is used for IMAGEMAGICK_CONVERT.  (It is helpful if ImageMagick's path is before the Windows system paths.)")
+        message(SEND_ERROR "IMAGEMAGICK_CONVERT set to Window's convert.exe for changing file systems rather than ImageMagick's convert for changing image formats. Please make sure ImageMagick is installed (available at http://www.imagemagick.org). If you have a recent version of ImageMagick (7.0 or higher), use the magick program instead of convert for IMAGEMAGICK_CONVERT.")
       else()
         set(converter ${IMAGEMAGICK_CONVERT})
       endif()
@@ -1052,7 +1072,7 @@ endfunction(latex_copy_input_file)
 
 function(latex_usage command message)
   message(SEND_ERROR
-    "${message}\n  Usage: ${command}(<tex_file>\n           [BIBFILES <bib_file> <bib_file> ...]\n           [INPUTS <tex_file> <tex_file> ...]\n           [IMAGE_DIRS <directory1> <directory2> ...]\n           [IMAGES <image_file1> <image_file2>\n           [CONFIGURE <tex_file> <tex_file> ...]\n           [DEPENDS <tex_file> <tex_file> ...]\n           [MULTIBIB_NEWCITES] <suffix_list>\n           [USE_INDEX] [USE_GLOSSARY] [USE_NOMENCL]\n           [FORCE_PDF] [FORCE_DVI] [FORCE_HTML]\n           [TARGET_NAME] <name>\n           [EXCLUDE_FROM_ALL]\n           [EXCLUDE_FROM_DEFAULTS])"
+      "${message}\n  Usage: ${command}(<tex_file>\n           [BIBFILES <bib_file> <bib_file> ...]\n           [INPUTS <tex_file> <tex_file> ...]\n           [IMAGE_DIRS <directory1> <directory2> ...]\n           [IMAGES <image_file1> <image_file2>\n           [CONFIGURE <tex_file> <tex_file> ...]\n           [DEPENDS <tex_file> <tex_file> ...]\n           [MULTIBIB_NEWCITES] <suffix_list>\n           [USE_BIBLATEX] [USE_INDEX] [USE_GLOSSARY] [USE_NOMENCL]\n           [FORCE_PDF] [FORCE_DVI] [FORCE_HTML]\n           [TARGET_NAME] <name>\n           [EXCLUDE_FROM_ALL]\n           [EXCLUDE_FROM_DEFAULTS])"
     )
 endfunction(latex_usage command message)
 
@@ -1061,6 +1081,7 @@ endfunction(latex_usage command message)
 # LATEX_INPUTS.
 function(parse_add_latex_arguments command latex_main_input)
   set(options
+    USE_BIBLATEX
     USE_INDEX
     USE_GLOSSARY
     USE_NOMENCL
@@ -1282,25 +1303,35 @@ function(add_latex_targets_internal)
   endif()
 
   if(LATEX_BIBFILES)
+    if(LATEX_USE_BIBLATEX)
+      if(NOT BIBER_COMPILER)
+	message(SEND_ERROR "I need the biber command.")
+      endif()
+      set(bib_compiler ${BIBER_COMPILER})
+      set(bib_compiler_flags ${BIBER_COMPILER_FLAGS})
+    else()
+      set(bib_compiler ${BIBTEX_COMPILER})
+      set(bib_compiler_flags ${BIBTEX_COMPILER_FLAGS})
+    endif() 
     if(LATEX_MULTIBIB_NEWCITES)
       foreach (multibib_auxfile ${LATEX_MULTIBIB_NEWCITES})
         latex_get_filename_component(multibib_target ${multibib_auxfile} NAME_WE)
         set(make_dvi_command ${make_dvi_command}
           COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-          ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${multibib_target})
+          ${bib_compiler} ${bib_compiler_flags} ${multibib_target})
         set(make_pdf_command ${make_pdf_command}
           COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-          ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${multibib_target})
+          ${bib_compiler} ${bib_compiler_flags} ${multibib_target})
         set(auxiliary_clean_files ${auxiliary_clean_files}
           ${output_dir}/${multibib_target}.aux)
       endforeach (multibib_auxfile ${LATEX_MULTIBIB_NEWCITES})
     else()
       set(make_dvi_command ${make_dvi_command}
         COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-        ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
+        ${bib_compiler} ${bib_compiler_flags} ${LATEX_TARGET})
       set(make_pdf_command ${make_pdf_command}
         COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
-        ${BIBTEX_COMPILER} ${BIBTEX_COMPILER_FLAGS} ${LATEX_TARGET})
+        ${bib_compiler} ${bib_compiler_flags} ${LATEX_TARGET})
     endif()
 
     foreach (bibfile ${LATEX_BIBFILES})
@@ -1351,6 +1382,17 @@ function(add_latex_targets_internal)
     ${pdflatex_build_command}
     COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
     ${pdflatex_build_command})
+
+  # Need to run one more time to remove biblatex' warning
+  # about page breaks that have changed.
+  if(LATEX_USE_BIBLATEX)
+    set(make_dvi_command ${make_dvi_command}
+      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+      ${latex_build_command})
+    set(make_pdf_command ${make_pdf_command}
+      COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+      ${pdflatex_build_command})
+  endif()
 
   if(LATEX_USE_SYNCTEX)
     if(NOT GZIP)

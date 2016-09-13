@@ -23,31 +23,30 @@ its template-based code removes the overhead of abstraction.
 
 \begin{figure}[htb]
   \centering
-  \begin{tabular}{ccc}
-    CUDA SDK & PISTON & VTK-m \\
-    {\small 431 LOC} & {\small 369 LOC} & {\small 265 LOC} \\
+  %% \begin{tabular}{ccc}
+  %%   CUDA SDK & PISTON & VTK-m \\
+  %%   {\small 431 LOC} & {\small 369 LOC} & {\small 265 LOC} \\
+  %%   \includegraphics[width=.75in]{images/MCCompareCuda} &
+  %%   \includegraphics[width=.75in]{images/MCComparePiston} &
+  %%   \includegraphics[width=.75in]{images/MCCompareVTKm}
+  %% \end{tabular}
+  \begin{tabular}{cc}
+    CUDA SDK & VTK-m \\
+    {\small 431 LOC} & {\small 265 LOC} \\
     \includegraphics[width=.75in]{images/MCCompareCuda} &
-    \includegraphics[width=.75in]{images/MCComparePiston} &
     \includegraphics[width=.75in]{images/MCCompareVTKm}
   \end{tabular}
-  \caption[Comparison of Marching Cubes implementations.]{Comparison of the
-    Marching Cubes algorithm in VTK-m and two other implementations.
-    Implementations in VTK-m are simpler, shorter, more general, and easier
-    to maintain. (Lines of code (LOC) measurements come from cloc.)}
+  \caption[Comparison of Marching Cubes implementations.]{
+    Comparison of the Marching Cubes algorithm in VTK-m and the reference implementation in the CUDA SDK.
+    Implementations in VTK-m are simpler, shorter, more general, and easier to maintain.
+    (Lines of code (LOC) measurements come from cloc.)}
   \label{fig:MCCompare}
 \end{figure}
 
-VTK-m simplifies the development of parallel scientific visualization
-algorithms by providing a framework of supporting functionality that allows
-developers to focus on visualization operations. Consider the listings in
-Figure~\ref{fig:MCCompare} that compares the size of the implementations
-for the Marching Cubes algorithm in VTK-m with the equivalent algorithms
-implemented in the CUDA software development kit reference implementation
-and the PISTON visualization library. Because VTK-m internally manages the
-parallel distribution of work and data, the VTK-m implementation is shorter
-and easier to maintain. Additionally, VTK-m provides data abstractions not
-provided by the other libraries that make code written in VTK-m more
-versatile.
+VTK-m simplifies the development of parallel scientific visualization algorithms by providing a framework of supporting functionality that allows developers to focus on visualization operations.
+Consider the listings in Figure~\ref{fig:MCCompare} that compares the size of the implementation for the Marching Cubes algorithm in VTK-m with the equivalent reference implementation in the CUDA software development kit.
+Because VTK-m internally manages the parallel distribution of work and data, the VTK-m implementation is shorter and easier to maintain.
+Additionally, VTK-m provides data abstractions not provided by other libraries that make code written in VTK-m more versatile.
 
 \begin{didyouknow}
   VTK-m is written in C++ and makes extensive use of templates. The toolkit

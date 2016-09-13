@@ -1,6 +1,6 @@
 # File: UseLATEX.cmake
 # CMAKE commands to actually use the LaTeX compiler
-# Version: 2.3.1
+# Version: 2.3.2
 # Author: Kenneth Moreland <kmorel@sandia.gov>
 #
 # Copyright 2004, 2015 Sandia Corporation.
@@ -115,6 +115,12 @@
 #
 # History:
 #
+# 2.3.2 Declare LaTeX input files as sources for targets so that they show
+#       up in IDEs like QtCreator.
+#
+#       Fix issue where main tex files in subdirectories were creating
+#       invalid targets for building HTML. Just disable the HTML targets in
+#       this case.
 #
 # 2.3.1 Support use of magick command instead of convert command for
 #       ImageMagick 7.
@@ -1168,6 +1174,10 @@ function(add_latex_targets_internal)
     set(LATEX_TARGET_NAME ${LATEX_TARGET})
   endif()
 
+  # Some LaTeX commands may need to be modified (or may not work) if the main
+  # tex file is in a subdirectory. Make a flag for that.
+  get_filename_component(LATEX_MAIN_INPUT_SUBDIR ${LATEX_MAIN_INPUT} DIRECTORY)
+
   # Set up target names.
   set(dvi_target      ${LATEX_TARGET_NAME}_dvi)
   set(pdf_target      ${LATEX_TARGET_NAME}_pdf)
@@ -1245,6 +1255,8 @@ function(add_latex_targets_internal)
         )
     endif()
   endforeach(input)
+
+  set(all_latex_sources ${LATEX_MAIN_INPUT} ${LATEX_INPUTS} ${image_list})
 
   if(LATEX_USE_GLOSSARY)
     foreach(dummy 0 1)   # Repeat these commands twice.
@@ -1436,7 +1448,10 @@ function(add_latex_targets_internal)
         COMMAND ${make_pdf_command}
         DEPENDS ${make_pdf_depends}
         )
-      add_custom_target(${pdf_target} DEPENDS ${output_dir}/${LATEX_TARGET}.pdf)
+      add_custom_target(${pdf_target}
+        DEPENDS ${output_dir}/${LATEX_TARGET}.pdf
+        SOURCES ${all_latex_sources}
+        )
       if(NOT LATEX_EXCLUDE_FROM_DEFAULTS)
         add_dependencies(pdf ${pdf_target})
       endif()
@@ -1457,7 +1472,10 @@ function(add_latex_targets_internal)
       COMMAND ${make_dvi_command}
       DEPENDS ${make_dvi_depends}
       )
-    add_custom_target(${dvi_target} DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
+    add_custom_target(${dvi_target}
+      DEPENDS ${output_dir}/${LATEX_TARGET}.dvi
+      SOURCES ${all_latex_sources}
+      )
     if(NOT LATEX_EXCLUDE_FROM_DEFAULTS)
       add_dependencies(dvi ${dvi_target})
     endif()
@@ -1467,7 +1485,10 @@ function(add_latex_targets_internal)
         COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
         ${DVIPS_CONVERTER} ${DVIPS_CONVERTER_FLAGS} -o ${LATEX_TARGET}.ps ${LATEX_TARGET}.dvi
         DEPENDS ${output_dir}/${LATEX_TARGET}.dvi)
-      add_custom_target(${ps_target} DEPENDS ${output_dir}/${LATEX_TARGET}.ps)
+      add_custom_target(${ps_target}
+        DEPENDS ${output_dir}/${LATEX_TARGET}.ps
+        SOURCES ${all_latex_sources}
+        )
       if(NOT LATEX_EXCLUDE_FROM_DEFAULTS)
         add_dependencies(ps ${ps_target})
       endif()
@@ -1492,7 +1513,18 @@ function(add_latex_targets_internal)
       set(default_build html)
     endif()
 
-    if(LATEX2HTML_CONVERTER)
+    if(LATEX2HTML_CONVERTER AND LATEX_MAIN_INPUT_SUBDIR)
+      message(STATUS
+	"Disabling HTML build for ${LATEX_TARGET_NAME}.tex because the main file is in subdirectory ${LATEX_MAIN_INPUT_SUBDIR}"
+	)
+      # The code below to run HTML assumes that LATEX_TARGET.tex is in the
+      # current directory. I have tried to specify that LATEX_TARGET.tex is
+      # in a subdirectory. That makes the build targets correct, but the
+      # HTML build still fails (at least for htlatex) because files are not
+      # generated where expected. I am getting around the problem by simply
+      # disabling HTML in this case. If someone really cares, they can fix
+      # this, but make sure it runs on many platforms and build programs.
+    elseif(LATEX2HTML_CONVERTER)
       if(USING_HTLATEX)
         # htlatex places the output in a different location
         set(HTML_OUTPUT "${output_dir}/${LATEX_TARGET}.html")
@@ -1504,7 +1536,10 @@ function(add_latex_targets_internal)
           ${LATEX2HTML_CONVERTER} ${LATEX2HTML_CONVERTER_FLAGS} ${LATEX_MAIN_INPUT}
         DEPENDS ${output_dir}/${LATEX_TARGET}.tex
         )
-      add_custom_target(${html_target} DEPENDS ${HTML_OUTPUT} ${dvi_target})
+      add_custom_target(${html_target}
+        DEPENDS ${HTML_OUTPUT} ${dvi_target}
+        SOURCES ${all_latex_sources}
+        )
       if(NOT LATEX_EXCLUDE_FROM_DEFAULTS)
         add_dependencies(html ${html_target})
       endif()

@@ -9,6 +9,8 @@ set(images
   images/SandiaLogo.pdf
   images/DOELogo.pdf
   images/KitwareLogo.png
+  images/CMakeGUIBlank.png
+  images/CMakeGUI.png
   images/ArrayHandleStorage.pdf
   images/BasicGlut.png
   images/CameraViewRange2D.pdf
@@ -40,6 +42,7 @@ set(input_docs
   TitlePage.tex
   Contributors.tex
   Introduction.tex
+  BuildAndInstall.tex
   IO.tex
   ProvidedFilters.tex
   Rendering.tex

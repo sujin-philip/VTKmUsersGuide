@@ -790,7 +790,7 @@ following lists are provided.
   in visualization. This includes signed integers and floats that are 32 or
   64 bit. It also includes 3 dimensional vectors of floats. This is the
   default list used when resolving the type in dynamic arrays (described in
-  Section~\ref{sec:DynamicArrayHandle}).
+  Chapter~\ref{chap:DynamicArrayHandle}).
 \end{description}
 
 If these lists are not sufficient, it is possible to build new type lists
@@ -803,7 +803,7 @@ example.
 The \vtkmheader{vtkm}{TypeListTag.h} header also defines a macro named
 \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} that defines a default list of
 types to use in classes like \vtkmcont{DynamicArrayHandle}
-(Section~\ref{sec:DynamicArrayHandle}). This list can be overridden by
+(Chapter~\ref{chap:DynamicArrayHandle}). This list can be overridden by
 defining the \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG} macro \emph{before}
 any VTK-m headers are included. If included after a VTK-m header, the list
 is not likely to take effect. Do not ignore compiler warnings about the
@@ -832,7 +832,7 @@ call.
 The following example shows a rudimentary version of coverting a
 dynamically-typed array to a statically-typed array similar to what is done
 in VTK-m classes like \vtkmcont{DynamicArrayHandle} (which is documented in
-Section~\ref{sec:DynamicArrayHandle}).
+Chapter~\ref{chap:DynamicArrayHandle}).
 
 \vtkmlisting{Converting dynamic types to static types with \textidentifier{ListForEach}.}{ListForEach.cxx}
 

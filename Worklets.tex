@@ -636,7 +636,7 @@ of its \controlsignature.
   \textidentifier{DynamicCellSet} in the associated parameter of the
   dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
   cell shape tag. (Cell shapes and the operations you can do with cells are
-  discussed in Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.)
+  discussed in Chapter~\ref{chap:WorkingWithCells}.)
 
   There must be exactly one \sigtag{CellSetIn} argument, and the worklet's
   \inputdomain must be set to this argument.
@@ -710,7 +710,7 @@ A field map worklet supports the following tags in the parameters of its
 \item[\sigtag{CellShape}] This tag produces a shape tag corresponding to
   the shape of the visited cell. (Cell shapes and the operations you can do
   with cells are discussed in
-  Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.) This is the
+  Chapter~\ref{chap:WorkingWithCells}.) This is the
   same value that gets provided if you reference the
   \textsignature{CellSetIn} parameter.
 
@@ -924,7 +924,7 @@ other topology maps but with different (more general) names.
   \textidentifier{DynamicCellSet} in the associated parameter of the
   dispatcher's \textcode{Invoke}. Each invocation of the worklet gets a
   cell shape tag. (Cell shapes and the operations you can do with cells are
-  discussed in Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.)
+  discussed in Chapter~\ref{chap:WorkingWithCells}.)
 
   There must be exactly one \sigtag{CellSetIn} argument, and the worklet's
   \inputdomain must be set to this argument.
@@ -992,7 +992,7 @@ parameters of its \executionsignature.
 \item[\sigtag{CellShape}] This tag produces a shape tag corresponding to
   the shape of the visited ``to'' element. (Cell shapes and the operations
   you can do with cells are discussed in
-  Section~\ref{sec:ExecutionEnvironment:WorkingWithTopology}.) This is the
+  Chapter~\ref{chap:WorkingWithCells}.) This is the
   same value that gets provided if you reference the
   \textsignature{CellSetIn} parameter.
 
@@ -1731,7 +1731,7 @@ An execution object can refer to an array, but the array reference must be
 through an array portal for the execution environment. This can be
 retrieved from the \textcode{PrepareForInput} method in
 \vtkmcont{ArrayHandle} as described in
-Section~\ref{sec:ArrayHandleInterfaceToExecutionEnvironment}. Other VTK-m
+Section~\ref{sec:ArrayHandle:InterfaceToExecutionEnvironment}. Other VTK-m
 data objects, such as the subclasses of \vtkmcont{CellSet}, have similar
 methods.
 

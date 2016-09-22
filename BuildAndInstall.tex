@@ -112,7 +112,7 @@ For example, to enable TBB support, you may have to first enable building TBB, c
 
 Once you have set all desired configuration variables and resolved any CMake errors, click the ``Generate'' button. This will create the build files (such as makefiles or project files depending on the generator chosen at the beginning). You can then close the CMake GUI.
 
-There are a great number of configuration paramters available when running CMake on \VTKm.
+There are a great number of configuration parameters available when running CMake on \VTKm.
 The following list contains the most common configuration parameters.
 
 \begin{description}
@@ -120,7 +120,7 @@ The following list contains the most common configuration parameters.
   Determines whether static or shared libraries are built.
 \item[\cmakevar{CMAKE\_BUILD\_TYPE}]
   \index{Debug} \index{Release}
-  Selects groups of compiler options from catagories like Debug and Release.
+  Selects groups of compiler options from categories like Debug and Release.
   Debug builds are, obviously, easier to debug, but they run \emph{much} slower than Release builds.
   Use Release builds whenever releasing production software or doing performance tests.
 \item[\cmakevar{CMAKE\_INSTALL\_PREFIX}]
@@ -181,6 +181,14 @@ make install
   For example, \textfilename{make} requires the \textfilename{-j} flag to start parallel builds as demonstrated in Example~\ref{ex:RunningMake}.
 \end{didyouknow}
 
+\begin{commonerrors}
+  CMake allows you to switch between several types of builds including default, Debug, and Release.
+  Programs and libraries compiled as release builds can run \emph{much} faster than those from other types of builds.
+  Thus, it is important to perform Release builds of all software released for production or where runtime is a concern.
+  Some integrated development environments such as Microsoft Visual Studio allow you to specify the different build types within the build system.
+  But for other build programs, like \textfilename{make}, you have to specify the build type in the \cmakevar{CMAKE\_BUILD\_TYPE} CMake configuration variable, which is described in Section~\ref{sec:ConfigureVTKm}.
+\end{commonerrors}
+
 CMake creates several build ``targets'' that specify the group of things to build.
 The default target builds all of \VTKm's libraries as well as tests, examples, and benchmarks if enabled.
 The \textfilename{test} target executes each of the \VTKm regression tests and verifies they complete successfully on the system.
@@ -203,7 +211,111 @@ However, \VTKm comes with several CMake configuration files that simplify linkin
 Thus, the documentation in this section is specifically for finding and configuring \VTKm for CMake projects.
 
 \index{CMake|(}
+\index{CMake!VTK-m package|(}
+\index{VTK-m CMake package|(}
 
+\VTKm can be configured from an external project using the \textcode{find\_package} CMake function.
+The behavior and use of this function is well described in the CMake documentation.
+The first argument to \textcode{find\_package} is the name of the package, which in this case is \textcode{VTKm}.
+CMake configures this package by looking for a file named \textfilename{VTKmConfig.cmake}, which will be located in the \textfilename{lib} directory of the install or build of \VTKm.
+The configurable CMake variable \cmakevar{VTKm\_DIR} can be set to the directory that contains this file.
 
+\begin{didyouknow}
+  The CMake \textcode{find\_package} function also supports several features not discussed here including specifying a minimum or exact version of \VTKm and turning off some of the status messages.
+  See the CMake documentation for more details.
+\end{didyouknow}
 
-\index{Cmake|)}
+\index{CMake!VTK-m package!components|(}
+\index{VTK-m CMake package!components|(}
+
+\newcommand*{\cmakecomponent}[1]{%
+  \textsf{#1}%
+  \index{#1}%
+  \index{CMake!VTK-m package!#1}%
+  \index{VTK-m CMake package!components!#1}}
+
+The CMake package for VTK-m is broken down into components that let you load particular features of VTK-m.
+Package components can be specified with the \textcode{COMPONENTS} and \textcode{OPTIONAL\_COMPONENTS} arguments to the \textcode{find\_package} function.
+The following example demonstrates using \textcode{find\_package} to find the \VTKm package that requires the \cmakecomponent{Serial} backend as well as the \cmakecomponent{Rendering} and \cmakecomponent{OpenGL} features as well as optionally using the \cmakecomponent{TBB} and \cmakecomponent{CUDA} backends.
+
+\begin{blankexample}{Loading \VTKm configuration from an external CMake project.}
+find_package(VTKm REQUIRED
+  COMPONENTS Serial OpenGL Rendering
+  OPTIONAL_COMPONENTS TBB CUDA
+  )
+\end{blankexample}
+
+The following components are available.
+Many of the features for these components are described elsewhere within this book.
+
+\begin{description}
+\item[\cmakecomponent{Base}]
+  The ``base'' configuration required for using any part of \VTKm.
+  This component is loaded automatically even if no components are specified in \textcode{find\_package}.
+\item[\cmakecomponent{Serial}]
+  The serial backend for \VTKm, which is useful for debugging and when no other backend is available.
+\item[\cmakecomponent{OpenGL}]
+  Support for the integration of OpenGL features with \VTKm.
+\item[\cmakecomponent{OSMesa}]
+  Support for creating off screen canvases using the OSMesa library.
+\item[\cmakecomponent{EGL}]
+  Support for creating off screen canvases using the EGL library.
+\item[\cmakecomponent{GLFW}]
+  A convenience component that loads the necessary configuration to use the GLFW library, which provides a cross-platform interface for creating OpenGL windows.
+\item[\cmakecomponent{GLUT}]
+  A convenience component that loads the necessary configuration to use the GLUT library, which provides a cross-platform interface for creating OpenGL windows.
+\item[\cmakecomponent{Interop}]
+  Support for transferring \VTKm array data directly to OpenGL objects.
+\item[\cmakecomponent{Rendering}]
+  Use of the lightweight \VTKm rendering library, which provides basic rendering of \VTKm data objects.
+\item[\cmakecomponent{TBB}]
+  The Intel Threading Building Blocks (TBB) backend for \VTKm, which uses multiple cores and threads for parallel processing.
+\item[\cmakecomponent{CUDA}]
+  The CUDA backend for \VTKm, which uses GPU processors for parallel processing.
+\end{description}
+
+\index{VTK-m CMake package!components|)}
+\index{CMake!VTK-m package!components|)}
+
+\index{CMake!VTK-m package!variables|(}
+\index{VTK-m CMake package!variables|(}
+
+\newcommand*{\cmakevtkmpackagevariable}[1]{%
+  \textsf{#1}%
+  \index{#1}%
+  \index{CMake!VTK-m package!#1}%
+  \index{VTK-m CMake package!variables!#1}}
+
+After the \textcode{find\_package} function completes, the following CMake variables are defined, which are then used for subsequent configuration.
+
+\begin{description}
+\item[\cmakevtkmpackagevariable{VTKm\_FOUND}]
+  Set to true if the \VTKm CMake package, all its dependent packages, and all the specified components were successfully configured.
+  If \textcode{find\_package} was not called with the \textcode{REQUIRED} option, then this variable should be checked before attempting to use \VTKm.
+\item[\cmakevtkmpackagevariable{VTKm\_{\it{}\textless{}component\_name\textgreater{}}\_FOUND}]
+  For each component specified in the \textcode{find\_package} call, one of these variables will be defined as true or false depending on whether the component successfully loaded.
+  For components specified as an \textcode{OPTIONAL\_COMPONENTS} argument, the \cmakevtkmpackagevariable{VTKm\_FOUND} might still be true (because all required components succeeded) while the associated \cmakevtkmpackagevariable{VTKm\_{\it{}\textless{}component\_name\textgreater{}}\_FOUND} could be false if that specific component failed to load.
+\item[\cmakevtkmpackagevariable{VTKm\_INCLUDE\_DIRS}]
+  Contains a list of all directories that need to be specified to properly include \VTKm header files.
+  These also include the directories needed for header files that \VTKm depends on and specified components.
+  Targets should use the \textcode{target\_include\_directories} CMake function to add this list of directories to the compile commands.
+\item[\cmakevtkmpackagevariable{VTKm\_LIBRARIES}]
+  Contains a list of all requested \VTKm libraries and component libraries.
+  Targets should use the \textcode{target\_link\_libraries} CMake function to add this list of libraries to the link commands.
+\item[\cmakevtkmpackagevariable{VTKm\_COMPILE\_OPTIONS}]
+  Contains a string of options that \VTKm suggests to add to the compiler.
+  Targets should use the \textcode{target\_compile\_options} CMake function to add this list of directories to the compile commands.
+\end{description}
+
+\begin{commonerrors}
+  It is not sufficient to just call \textcode{find\_package} to compile code using \VTKm.
+  You must also use the \cmakevtkmpackagevariable{VTKm\_INCLUDE\_DIRS} and \cmakevtkmpackagevariable{VTKm\_LIBRARIES} CMake variables to configure the compiler to load \VTKm's components.
+  (Although technically not required, it is highly advisable to also use the \cmakevtkmpackagevariable{VTKm\_COMPILE\_OPTIONS} variable as well.) 
+\end{commonerrors}
+
+\index{VTK-m CMake package!variables|)}
+\index{CMake!VTK-m package!variables|)}
+
+\index{VTK-m CMake package|)}
+\index{CMake!VTK-m package|)}
+\index{CMake|)}

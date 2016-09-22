@@ -222,6 +222,11 @@ The following classes, when constructed, create an off screen rendering
 buffer.
 
 \begin{description}
+\item[\vtkmrendering{CanvasEGL}]
+  \index{rendering!EGL} \index{canvas!EGL} \index{EGL}
+  Creates an off screen OpenGL rendering buffer using EGL.
+  EGL provides an interface to create a context for OpenGL rendering software without engaging the operating-system-specific windowing system.
+  For this to be available, \VTKm must have been configured to use the EGL library.
 \item[\vtkmrendering{CanvasOSMesa}] \index{rendering!OSMesa}
   \index{canvas!OSMesa} \index{OSMesa} Creates an off screen OpenGL
   rendering buffer using the OSMesa library. For this to be available,

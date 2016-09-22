@@ -1,7 +1,7 @@
 ////
 //// BEGIN-EXAMPLE DefaultDeviceAdapter.cxx
 ////
-// Uncomment one (and only one) of the following to reconfigure the Dax
+// Uncomment one (and only one) of the following to reconfigure the VTK-m
 // code to use a particular device. Comment them all to automatically pick a
 // device.
 #define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_SERIAL

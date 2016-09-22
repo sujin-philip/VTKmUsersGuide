@@ -183,12 +183,7 @@ if (test)
   any VTK-m package namespace with the ``using'' keyword. It should also be
   avoided in class, method, and function scopes (fully qualified namespace
   references are preferred).
-\item All code must be valid by the C++03 and C++11 specifications. It must
-  also compile on older compilers that support C++98. Code that uses
-  language features not available in C++98 must have a second
-  implementation that works around the limitations of C++98. The
-  \cmakevar{VTKM\_FORCE\_ANSI} turns on a compiler check for ANSI
-  compatibility in gcc and clang compilers.
+\item All code must be valid by the C++11 specification.
 \item Limit all lines to 80 characters whenever possible.
 \item New code must include regression tests that will run on the
   dashboards. Generally a new class will have an associated ``UnitTest''

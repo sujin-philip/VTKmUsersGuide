@@ -53,6 +53,7 @@ set(input_docs
   FancyArrayStorage.tex
   DynamicArrayHandle.tex
   DataSet.tex
+  Policies.tex
   Worklets.tex
   Math.tex
   WorkingWithCells.tex

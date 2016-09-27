@@ -1,0 +1,101 @@
+% -*- latex -*-
+
+\chapter{Filter Polices}
+\label{chap:FilterPolicies}
+\label{chap:Policies}
+
+\index{filter!policies|(}
+\index{policies|(}
+
+In Chapter~\ref{chap:ProvidedFilters} we explored the set of filter classes in \VTKm, which provide a convenient interface for running the algorithms that come with \VTKm.
+That chapter describes methods like \textcode{Execute} and \textcode{MapFieldOntoOutput}, which take data process it in parallel.
+What is not described in Chapter~\ref{chap:ProvidedFilters} is how the filter chooses data types and what computing device (e.g. CPU or GPU) to use.
+
+These decisions are determined by \keyterm{policies}.
+A policy defines the behavior of how a filter interprets dynamic data and what devices it should use.
+The methods previously described in~\ref{chap:ProvidedFilters} implicitly use a default policy that tries the most common types and a group of basic devices.
+However, each of these methods have an alternate form that allows you to specify a customized policy.
+In this chapter we describe policies and demonstrate how to create and use your own policies.
+
+
+\section{Default Policy}
+
+\index{filter!policies!default|(}
+\index{policies!default|(}
+
+The default policy is specified by the \vtkmfilter{DefaultPolicy} class, which is defined in the \vtkmheader{vtkm/filter}{DefaultPolicy.h} header file.
+The default policy can be used any place a standard policy is used, although generally this is unnecessary as the default policy is used automatically if no policy is specified.
+
+\begin{didyouknow}
+  The \vtkmfilter{DefaultPolicy} class makes for a good reference on what a policy contains and how to construct a new policy.
+  The contents of the default policy can also be used when creating new policies where only some of the properties need be different (as is done in the examples here).
+\end{didyouknow}
+
+\fix{It would be nice if you could create a new policy that inherited all of the default policies rather than require you to define every one. If that were implemented, then the description above would change as would pretty much all the examples here.}
+
+\index{policies!default|)}
+\index{filter!policies!default|)}
+
+
+\section{Policy Contents}
+
+A policy is a traits-like object that contains the following typedefs.
+\fix{Most of?} These typedefs are list tag objects.
+List tags are described in Section~\ref{sec:ListTags}.
+
+\begin{description}
+\item[\textcode{FieldTypeList}] \index{FieldTypeList}
+  A type list tag containing a list of all possible types of values in field arrays used as input to the filter.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_TYPE\_LIST\_TAG}, which corresponds to \vtkm{Int32}, \vtkm{Int64}, \vtkm{Float32}, \vtkm{Float64}, \vtkm{Vec}\tparams{\vtkm{Float32},3}, and \vtkm{Vec}\tparams{\vtkm{Float64},3}.
+\item[\textcode{FieldStorageList}] \index{FieldStorageList}
+  A type list tag containing a list of all possible storage types for field arrays used as input to the filter.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_STORAGE\_LIST\_TAG}, which corresponds to a list containing only \vtkmcont{StorageTagBasic} (the default storage for \vtkmcont{ArrayHandle} objects).
+\item[\textcode{CoordinateTypeList}] \index{CoordinateTypeList}
+  A type list tag containing a list of all possible types of values in field arrays used as input to the filter when the field array comes from the coordinates of the data set.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_COORDINATE\_SYSTEM\_TYPE\_LIST\_TAG}, which corresponds to \vtkm{Vec}\tparams{\vtkm{Float32},3} and \vtkm{Vec}\tparams{\vtkm{Float64},3}.
+\item[\textcode{CoordinateStorageList}] \index{CoordinateStorageList}
+  A type list tag containing a list of all possible storage types for field arrays used as input to the filter when the field array comes from the coordinates of the data set.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_COORDINATE\_SYSTEM\_STORAGE\_LIST\_TAG}, which corresponds to a list containing the basic \textidentifier{ArrayHandle} storage as well as structures for \vtkmcont{ArrayHandleUniformPointCoordinates}, \vtkmcont{ArrayHandleCompositeVector}, and \vtkmcont{ArrayHandleCartesianProduct}.
+\item[\textcode{StructuredCellSetList}] \index{StructuredCellSetList}
+  A type list tag containing a list of all possible cell sets classes used when representing structured cell sets.
+  The default policy sets this to \vtkmcont{CellSetListTagStructured}, which corresponds to a list containing \vtkmcont{CellSetStructured}\tparams{2} and \vtkmcont{CellSetStructured}\tparams{3}.
+\item[\textcode{UnstructuredCellSetList}] \index{UnstructuredCellSetList}
+  A type list tag containing a list of all possible cell set classes used when representing unstructured cell sets.
+  The default policy sets this to \vtkmcont{CellSetListTagUnstructured}, which corresponds to a list containing \vtkmcont{CellSetExplicit} and \vtkmcont{CellSetSingleType}.
+\item[\textcode{AllCellSetList}] \index{AllCellSetList}
+  A type list tag containing a list of all possible cell set classes.
+  This is usually a union of \textcode{StructuredCellSetList} and \textcode{UnstructuredCellSetList}.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_CELL\_SET\_LIST\_TAG}, which corresponds to a list containing \vtkmcont{CellSetStructured}\tparams{2}, \vtkmcont{CellSetStructured}\tparams{3}, \vtkmcont{CellSetExplicit}, and \vtkmcont{CellSetSingleType}
+\item[\textcode{DeviceAdapterList}] \index{DeviceAdapterList}
+  A type list tag containing a list of device adapter tags for the devices to try to run the algorithm on.
+  The devices are tried in the order they are listed in \textcode{DeviceAdapterList}, so the ``best'' devices should be listed first.
+  The default policy sets this to \vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_LIST\_TAG}, which corresponds to a list containing \vtkmcont{DeviceAdapterTagCuda}, \vtkmcont{DeviceAdapterTagTBB}, and \vtkmcont{DeviceAdapterTagSerial}.
+\end{description}
+
+\begin{commonerrors}
+  Just because a device is listed in \textcode{DeviceAdapterList} there is no guarantee that such a device will ever be used.
+  For example, if the Cuda device is listed (as in the default) but the filter is not compiled by the Cuda compiler, then that device will always be skipped.
+\end{commonerrors}
+
+
+\section{Creating Policies}
+
+\index{filter!policies!custom|(}
+\index{policies!custom|(}
+
+Creating a policy is as simple as creating a subclass of \vtkmfilter{PolicyBase} that provides typedefs for each of the expected policy information types.
+\textidentifier{PolicyBase} is a templated class that takes as its single template parameter the type of the subclass.
+For example, a policy object named \textcode{PolicyFoo} will subclass \textidentifier{PolicyBase}\tparams{PolicyFoo}.
+
+\begin{didyouknow}
+  The convention of having a subclass be templated on the derived class' type is known as the Curiously Recurring Template Pattern (CRTP).
+  In the case of policies, \VTKm uses this CRTP behavior to allow methods to have templates that accept any policy type but nothing that is not a policy.
+\end{didyouknow}
+
+\fix{Add similar didyouknow to \vtkmcontinternal{DeviceAdapterAlgorithmGeneral} description.}
+
+\index{policies!custom|)}
+\index{filter!policies!custom|)}
+
+\index{policies|)}
+\index{filter!policies|)}

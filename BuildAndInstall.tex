@@ -279,16 +279,37 @@ Many of the features for these components are described elsewhere within this bo
 \index{VTK-m CMake package!components|)}
 \index{CMake!VTK-m package!components|)}
 
-\index{CMake!VTK-m package!variables|(}
-\index{VTK-m CMake package!variables|(}
-
 \newcommand*{\cmakevtkmpackagevariable}[1]{%
   \textsf{#1}%
   \index{#1}%
   \index{CMake!VTK-m package!#1}%
   \index{VTK-m CMake package!variables!#1}}
 
-After the \textcode{find\_package} function completes, the following CMake variables are defined, which are then used for subsequent configuration.
+After the \textcode{find\_package} function completes, C++ libraries and executables can be creating using the configuration variables defined.
+The following is a simple example of creating an executable.
+
+\begin{blankexample}{Loading \VTKm configuration from an external CMake project.}
+find_package(VTKm REQUIRED
+  COMPONENTS Serial OpenGL Rendering
+  OPTIONAL_COMPONENTS TBB CUDA
+  )
+
+add_executable(myprog myprog.cxx)
+target_include_directories(myprog PRIVATE ${VTKm_INCLUDE_DIRS})
+target_link_libraries(myprog ${VTKm_LIBRARIES})
+target_compile_options(myprog PRIVATE ${VTKm_COMPILE_OPTIONS})
+\end{blankexample}
+
+\begin{commonerrors}
+  It is not sufficient to just call \textcode{find\_package} to compile code using \VTKm.
+  You must also use the \cmakevtkmpackagevariable{VTKm\_INCLUDE\_DIRS} and \cmakevtkmpackagevariable{VTKm\_LIBRARIES} CMake variables to configure the compiler to load \VTKm's components.
+  (Although technically not required, it is highly advisable to also use the \cmakevtkmpackagevariable{VTKm\_COMPILE\_OPTIONS} variable as well.) 
+\end{commonerrors}
+
+\index{CMake!VTK-m package!variables|(}
+\index{VTK-m CMake package!variables|(}
+
+The following is a list of all the CMake variables defined when the \textcode{find\_package} function completes.
 
 \begin{description}
 \item[\cmakevtkmpackagevariable{VTKm\_FOUND}]
@@ -306,14 +327,8 @@ After the \textcode{find\_package} function completes, the following CMake varia
   Targets should use the \textcode{target\_link\_libraries} CMake function to add this list of libraries to the link commands.
 \item[\cmakevtkmpackagevariable{VTKm\_COMPILE\_OPTIONS}]
   Contains a string of options that \VTKm suggests to add to the compiler.
-  Targets should use the \textcode{target\_compile\_options} CMake function to add this list of directories to the compile commands.
+  Targets should use the \textcode{target\_compile\_options} CMake function to add this list of options to the compile commands.
 \end{description}
-
-\begin{commonerrors}
-  It is not sufficient to just call \textcode{find\_package} to compile code using \VTKm.
-  You must also use the \cmakevtkmpackagevariable{VTKm\_INCLUDE\_DIRS} and \cmakevtkmpackagevariable{VTKm\_LIBRARIES} CMake variables to configure the compiler to load \VTKm's components.
-  (Although technically not required, it is highly advisable to also use the \cmakevtkmpackagevariable{VTKm\_COMPILE\_OPTIONS} variable as well.) 
-\end{commonerrors}
 
 \index{VTK-m CMake package!variables|)}
 \index{CMake!VTK-m package!variables|)}

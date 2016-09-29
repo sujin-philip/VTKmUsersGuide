@@ -38,6 +38,7 @@ The default policy can be used any place a standard policy is used, although gen
 
 
 \section{Policy Contents}
+\label{sec:PolicyContents}
 
 A policy is a traits-like object that contains the following typedefs.
 \fix{Most of?} These typedefs are list tag objects.
@@ -92,7 +93,13 @@ For example, a policy object named \textcode{PolicyFoo} will subclass \textident
   In the case of policies, \VTKm uses this CRTP behavior to allow methods to have templates that accept any policy type but nothing that is not a policy.
 \end{didyouknow}
 
-\fix{Add similar didyouknow to \vtkmcontinternal{DeviceAdapterAlgorithmGeneral} description.}
+After inheriting from \textidentifier{PolicyBase}, the custom policy class adds definitions for the type names listed in Section~\ref{sec:PolicyContents}.
+The following examples show type typical structure for some common instances of policies.
+Although these custom policies are separated by use case, there is no real restriction on combining them.
+
+\fix{The \VTKm source is moving from using \textcode{typedef} to \textcode{using =}. Perhaps we should go through and change all of the examples.}
+
+\fix{Maybe I will hold off on implementing this. If the virtual method branch gets accepted, then the policies will change significantly.}
 
 \index{policies!custom|)}
 \index{filter!policies!custom|)}

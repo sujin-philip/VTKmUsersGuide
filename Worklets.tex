@@ -160,7 +160,15 @@ are provided in Section~\ref{sec:ProvidedWorklets}.
 \section{Provided Worklets}
 \label{sec:ProvidedWorklets}
 
-\fix{Write this once some worklets are provided.}
+\VTKm comes with several worklet implementations.
+These worklet implementations for the most part provide the underlying implementations of the filters described in Chapter~\ref{chap:ProvidedFilters}.
+The easiest way to execute a filter is to run it from the associated filter class.
+However, if your data is not in a \vtkmcont{DataSet} structure or you have knowledge of the specific data types used in the \textidentifier{DataSet}, it might be more efficient to run the worklet directly.
+Note that many of the filters use multiple worklets under the covers to implement the full functionality.
+
+The following example demonstrates using the simple \vtkmworklet{PointElevation} worklet directly.
+
+\vtkmlisting{Using the provided \textidentifier{PointElevation} worklet.}{UsePointElevationWorklet.cxx}
 
 
 \section{Creating Worklets}

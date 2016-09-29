@@ -38,6 +38,7 @@ set(example_src
   Traits.cxx
   TransferringArguments.cxx
   TriangleQuality.cxx
+  UsePointElevationWorklet.cxx
   UseWorkletMapCellToPoint.cxx
   UseWorkletMapField.cxx
   UseWorkletMapPointToCell.cxx

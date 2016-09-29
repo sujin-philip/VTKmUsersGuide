@@ -57,6 +57,7 @@ set(input_docs
   Worklets.tex
   Math.tex
   WorkingWithCells.tex
+  ImplementingDeviceAdapters.tex
   AdvancedWorklets.tex
   CodingConventions.tex
   )

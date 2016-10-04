@@ -46,21 +46,15 @@ set(example_src
 # Set up compiling and testing of examples.
 if (BUILD_EXAMPLES)
   find_package(VTKm REQUIRED
-    COMPONENTS Serial TBB Rendering OpenGL
+    COMPONENTS Serial TBB Rendering OpenGL GLUT
     )
   include_directories(${VTKm_INCLUDE_DIRS})
-
-  find_package(GLUT REQUIRED)
 
   set(test_prog ExampleTests)
   create_test_sourcelist(test_src ${test_prog}.cxx ${example_src})
   add_executable(${test_prog} ${test_src})
-  target_include_directories(${test_prog}
-    PRIVATE ${VTKm_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS}
-    )
-  target_link_libraries(${test_prog}
-    ${VTKm_LIBRARIES} ${GLUT_LIBRARIES}
-    )
+  target_include_directories(${test_prog} PRIVATE ${VTKm_INCLUDE_DIRS})
+  target_link_libraries(${test_prog} ${VTKm_LIBRARIES})
   target_compile_options(${test_prog} PRIVATE ${VTKm_COMPILE_OPTIONS})
 
   foreach (test ${example_src})

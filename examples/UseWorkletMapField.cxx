@@ -123,7 +123,7 @@ FieldMagnitude::DoExecute(const vtkm::cont::DataSet &inDataSet,
   VTKM_IS_ARRAY_HANDLE(ArrayHandleType);
   VTKM_IS_DEVICE_ADAPTER_TAG(DeviceAdapter);
 
-  using ComponentType = ArrayHandleType::ValueType::ComponentType;
+  using ComponentType = typename ArrayHandleType::ValueType::ComponentType;
   vtkm::cont::ArrayHandle<ComponentType> outField;
 
   vtkm::worklet::DispatcherMapField<vtkm::worklet::Magnitude, DeviceAdapter>

@@ -9,9 +9,8 @@
 
 #include <vtkm/VectorAnalysis.h>
 
-//// PAUSE-EXAMPLE
-namespace {
-//// RESUME-EXAMPLE
+namespace vtkm {
+namespace worklet {
 
 class Magnitude : public vtkm::worklet::WorkletMapField
 {
@@ -38,13 +37,16 @@ public:
   }
 };
 
+}
+} // namespace vtkm::worklet
+
 VTKM_CONT_EXPORT
 vtkm::cont::DynamicArrayHandle
 InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 {
   vtkm::cont::ArrayHandle<vtkm::Float64> output;
 
-  vtkm::worklet::DispatcherMapField<Magnitude> dispatcher;
+  vtkm::worklet::DispatcherMapField<vtkm::worklet::Magnitude> dispatcher;
   dispatcher.Invoke(input, output);
 
   return vtkm::cont::DynamicArrayHandle(output);
@@ -56,6 +58,9 @@ InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 ////
 //// BEGIN-EXAMPLE RandomArrayAccess.cxx
 ////
+namespace vtkm {
+namespace worklet {
+
 struct ReverseArrayCopy : vtkm::worklet::WorkletMapField
 {
   typedef void ControlSignature(FieldIn<> inputArray,
@@ -81,6 +86,9 @@ struct ReverseArrayCopy : vtkm::worklet::WorkletMapField
   }
 };
 
+}
+} // namespace vtkm::worklet
+
 template<typename T, typename Storage>
 VTKM_CONT_EXPORT
 vtkm::cont::ArrayHandle<T>
@@ -89,7 +97,7 @@ InvokeReverseArrayCopy(const vtkm::cont::ArrayHandle<T,Storage> &inArray)
   vtkm::cont::ArrayHandle<T> outArray;
   outArray.Allocate(inArray.GetNumberOfValues());
 
-  vtkm::worklet::DispatcherMapField<ReverseArrayCopy> dispatcher;
+  vtkm::worklet::DispatcherMapField<vtkm::worklet::ReverseArrayCopy> dispatcher;
   dispatcher.Invoke(inArray, outArray);
 
   return outArray;
@@ -97,8 +105,6 @@ InvokeReverseArrayCopy(const vtkm::cont::ArrayHandle<T,Storage> &inArray)
 ////
 //// END-EXAMPLE RandomArrayAccess.cxx
 ////
-
-} // anonymous namespace
 
 #include <vtkm/cont/testing/Testing.h>
 

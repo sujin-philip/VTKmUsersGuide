@@ -10,9 +10,8 @@
 #include <vtkm/cont/DynamicCellSet.h>
 #include <vtkm/cont/Field.h>
 
-//// PAUSE-EXAMPLE
-namespace {
-//// RESUME-EXAMPLE
+namespace vtkm {
+namespace worklet {
 
 class AverageCellField : public vtkm::worklet::WorkletMapCellToPoint
 {
@@ -84,6 +83,9 @@ private:
   }
 };
 
+}
+} // namespace vtkm::worklet
+
 VTKM_CONT_EXPORT
 vtkm::cont::DataSet
 ConvertCellFieldsToPointFields(const vtkm::cont::DataSet &inData)
@@ -117,7 +119,8 @@ ConvertCellFieldsToPointFields(const vtkm::cont::DataSet &inData)
           inData.GetCellSet(inField.GetAssocCellSet());
 
       vtkm::cont::DynamicArrayHandle outFieldData = inFieldData.NewInstance();
-      vtkm::worklet::DispatcherMapTopology<AverageCellField> dispatcher;
+      vtkm::worklet::DispatcherMapTopology<vtkm::worklet::AverageCellField>
+          dispatcher;
       dispatcher.Invoke(inCellSet, inFieldData, outFieldData);
 
       vtkm::cont::DataSetFieldAdd::AddCellField(outData,
@@ -136,8 +139,6 @@ ConvertCellFieldsToPointFields(const vtkm::cont::DataSet &inData)
 ////
 //// END-EXAMPLE UseWorkletMapCellToPoint.cxx
 ////
-
-} // anonymous namespace
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>

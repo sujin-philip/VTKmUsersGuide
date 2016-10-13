@@ -10,9 +10,8 @@
 #include <vtkm/exec/CellInterpolate.h>
 #include <vtkm/exec/ParametricCoordinates.h>
 
-//// PAUSE-EXAMPLE
-namespace {
-//// RESUME-EXAMPLE
+namespace vtkm {
+namespace worklet {
 
 class CellCenter : public vtkm::worklet::WorkletMapPointToCell
 {
@@ -41,12 +40,15 @@ public:
   }
 };
 
+}
+} // namespace vtkm::worklet
+
 VTKM_CONT_EXPORT
 void FindCellCenters(vtkm::cont::DataSet &dataSet)
 {
   vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,3> > cellCentersArray;
 
-  vtkm::worklet::DispatcherMapTopology<CellCenter> dispatcher;
+  vtkm::worklet::DispatcherMapTopology<vtkm::worklet::CellCenter> dispatcher;
   dispatcher.Invoke(dataSet.GetCellSet(),
                     dataSet.GetCoordinateSystem().GetData(),
                     cellCentersArray);
@@ -57,8 +59,6 @@ void FindCellCenters(vtkm::cont::DataSet &dataSet)
 ////
 //// END-EXAMPLE UseWorkletMapPointToCell.cxx
 ////
-
-} // anonymous namespace
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>

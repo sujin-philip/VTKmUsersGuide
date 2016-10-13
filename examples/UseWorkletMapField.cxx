@@ -44,7 +44,7 @@ VTKM_CONT_EXPORT
 vtkm::cont::DynamicArrayHandle
 InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 {
-  vtkm::cont::ArrayHandle<vtkm::Float64> output;
+  vtkm::cont::ArrayHandle<vtkm::FloatDefault> output;
 
   vtkm::worklet::DispatcherMapField<vtkm::worklet::Magnitude> dispatcher;
   dispatcher.Invoke(input, output);
@@ -53,6 +53,100 @@ InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 }
 ////
 //// END-EXAMPLE UseWorkletMapField.cxx
+////
+
+#include <vtkm/filter/FilterField.h>
+
+////
+//// BEGIN-EXAMPLE UseFilterField.cxx
+////
+namespace vtkm {
+namespace filter {
+
+class FieldMagnitude : public vtkm::filter::FilterField<FieldMagnitude>
+{
+public:
+  VTKM_CONT_EXPORT
+  FieldMagnitude();
+
+  template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
+  VTKM_CONT_EXPORT
+  vtkm::filter::ResultField
+  DoExecute(const vtkm::cont::DataSet &inDataSet,
+            const ArrayHandleType &inField,
+            const vtkm::filter::FieldMetadata &fieldMetadata,
+            vtkm::filter::PolicyBase<Policy>,
+            DeviceAdapter);
+};
+
+template<>
+class FilterTraits<vtkm::filter::FieldMagnitude>
+{
+public:
+  struct InputFieldTypeList :
+      vtkm::ListTagBase<vtkm::Vec<vtkm::Float32,2>,
+                        vtkm::Vec<vtkm::Float64,2>,
+                        vtkm::Vec<vtkm::Float32,3>,
+                        vtkm::Vec<vtkm::Float64,3>,
+                        vtkm::Vec<vtkm::Float32,4>,
+                        vtkm::Vec<vtkm::Float64,4> >
+  {  };
+};
+
+}
+} // namespace vtkm::filter
+////
+//// END-EXAMPLE UseFilterField.cxx
+////
+
+////
+//// BEGIN-EXAMPLE FilterFieldImpl.cxx
+////
+namespace vtkm {
+namespace filter {
+
+VTKM_CONT_EXPORT
+FieldMagnitude::FieldMagnitude()
+{
+  this->SetOutputFieldName("");
+}
+
+template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
+VTKM_CONT_EXPORT
+vtkm::filter::ResultField
+FieldMagnitude::DoExecute(const vtkm::cont::DataSet &inDataSet,
+                          const ArrayHandleType &inField,
+                          const vtkm::filter::FieldMetadata &fieldMetadata,
+                          vtkm::filter::PolicyBase<Policy>,
+                          DeviceAdapter)
+{
+  VTKM_IS_ARRAY_HANDLE(ArrayHandleType);
+  VTKM_IS_DEVICE_ADAPTER_TAG(DeviceAdapter);
+
+  using ComponentType = ArrayHandleType::ValueType::ComponentType;
+  vtkm::cont::ArrayHandle<ComponentType> outField;
+
+  vtkm::worklet::DispatcherMapField<vtkm::worklet::Magnitude, DeviceAdapter>
+      dispatcher;
+  dispatcher.Invoke(inField, outField);
+
+  std::string outFieldName = this->GetOutputFieldName();
+  if (outFieldName == "")
+  {
+    outFieldName = fieldMetadata.GetName() + "_magnitude";
+  }
+
+  return vtkm::filter::ResultField(inDataSet,
+                                   outField,
+                                   outFieldName,
+                                   fieldMetadata.GetAssociation(),
+                                   fieldMetadata.GetCellSetName());
+}
+
+}
+} // namespace vtkm::filter
+////
+//// END-EXAMPLE FilterFieldImpl.cxx
 ////
 
 ////
@@ -106,6 +200,7 @@ InvokeReverseArrayCopy(const vtkm::cont::ArrayHandle<T,Storage> &inArray)
 //// END-EXAMPLE RandomArrayAccess.cxx
 ////
 
+#include <vtkm/cont/DataSetFieldAdd.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace {
@@ -126,8 +221,31 @@ void Test()
 
   vtkm::cont::DynamicArrayHandle outputDynamicArray =
       InvokeMagnitude(inputArray);
-  vtkm::cont::ArrayHandle<vtkm::Float64> outputArray;
+  vtkm::cont::ArrayHandle<vtkm::FloatDefault> outputArray;
   outputDynamicArray.CopyTo(outputArray);
+
+  VTKM_TEST_ASSERT(outputArray.GetNumberOfValues() == ARRAY_SIZE,
+                   "Bad output array size.");
+  for (vtkm::Id index = 0; index < ARRAY_SIZE; index++)
+  {
+    Vec3 testValue = TestValue(index, Vec3());
+    vtkm::Float64 expectedValue = sqrt(vtkm::dot(testValue,testValue));
+    vtkm::Float64 gotValue = outputArray.GetPortalConstControl().Get(index);
+    VTKM_TEST_ASSERT(test_equal(expectedValue, gotValue), "Got bad value.");
+  }
+  outputArray.ReleaseResources();
+
+  vtkm::cont::DataSet inputDataSet;
+  vtkm::cont::CellSetStructured<1> cellSet("1D_mesh");
+  cellSet.SetPointDimensions(ARRAY_SIZE);
+  inputDataSet.AddCellSet(cellSet);
+  vtkm::cont::DataSetFieldAdd::AddPointField(
+        inputDataSet, "test_values", inputArray);
+
+  vtkm::filter::FieldMagnitude fieldMagFilter;
+  vtkm::filter::ResultField magResult =
+      fieldMagFilter.Execute(inputDataSet, "test_values");
+  magResult.FieldAs(outputArray);
 
   VTKM_TEST_ASSERT(outputArray.GetNumberOfValues() == ARRAY_SIZE,
                    "Bad output array size.");

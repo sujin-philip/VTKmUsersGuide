@@ -3,6 +3,8 @@
 \chapter{Creating Filters}
 \label{chap:CreatingFilters}
 
+\index{filter|(}
+
 In Chapter~\ref{chap:Worklets} we discuss how to implement an algorithm in the VTK-m framework by creating a worklet.
 Worklets might be straightforward to implement and invoke for those well familiar with the appropriate VTK-m API.
 However, novice users have difficulty using worklets directly.
@@ -16,3 +18,110 @@ The \textcode{DoExecute} method performs the operation of the filter and returns
 
 As with worklets, there are several flavors of filter types to address different operating behaviors although their is not a one-to-one relationship between worklet and filter types.
 This chapter is sectioned by the different filter types with an example of implementations for each.
+
+\section{Field Filters}
+
+\index{filter!field|(}
+\index{field filter|(}
+
+As described in Section~\ref{sec:ProvidedFieldFilters} (starting on page~\pageref{sec:ProvidedFieldFilters}), field filters are a category of filters that generate a new fields.
+These new fields are typically derived from one or more existing fields or point coordinates on the data set.
+For example, mass, volume, and density are interrelated, and any one can be derived from the other two.
+
+Field filters are implemented in classes that derive the \vtkmfilter{FilterField} base class.
+\textidentifier{FilterField} is a templated class that has a single template argument, which is the type of the concrete subclass.
+
+\begin{didyouknow}
+  The convention of having a subclass be templated on the derived class' type is known as the Curiously Recurring Template Pattern (CRTP).
+  In the case of \textidentifier{FilterField} and other filter base classes, \VTKm uses this CRTP behavior to allow the general implementation of these algorithms to run \textcode{DoExecute} in the subclass, which as we see in a moment is itself templated.
+\end{didyouknow}
+
+All \textidentifier{FilterField} subclasses must implement a \textcode{DoExecute} method.
+The \textidentifier{FilterField} base class implements an \textcode{Execute} method (actually several overloaded versions of \textcode{Execute}), processes the arguments, and then calls the \textcode{DoExecute} method of its subclass.
+The \textcode{DoExecute} method has the following 5 arguments.
+\begin{itemize}
+\item
+  An input data set contained in a \vtkmcont{DataSet} object.
+  (See Chapter~\ref{chap:DataSet} for details on \textidentifier{DataSet} objects.)
+\item
+  The field from the \textidentifier{DataSet} specified in the \textcode{Execute} method to operate on.
+  The field is always passed as an instance of \vtkmcont{ArrayHandle}.
+  (See Chapter~\ref{chap:ArrayHandle} for details on \textidentifier{ArrayHandle} objects.)
+  The type of the \textidentifier{ArrayHandle} is generally not known until the class is used and requires a template type.
+\item
+  A \vtkmfilter{FieldMetadata} object that contains the associated metadata of the field not contained in the \textidentifier{ArrayHandle} of the second argument.
+  The \textidentifier{FieldMetadata} contains information like the name of the field and what topological element the field is associated with (such as points or cells).
+\item
+  A policy class.
+  (See Chapter~\ref{chap:Policies} for details on policy classes.)
+  The type of the policy is generally to known until the class is used and requires a template type.
+\item
+  A device adapter tag.
+  (See Chapter~\ref{chap:DeviceAdapter} for details on device adapters and their tags.)
+  The type of the device adapter is generally to known until the class is used and requires a template type.
+\end{itemize}
+
+In this section we provide an example implementation of a field filter that wraps the ``magnitude'' worklet provided in Example~\ref{ex:UseWorkletMapField} (listed on page~\pageref{ex:UseWorkletMapField}).
+By convention, filter implementations are split into two files.
+The first file is a standard header file with a \textfilename{.h} extension that contains the declaration of the filter class without the implementation.
+So we would expect the following code to be in a file named \textfilename{FieldMagnitude.h}.
+
+\vtkmlisting[ex:MagnitudeFilterDeclaration]{Header declaration for a field filter.}{UseFilterField.cxx}
+
+\index{filter!traits|(}
+\index{traits!filter|(}
+
+Notice that in addition to declaring the class for \textcode{FieldMagnitude}, Example~\ref{ex:MagnitudeFilterDeclaration} also specializes the \vtkmfilter{FilterTraits} templated class for \textcode{FieldMagnitude}.
+The \textidentifier{FilterTraits} class, declared in \vtkmheader{vtkm/filter}{FilterTraits.h}, provides hints used internally in the base filter classes to modify its behavior based on the subclass.
+A \textidentifier{FilterTraits} class is expected to define the following types.
+\begin{description}
+\item[\textcode{InputFieldTypeList}]
+  A type list containing all the types that are valid for the input field.
+  For example, a filter operating on positions in space might limit the types to three dimensional vectors.
+  Type lists are discussed in detail in Section~\ref{sec:TypeLists}.
+\end{description}
+
+In the particular case of our \textcode{FieldMagnitude} filter, the filter expects to operate on some type of vector field.
+Thus, the \textcode{InputFieldTypeList} is modified to a list of all standard floating point \textidentifier{Vec}s.
+
+Once the filter class and (optionally) the \textidentifier{FilterTraits} are declared in the \textfilename{.h} file, the implementation filter is by convention given in a separate \textfilename{.hxx} file.
+So the continuation of our example that follows would be expected in a file named \textfilename{FieldMagnitude.hxx}.
+The \textfilename{.h} file near its bottom needs an include line to the \textfilename{.hxx} file.
+This convention is set up because a near future version of \VTKm will allow the building of filter libraries containing default policies that can be used by only including the header declaration.
+
+The implementation of \textcode{DoExecute} is straightforward.
+A worklet is invoked to compute a new field array.
+\textcode{DoExecute} then returns a newly constructed \vtkmfilter{ResultField} object.
+The constructor to \textidentifier{ResultField} takes the following 5 arguments.
+\begin{itemize}
+\item
+  The input data set.
+  This is the same data set passed to the first argument of \textcode{DoExecute}.
+\item
+  The array containing the data for the new field, which was presumably computed by the filter.
+\item
+  The name of the new field.
+\item
+  The topological association (e.g. points or cells) of the new field.
+  In the case where the filter is a simple operation on a field array, the association can usually be copied from the \textidentifier{FieldMetadata} passed to \textcode{DoExecute}.
+\item
+  The name of the element set the new field is associated with.
+  This only has meaning if the new field is associated with cells.
+  This usually can be copied from the \textidentifier{FieldMetadata} passed to \textcode{DoExecute}.
+\end{itemize}
+
+Note that all fields need a unique name, which is the reason for the third argument to the \textidentifier{ResultField} constructor.
+The \vtkmfilter{FilterField} base class contains a pair of methods named \textcode{SetOutputFieldName} and \textcode{GetOutputFieldName} to allow users to specify the name of output fields.
+The \textcode{DoExecute} method should respect the given output field name.
+However, it is also good practice for the filter to have a default name if none is given.
+This might be simply specifying a name in the constructor, but it is worthwhile for many filters to derive a name based on the name of the input field.
+
+\vtkmlisting{Implementation of a field filter.}{FilterFieldImpl.cxx}
+
+\index{traits!filter|)}
+\index{filter!traits|)}
+
+\index{field filter|)}
+\index{filter!field|)}
+
+\index{filter|)}

@@ -55,6 +55,7 @@ set(input_docs
   DataSet.tex
   Policies.tex
   Worklets.tex
+  CreatingFilters.tex
   Math.tex
   WorkingWithCells.tex
   ImplementingDeviceAdapters.tex

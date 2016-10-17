@@ -1,0 +1,18 @@
+% -*- latex -*-
+
+\chapter{Creating Filters}
+\label{chap:CreatingFilters}
+
+In Chapter~\ref{chap:Worklets} we discuss how to implement an algorithm in the VTK-m framework by creating a worklet.
+Worklets might be straightforward to implement and invoke for those well familiar with the appropriate VTK-m API.
+However, novice users have difficulty using worklets directly.
+For simplicity, worklet algorithms are generally wrapped in what are called filter objects for general usage.
+Chapter~\ref{chap:ProvidedFilters} introduces the concept of filters and documents those that come with the VTK-m library.
+In this chapter we describe how to build new filter objects using the worklet examples introduced in Chapter~\ref{chap:Worklets}.
+
+Unsurprisingly, the base filter objects are contained in the \vtkmfilter{} package.
+The basic implementation of a filter involves subclassing one of the base filter objects and implementing the \textcode{DoExecute} method.
+The \textcode{DoExecute} method performs the operation of the filter and returns the appropriate result object.
+
+As with worklets, there are several flavors of filter types to address different operating behaviors although their is not a one-to-one relationship between worklet and filter types.
+This chapter is sectioned by the different filter types with an example of implementations for each.

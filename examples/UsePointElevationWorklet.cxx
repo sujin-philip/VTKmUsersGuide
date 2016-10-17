@@ -49,7 +49,8 @@ void DoPointElevation()
       pointCoordinates.GetPortalControl();
   for (vtkm::Id index = 0; index < ARRAY_SIZE; index++)
   {
-    inputPortal.Set(index, vtkm::Vec<vtkm::FloatDefault,3>(index));
+    inputPortal.Set(index, vtkm::Vec<vtkm::FloatDefault,3>(
+                      static_cast<vtkm::FloatDefault>(index)));
   }
 
   using OutputArrayType = vtkm::cont::ArrayHandle<vtkm::FloatDefault>;

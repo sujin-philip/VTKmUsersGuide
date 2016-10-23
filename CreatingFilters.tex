@@ -84,6 +84,9 @@ A \textidentifier{FilterTraits} class is expected to define the following types.
 In the particular case of our \textcode{FieldMagnitude} filter, the filter expects to operate on some type of vector field.
 Thus, the \textcode{InputFieldTypeList} is modified to a list of all standard floating point \textidentifier{Vec}s.
 
+\index{traits!filter|)}
+\index{filter!traits|)}
+
 Once the filter class and (optionally) the \textidentifier{FilterTraits} are declared in the \textfilename{.h} file, the implementation filter is by convention given in a separate \textfilename{.hxx} file.
 So the continuation of our example that follows would be expected in a file named \textfilename{FieldMagnitude.hxx}.
 The \textfilename{.h} file near its bottom needs an include line to the \textfilename{.hxx} file.
@@ -118,10 +121,60 @@ This might be simply specifying a name in the constructor, but it is worthwhile 
 
 \vtkmlisting{Implementation of a field filter.}{FilterFieldImpl.cxx}
 
-\index{traits!filter|)}
-\index{filter!traits|)}
-
 \index{field filter|)}
 \index{filter!field|)}
+
+\section{Field Filters Using Cell Connectivity}
+
+\index{filter!field!using cells|(}
+\index{field filter using cells|(}
+
+A special subset of field filters are those that take into account the connectivity of a cell set to compute derivative fields.
+These types of field filters should be implemented in classes that derive the \vtkmfilter{FilterCell} base class.
+\textidentifier{FilterCell} is itself a subclass of \vtkmfilter{FilterField} and behaves essentially the same.
+\textidentifier{FilterCell} adds the pair of methods \textcode{SetActiveCellSet} and \textcode{GetActiveCellSetIndex}.
+\fix{Why is there a mismatch in the naming? Should they be changed? If they are, update the documentation here and in the ProvidedFilters chapter.}
+The \textcode{SetActiveCellSet} method allows users to specify which cell set of the given \textidentifier{DataSet} to use.
+Likewise, \textidentifier{FilterCell} subclasses should use \textcode{GetActiveCellSetIndex} when retrieving a cell set from the given \textidentifier{DataSet}.
+
+Like \textidentifier{FilterField}, \textidentifier{FilterCell} is a templated class that takes as its single template argument the type of the derived class.
+Also like \textidentifier{FilterField}, a \textidentifier{FilterCell} subclass must implement a method named \textcode{DoExecute} with 5 arguments: an input \vtkmcont{DataSet} object, a \vtkmcont{ArrayHandle} of the input field, a \vtkmfilter{FieldMetadata} information object, a policy class, and a device adapter tag.
+
+In this section we provide an example implementation of a field filter on cells that wraps the ``cell center'' worklet provided in Example~\ref{ex:UseWorkletMapPointToCell} (listed on page~\pageref{ex:UseWorkletMapPointToCell}).
+By convention, filter implementations are split into two files.
+The first file is a standard header file with a \textfilename{.h} extension that contains the declaration of the filter class without the implementation.
+So we would expect the following code to be in a file named \textfilename{CellCenter.h}.
+
+\vtkmlisting[ex:CellCenterFilterDeclaration]{Header declaration for a field filter using cell topology.}{UseFilterCell.cxx}
+
+\begin{didyouknow}
+  \index{filter!traits} \index{traits!filter} You may have noticed that Example~\ref{ex:MagnitudeFilterDeclaration} provided a specialization for \vtkmfilter{FilterTraits} but Example~\ref{ex:CellCenterFilterDeclaration} provides no such specialization.
+  This demonstrates that declaring filter traits is optional.
+  If a filter only works on some limited number of types, then it can use \textidentifier{FilterTraits} to specify the specific types it supports.
+  But if a filter is generally applicable to many field types, it can simply use the default filter traits.
+\end{didyouknow}
+
+Once the filter class and (optionally) the \textidentifier{FilterTraits} are declared in the \textfilename{.h} file, the implementation filter is by convention given in a separate \textfilename{.hxx} file.
+So the continuation of our example that follows would be expected in a file named \textfilename{CellCenter.hxx}.
+The \textfilename{.h} file near its bottom needs an include line to the \textfilename{.hxx} file.
+This convention is set up because a near future version of \VTKm will allow the building of filter libraries containing default policies that can be used by only including the header declaration.
+
+Like with a \textidentifier{FilterField}, a subclass of \textidentifier{FilterCell} implements \textcode{DoExecute} by invoking a worklet to compute a new field array and then return a newly constructed \vtkmfilter{ResultField} object.
+
+\vtkmlisting[ex:CellCenterFilterImplementation]{Implementation of a field filter using cell topology.}{FilterCellImpl.cxx}
+
+\begin{commonerrors}
+  The policy passed to the \textcode{DoExecute} method contains information on what types of cell sets should be supported by the execution.
+  This list of cell set types could be different than the default types specified the \textidentifier{DynamicCellSet} returned from \textidentifier{DataSet}\textcode{::GetCellSet()}.
+  \index{policy} Thus, it is important to apply the policy to the cell set before passing it to the dispatcher's invoke method.
+  The policy is applied by calling the \vtkmfilter{ApplyPolicy} function on the \textidentifier{DynamicCellSet}.
+  The use of \textidentifier{ApplyPolicy} is demonstrated in Example~\ref{ex:CellCenterFilterImplementation}.
+  \fix{The details of this may change when moving to virtual methods.}
+\end{commonerrors}
+
+\index{field filter using cells|)}
+\index{filter!field!using cells|)}
+
+\fix{Add documentation for \vtkmfilter{FilterDataSet} and \vtkmfilter{FilterDataSetWithField}. These will make more sense once we have worklet types that support creating new topologies.}
 
 \index{filter|)}

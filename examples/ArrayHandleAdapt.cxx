@@ -47,32 +47,32 @@ class ArrayPortalFooPressure
 public:
   typedef float ValueType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayPortalFooPressure() : Container(NULL) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayPortalFooPressure(DequeType *container) : Container(container) {  }
 
   // Required to copy compatible types of ArrayPortalFooPressure. Really needed
   // to copy from non-const to const versions of array portals.
   template<typename OtherDequeType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayPortalFooPressure(const ArrayPortalFooPressure<OtherDequeType> &other)
     : Container(other.GetContainer()) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::Id GetNumberOfValues() const {
     return static_cast<vtkm::Id>(this->Container->size());
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ValueType Get(vtkm::Id index) const {
     VTKM_ASSERT(index >= 0);
     VTKM_ASSERT(index < this->GetNumberOfValues());
     return (*this->Container)[index].Pressure;
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Set(vtkm::Id index, ValueType value) const {
     VTKM_ASSERT(index >= 0);
     VTKM_ASSERT(index < this->GetNumberOfValues());
@@ -80,7 +80,7 @@ public:
   }
 
   // Here for the copy constructor.
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   DequeType *GetContainer() const { return this->Container; }
 
 private:
@@ -129,36 +129,36 @@ public:
   typedef ArrayPortalFooPressure<FooFieldsDeque> PortalType;
   typedef ArrayPortalFooPressure<const FooFieldsDeque> PortalConstType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   Storage() : Container(NULL) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   Storage(FooFieldsDeque *container) : Container(container) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalType GetPortal() { return PortalType(this->Container); }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalConstType GetPortalConst() const {
     return PortalConstType(this->Container);
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::Id GetNumberOfValues() const {
     return static_cast<vtkm::Id>(this->Container->size());
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Allocate(vtkm::Id numberOfValues) {
     this->Container->resize(numberOfValues);
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Shrink(vtkm::Id numberOfValues) {
     this->Container->resize(numberOfValues);
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void ReleaseResources() { this->Container->clear(); }
 
 private:
@@ -189,7 +189,7 @@ public:
       ArrayHandleFooPressure,
       (vtkm::cont::ArrayHandle<float, StorageTagFooPressure>));
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayHandleFooPressure(FooFieldsDeque *container)
     : Superclass(StorageType(container)) {  }
 };
@@ -200,7 +200,7 @@ public:
 ////
 //// BEGIN-EXAMPLE UsingArrayHandleAdapter.cxx
 ////
-VTKM_CONT_EXPORT
+VTKM_CONT
 void GetElevationAirPressure(vtkm::cont::DataSet grid, FooFieldsDeque *fields)
 {
   // Make an array handle that points to the pressure values in the fields.

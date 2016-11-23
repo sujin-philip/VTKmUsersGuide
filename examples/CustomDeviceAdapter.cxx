@@ -62,7 +62,7 @@ class ArrayManagerExecution<
       <T, StorageTag> Superclass;
 
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayManagerExecution(typename Superclass::StorageType *storage)
     : Superclass(storage) {  }
 };
@@ -105,12 +105,12 @@ private:
   template<typename FunctorType>
   struct ScheduleKernel1D
   {
-    VTKM_CONT_EXPORT
+    VTKM_CONT
     ScheduleKernel1D(const FunctorType &functor)
       : Functor(functor)
     {  }
 
-    VTKM_EXEC_EXPORT
+    VTKM_EXEC
     void operator()() const
     {
       try
@@ -147,12 +147,12 @@ private:
   template<typename FunctorType>
   struct ScheduleKernel3D
   {
-    VTKM_CONT_EXPORT
+    VTKM_CONT
     ScheduleKernel3D(const FunctorType &functor, vtkm::Id3 maxRange)
       : Functor(functor), MaxRange(maxRange)
     {  }
 
-    VTKM_EXEC_EXPORT
+    VTKM_EXEC
     void operator()() const
     {
       vtkm::Id3 threadId3D(this->BeginId%this->MaxRange[0],
@@ -204,7 +204,7 @@ private:
   };
 
   template<typename KernelType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   static void DoSchedule(KernelType kernel,
                          vtkm::Id numInstances)
   {
@@ -254,21 +254,21 @@ private:
 
 public:
   template<typename FunctorType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   static void Schedule(FunctorType functor, vtkm::Id numInstances)
   {
     DoSchedule(ScheduleKernel1D<FunctorType>(functor), numInstances);
   }
 
   template<typename FunctorType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   static void Schedule(FunctorType functor, vtkm::Id3 maxRange)
   {
     vtkm::Id numInstances = maxRange[0]*maxRange[1]*maxRange[2];
     DoSchedule(ScheduleKernel3D<FunctorType>(functor, maxRange), numInstances);
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   static void Synchronize()
   {
     // Nothing to do. This device schedules all of its operations using a
@@ -296,13 +296,13 @@ template<>
 class DeviceAdapterTimerImplementation<vtkm::cont::DeviceAdapterTagCxx11Thread>
 {
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   DeviceAdapterTimerImplementation()
   {
     this->Reset();
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Reset()
   {
     vtkm::cont::DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCxx11Thread>
@@ -310,7 +310,7 @@ public:
     this->StartTime = std::chrono::high_resolution_clock::now();
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::Float64 GetElapsedTime()
   {
     vtkm::cont::DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCxx11Thread>

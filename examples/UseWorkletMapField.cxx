@@ -29,7 +29,7 @@ public:
 
   //// BEGIN-EXAMPLE WorkletOperator.cxx
   template<typename T, vtkm::IdComponent Size>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   T operator()(const vtkm::Vec<T,Size> &inVector) const
   {
   //// END-EXAMPLE WorkletOperator.cxx
@@ -40,7 +40,7 @@ public:
 }
 } // namespace vtkm::worklet
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::DynamicArrayHandle
 InvokeMagnitude(vtkm::cont::DynamicArrayHandle input)
 {
@@ -66,11 +66,11 @@ namespace filter {
 class FieldMagnitude : public vtkm::filter::FilterField<FieldMagnitude>
 {
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   FieldMagnitude();
 
   template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::filter::ResultField
   DoExecute(const vtkm::cont::DataSet &inDataSet,
             const ArrayHandleType &inField,
@@ -105,14 +105,14 @@ public:
 namespace vtkm {
 namespace filter {
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 FieldMagnitude::FieldMagnitude()
 {
   this->SetOutputFieldName("");
 }
 
 template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::filter::ResultField
 FieldMagnitude::DoExecute(const vtkm::cont::DataSet &inDataSet,
                           const ArrayHandleType &inField,
@@ -163,7 +163,7 @@ struct ReverseArrayCopy : vtkm::worklet::WorkletMapField
   typedef _1 InputDomain;
 
   template<typename InputType, typename OutputArrayPortalType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(const InputType &inputValue,
                   const OutputArrayPortalType &outputArrayPortal,
                   vtkm::Id workIndex) const
@@ -184,7 +184,7 @@ struct ReverseArrayCopy : vtkm::worklet::WorkletMapField
 } // namespace vtkm::worklet
 
 template<typename T, typename Storage>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<T>
 InvokeReverseArrayCopy(const vtkm::cont::ArrayHandle<T,Storage> &inArray)
 {

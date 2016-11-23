@@ -219,60 +219,59 @@ class. Users should generally ignore classes in these namespaces.
 \index{packages|)}
 
 
-\section{Function and Method Exports}
-\label{sec:FunctionAndMethodExports}
+\section{Function and Method Environment Modifiers}
+\label{sec:FunctionAndMethodEnvironmentModifiers}
 
-Any function or method defined by VTK-m must come with an export modifier
-that determines in which environments the function may be run. These export
-modifiers are C macros that VTK-m uses to instruct the compiler for which
-architectures to compile each method. Most user code outside of VTK-m need
-not use these macros with the important exception of any classes passed to
-VTK-m. This occurs when defining new worklets, array storage, and device
-adapters.
+Any function or method defined by VTK-m must come with a modifier that determines in which environments the function may be run.
+These modifiers are C macros that VTK-m uses to instruct the compiler for which architectures to compile each method.
+Most user code outside of VTK-m need not use these macros with the important exception of any classes passed to VTK-m.
+This occurs when defining new worklets, array storage, and device adapters.
 
-VTK-m provides three export macros, \vtkmcontexport, \vtkmexecexport, and
-\vtkmexeccontexport, which are used to declare functions and methods that
+VTK-m provides three modifier macros, \vtkmcontmodifier, \vtkmexecmodifier, and
+\vtkmexeccontmodifier, which are used to declare functions and methods that
 can run in the control environment, execution environment, and both
 environments, respectively. These macros get defined by including just
 about any VTK-m header file, but including \vtkmheader{vtkm}{Types.h} will
 ensure they are defined. 
 
-The export macro is placed after the template declaration, if there is one,
+The modifier macro is placed after the template declaration, if there is one,
 and before the return type for the function. Here is a simple example of a
 function that will square a value. Since most types you would use this
 function on have operators in both the control and execution environments,
-the function is exported to both places.
+the function is declared for both places.
 
-\vtkmlisting{Usage of export macro.}{ExportMacro.cxx}
+\vtkmlisting{Usage of an environment modifier macro on a function.}{EnvironmentModifierMacro.cxx}
 
-The primary function of the export macros is to inject compiler-specific
+The primary function of the modifier macros is to inject compiler-specific
 keywords that specify what architecture to compile code for. For example,
-when compiling with CUDA\index{CUDA}, the control exports have
-\textcode{\_\_host\_\_}\index{\_\_host\_\_} in them and execution exports
+when compiling with CUDA\index{CUDA}, the control modifiers have
+\textcode{\_\_host\_\_}\index{\_\_host\_\_} in them and execution modifiers
 have \textcode{\_\_device\_\_}\index{\_\_device\_\_} in them.
 
-There is one additional export macro that is not used for functions but
+There is one additional modifier macro that is not used for functions but
 rather used when declaring a constant data object that is used in the
 execution environment. This macro is named
-\vtkmmacro{VTKM\_EXEC\_CONSTANT\_EXPORT}\index{export!constant}\index{constant~export}
+\vtkmmacro{VTKM\_EXEC\_CONSTANT}\index{modifier!constant}\index{constant~modifier}
 and is used to declare a constant lookup table used when executing a
 worklet. Its primary reason for existing is to add a
-\textcode{\_\_constant\_\_} keyword when compiling with CUDA. This export
+\textcode{\_\_constant\_\_} keyword when compiling with CUDA. This modifier
 currently has no effect on any other compiler.
 
 Finally, it is sometimes the case that a function declared as
-\vtkmexeccontexport has to call a method declared as \vtkmexecexport or
-\vtkmcontexport. Generally functions should not call other functions with
-incompatible control/execution exports, but sometimes a generic
-\vtkmexeccontexport function calls another function determined by the
-template parameters, and the export of this subfunction may be
+\vtkmexeccontmodifier has to call a method declared as \vtkmexecmodifier or
+\vtkmcontmodifier. Generally functions should not call other functions with
+incompatible control/execution modifiers, but sometimes a generic
+\vtkmexeccontmodifier function calls another function determined by the
+template parameters, and the valid environments of this subfunction may be
 inconsistent. For cases like this, you can use the
 \vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} to tell the compiler to ignore the
 inconsistency when resolving the template. When applied to a templated
 function or method, \vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} is placed
 before the \textcode{template} keyword. When applied to a non-templated
 method in a templated class, \vtkmmacro{VTKM\_SUPPRESS\_EXEC\_WARNINGS} is
-placed before the export macro.
+placed before the environment modifier macro.
+
+\vtkmlisting{Suppressing warnings about functions from mixed environments.}{SuppressExecWarnings.cxx}
 
 
 \section{Error Handling}
@@ -618,32 +617,46 @@ types including floating points and vectors.
 \index{traits!vector|(}
 \index{vector traits|(}
 
-The \vtkm{VecTraits}\tparams{T} templated class provides information and
-accessors to vector types. It contains the following elements.
+The templated \vtkm{Vec} class contains several items for introspection (such as the component type and its size).
+However, there are other types behave similarly to \textidentifier{Vec} objects but have different ways to perform this introspection.
+For example, \VTKm contains \textidentifier{Vec}-like objects that essentially behave the same but might have different features such as a variable number of components.
+Also, there may be reason to interchangeably use basic scalar values, like an integer or floating point number, with vectors.
+
+To provide a consistent interface to access these multiple types that represents vectors, the \vtkm{VecTraits}\tparams{T} templated class provides information and accessors to vector types.
+It contains the following elements.
 
 \index{tag!vector traits|(}
 
 \begin{description}
-\item[\textidentifier{ComponentType}] \index{ComponentType} This type is
-  set to the type for each component in the vector. For example, a
-  \vtkm{Id3} has \textidentifier{ComponentType} defined as \vtkm{Id}.
-\item[\textidentifier{NUM\_COMPONENTS}] \index{NUM\_COMPONENTS} An integer
-  specifying how many components are contained in the vector.
-\item[\textidentifier{HasMultipleComponents}] \index{HasMultipleComponents}
-  \index{tag!single component} \index{tag!multiple components}
-  This type is set to either \vtkm{VecTraitsTagSingleComponent} if the
-  vector length is size 1 or \vtkm{VecTraitsTagMultipleComponents}
-  otherwise. This tag can be useful for creating specialized functions when
-  a vector is really just a scalar.
-\item[\textcode{GetComponent}] \index{GetComponent} A static method that
-  takes a vector and returns a particular component.
-\item[\textcode{SetComponent}] \index{SetComponent} A static method that
-  takes a vector and sets a particular component to a given value.
-\item[\textcode{ToVec}] \index{ToVec} A static method that converts a
-  vector of the given type to a \vtkm{Vec}.
+\item[\textidentifier{ComponentType}]
+  \index{ComponentType}
+  This type is set to the type for each component in the vector.
+  For example, a \vtkm{Id3} has \textidentifier{ComponentType} defined as \vtkm{Id}.
+\item[\textidentifier{IsSizeStatic}]
+  \index{IsSizeStatic} \index{tag!static vector size} \index{tag!variable vector size}
+  This type is set to either \vtkm{VecTraitsTagSizeStatic} if the vector has a static number of components that can be determined at compile time or set to \vtkm{VecTraitsTagSizeVariable} if the size of the vector is determined at run time.
+  If \textidentifier{IsSizeStatic} is set to \textidentifier{VecTraitsTagSizeVariable}, then \textidentifier{VecTraits} will be missing some information that cannot be determined at compile time.
+\item[\textidentifier{HasMultipleComponents}]
+  \index{HasMultipleComponents} \index{tag!single component} \index{tag!multiple components}
+  This type is set to either \vtkm{VecTraitsTagSingleComponent} if the vector length is size 1 or \vtkm{VecTraitsTagMultipleComponents} otherwise.
+  This tag can be useful for creating specialized functions when a vector is really just a scalar.
+  If the vector type is of variable size (that is, \textidentifier{IsSizeStatic} is \textidentifier{VecTraitsTagSizeVariable}), then \textidentifier{HasMultipleComponents} might be \textidentifier{VecTraitsTagMultipleComponents} even when at run time there is only one component.
+\item[\textidentifier{NUM\_COMPONENTS}] \index{NUM\_COMPONENTS}
+  An integer specifying how many components are contained in the vector.
+  \textidentifier{NUM\_COMPONENTS} is not available for vector types of variable size (that is, \textidentifier{IsSizeStatic} is \textidentifier{VecTraitsTagSizeVariable}).
+\item[\textcode{GetNumberOfComponents}] \index{GetNumberOfComponents}
+  A static method that takes an instance of a vector and returns the number of components the vector contains.
+  The result of \textcode{GetNumberOfComponents} is the same value of \textidentifier{NUM\_COMPONENTS} for vector types that have a static size (that is, \textidentifier{IsSizeStatic} is \textidentifier{VecTraitsTagSizeStatic}).
+  But unlike \textidentifier{NUM\_COMPONENTS}, \textcode{GetNumberOfComponents} works for vectors of any type.
+\item[\textcode{GetComponent}] \index{GetComponent}
+  A static method that takes a vector and returns a particular component.
+\item[\textcode{SetComponent}] \index{SetComponent}
+  A static method that takes a vector and sets a particular component to a given value.
+\item[\textcode{CopyInto}] \index{CopyInto}
+  A static method that copies the components of a vector to a \vtkm{Vec}.
 \end{description}
 
-The definition of \vtkm{VecTraits} for \vtkm{Id3} could like something like
+The definition of \vtkm{VecTraits} for \vtkm{Id3} could look something like
 this.
 \begin{vtkmexample}{Definition of \protect \vtkm{VecTraits}\tparams{\protect \vtkm{Id3}}.}
 namespace vtkm {
@@ -653,21 +666,35 @@ struct VecTraits<vtkm::Id3>
 {
   typedef vtkm::Id ComponentType;
   static const int NUM_COMPONENTS = 3;
+  typedef vtkm::VecTraitsTagSizeStatic IsSizeStatic;
   typedef VecTraitsTagMultipleComponents HasMultipleComponents;
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
+  static vtkm::IdComponent GetNumberOfComponents(const VecType &vec) {
+    return NUM_COMPONENTS;
+  }
+
+  VTKM_EXEC_CONT
   static vtkm::Id &GetComponent(vtkm::Id3 &vector, int component) {
     return vector[component];
   }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   static void SetComponent(vtkm::Id3 &vector, int component, vtkm::Id value) {
     vector[component] = value;
   }
 
-  VTKM_EXEC_CONT_EXPORT
-  static vtkm::Vec<vtkm::Id,3> ToTuple(const vtkm::Id3 &vector) {
-    return vector;
+  template<vtkm::IdComponent destSize>
+  VTKM_EXEC_CONT
+  static void
+  CopyInto(const VecType &src, vtkm::Vec<vtkm::Id,destSize> &dest)
+  {
+    for (vtkm::IdComponent index = 0;
+         (index < NUM_COMPONENTS) && (index < OtherSize);
+         index++)
+    {
+      dest[index] = src[index];
+    }
   }
 };
 

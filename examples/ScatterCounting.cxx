@@ -20,7 +20,7 @@ public:
   typedef _1 InputDomain;
 
   template<typename T>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ClipPointsCount(const vtkm::Vec<T,3> &boundsMin,
                   const vtkm::Vec<T,3> &boundsMax)
     : BoundsMin(boundsMin[0], boundsMin[1], boundsMin[2]),
@@ -28,7 +28,7 @@ public:
   {  }
 
   template<typename T>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   vtkm::IdComponent operator()(const vtkm::Vec<T,3> &point) const
   {
     return static_cast<vtkm::IdComponent>((this->BoundsMin[0] < point[0]) &&
@@ -57,14 +57,14 @@ public:
   ////
   typedef vtkm::worklet::ScatterCounting ScatterType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ScatterType GetScatter() const { return this->Scatter; }
   ////
   //// END-EXAMPLE DeclareScatter.cxx
   ////
 
   template<typename CountArrayType, typename DeviceAdapterTag>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ClipPointsGenerate(const CountArrayType &countArray, DeviceAdapterTag)
     : Scatter(countArray, DeviceAdapterTag())
   {
@@ -72,7 +72,7 @@ public:
   }
 
   template<typename InType, typename OutType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(const vtkm::Vec<InType,3> &inPoint,
                   vtkm::Vec<OutType,3> &outPoint) const
   {
@@ -89,7 +89,7 @@ private:
 // Normally we would encapsulate these calls in a filter, but for demonstrative
 // purposes we are just calling the worklet directly.
 template<typename T, typename Storage, typename DeviceAdapterTag>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Vec<T,3> >
 RunClipPoints(const vtkm::cont::ArrayHandle<vtkm::Vec<T,3>, Storage> &pointArray,
               vtkm::Vec<T,3> boundsMin,

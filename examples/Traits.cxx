@@ -102,7 +102,7 @@ namespace {
 template<typename T>
 struct LessTotalOrder
 {
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   bool operator()(const T &left, const T &right)
   {
     for (int index = 0; index < vtkm::VecTraits<T>::NUM_COMPONENTS; index++)
@@ -127,7 +127,7 @@ struct LessTotalOrder
 template<typename T>
 struct LessPartialOrder
 {
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   bool operator()(const T &left, const T &right)
   {
     for (int index = 0; index < vtkm::VecTraits<T>::NUM_COMPONENTS; index++)

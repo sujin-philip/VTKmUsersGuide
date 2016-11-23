@@ -25,7 +25,7 @@ public:
 
   template<typename CellShape,
            typename InputPointFieldType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   typename InputPointFieldType::ComponentType
   operator()(CellShape shape,
              vtkm::IdComponent numPoints,
@@ -43,7 +43,7 @@ public:
 }
 } // namespace vtkm::worklet
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void FindCellCenters(vtkm::cont::DataSet &dataSet)
 {
   vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,3> > cellCentersArray;
@@ -71,11 +71,11 @@ namespace filter {
 class CellCenters : public vtkm::filter::FilterCell<CellCenters>
 {
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   CellCenters();
 
   template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::filter::ResultField
   DoExecute(const vtkm::cont::DataSet &inDataSet,
             const ArrayHandleType &inField,
@@ -96,14 +96,14 @@ public:
 namespace vtkm {
 namespace filter {
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 CellCenters::CellCenters()
 {
   this->SetOutputFieldName("");
 }
 
 template<typename ArrayHandleType, typename Policy, typename DeviceAdapter>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::filter::ResultField
 CellCenters::DoExecute(const vtkm::cont::DataSet &inDataSet,
                        const ArrayHandleType &inField,

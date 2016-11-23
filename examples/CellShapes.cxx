@@ -32,7 +32,7 @@ namespace detail {
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template<typename PointCoordinatesVector, typename WorkletType>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 typename PointCoordinatesVector::ComponentType
 CellNormalImpl(const PointCoordinatesVector &pointCoordinates,
                vtkm::CellTopologicalDimensionsTag<2>,
@@ -55,7 +55,7 @@ VTKM_SUPPRESS_EXEC_WARNINGS
 template<typename PointCoordinatesVector,
          vtkm::IdComponent Dimensions,
          typename WorkletType>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 typename PointCoordinatesVector::ComponentType
 CellNormalImpl(const PointCoordinatesVector &,
                vtkm::CellTopologicalDimensionsTag<Dimensions>,
@@ -71,7 +71,7 @@ VTKM_SUPPRESS_EXEC_WARNINGS
 template<typename CellShape,
          typename PointCoordinatesVector,
          typename WorkletType>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 typename PointCoordinatesVector::ComponentType
 CellNormal(CellShape,
            const PointCoordinatesVector &pointCoordinates,
@@ -86,7 +86,7 @@ CellNormal(CellShape,
 VTKM_SUPPRESS_EXEC_WARNINGS
 template<typename PointCoordinatesVector,
          typename WorkletType>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 typename PointCoordinatesVector::ComponentType
 CellNormal(vtkm::CellShapeTagGeneric shape,
            const PointCoordinatesVector &pointCoordinates,

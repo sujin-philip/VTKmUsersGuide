@@ -32,7 +32,7 @@ void CheckArray(const ArrayHandleType array)
 //// BEGIN-EXAMPLE ArrayHandleCast.cxx
 ////
 template<typename T>
-VTKM_CONT_EXPORT
+VTKM_CONT
 void Foo(const std::vector<T> &inputData)
 {
   vtkm::cont::ArrayHandle<T> originalArray =

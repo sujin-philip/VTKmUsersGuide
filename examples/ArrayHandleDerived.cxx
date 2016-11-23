@@ -13,11 +13,11 @@ public:
   typedef typename PortalType1::ValueType ValueType;
 
   VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ArrayPortalConcatenate() : Portal1(), Portal2() {  }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ArrayPortalConcatenate(const PortalType1 &portal1, const PortalType2 portal2)
     : Portal1(portal1), Portal2(portal2) {  }
 
@@ -26,19 +26,19 @@ public:
   /// casting that the portals do (like the non-const to const cast).
   VTKM_SUPPRESS_EXEC_WARNINGS
   template<typename OtherP1, typename OtherP2>
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ArrayPortalConcatenate(const ArrayPortalConcatenate<OtherP1,OtherP2> &src)
     : Portal1(src.GetPortal1()), Portal2(src.GetPortal2()) {  }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Id GetNumberOfValues() const {
     return
         this->Portal1.GetNumberOfValues() + this->Portal2.GetNumberOfValues();
   }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ValueType Get(vtkm::Id index) const {
     if (index < this->Portal1.GetNumberOfValues())
     {
@@ -51,7 +51,7 @@ public:
   }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   void Set(vtkm::Id index, const ValueType &value) const {
     if (index < this->Portal1.GetNumberOfValues())
     {
@@ -63,9 +63,9 @@ public:
     }
   }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   const PortalType1 &GetPortal1() const { return this->Portal1; }
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   const PortalType2 &GetPortal2() const { return this->Portal2; }
 
 private:
@@ -101,34 +101,34 @@ public:
       typename ArrayHandleType1::PortalConstControl,
       typename ArrayHandleType2::PortalConstControl> PortalConstType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   Storage() : Valid(false) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   Storage(const ArrayHandleType1 array1, const ArrayHandleType2 array2)
     : Array1(array1), Array2(array2), Valid(true) {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalType GetPortal() {
     VTKM_ASSERT(this->Valid);
     return PortalType(this->Array1.GetPortalControl(),
                       this->Array2.GetPortalControl());
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalConstType GetPortalConst() const {
     VTKM_ASSERT(this->Valid);
     return PortalConstType(this->Array1.GetPortalConstControl(),
                            this->Array2.GetPortalConstControl());
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::Id GetNumberOfValues() const {
     VTKM_ASSERT(this->Valid);
     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Allocate(vtkm::Id numberOfValues) {
     VTKM_ASSERT(this->Valid);
     // This implementation of allocate, which allocates the same amount in both
@@ -140,7 +140,7 @@ public:
     this->Array2.Allocate(half);
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Shrink(vtkm::Id numberOfValues) {
     VTKM_ASSERT(this->Valid);
     if (numberOfValues < this->Array1.GetNumberOfValues())
@@ -154,7 +154,7 @@ public:
     }
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void ReleaseResources() {
     VTKM_ASSERT(this->Valid);
     this->Array1.ReleaseResources();
@@ -162,12 +162,12 @@ public:
   }
 
   // Requried for later use in ArrayTransfer class.
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   const ArrayHandleType1 &GetArray1() const {
     VTKM_ASSERT(this->Valid);
     return this->Array1;
   }
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   const ArrayHandleType2 &GetArray2() const {
     VTKM_ASSERT(this->Valid);
     return this->Array2;
@@ -240,29 +240,29 @@ public:
       typename ArrayHandleType2::template ExecutionTypes<Device>::PortalConst>
     PortalConstExecution;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayTransfer(StorageType *storage)
     : Array1(storage->GetArray1()), Array2(storage->GetArray2())
   {  }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   vtkm::Id GetNumberOfValues() const {
     return this->Array1.GetNumberOfValues() + this->Array2.GetNumberOfValues();
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalConstExecution PrepareForInput(bool vtkmNotUsed(updateData)) {
     return PortalConstExecution(this->Array1.PrepareForInput(Device()),
                                 this->Array2.PrepareForInput(Device()));
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalExecution PrepareForInPlace(bool vtkmNotUsed(updateData)) {
     return PortalExecution(this->Array1.PrepareForInPlace(Device()),
                            this->Array2.PrepareForInPlace(Device()));
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   PortalExecution PrepareForOutput(vtkm::Id numberOfValues)
   {
     // This implementation of allocate, which allocates the same amount in both
@@ -275,14 +275,14 @@ public:
           this->Array2.PrepareForOutput(half, Device()));
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void RetrieveOutputData(StorageType *vtkmNotUsed(storage)) const {
     // Implementation of this method should be unnecessary. The internal
     // array handles should automatically retrieve the output data as
     // necessary.
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void Shrink(vtkm::Id numberOfValues) {
     if (numberOfValues < this->Array1.GetNumberOfValues())
     {
@@ -295,7 +295,7 @@ public:
     }
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void ReleaseResources() {
     this->Array1.ReleaseResourcesExecution();
     this->Array2.ReleaseResourcesExecution();
@@ -334,7 +334,7 @@ private:
   typedef vtkm::cont::internal::Storage<ValueType,StorageTag> StorageType;
 
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayHandleConcatenate(const ArrayHandleType1 &array1,
                          const ArrayHandleType2 &array2)
     : Superclass(StorageType(array1, array2)) {  }

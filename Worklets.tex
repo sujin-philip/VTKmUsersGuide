@@ -211,7 +211,7 @@ components of a worklet.
 %%   typedef _1 InputDomain;
 
 %%   typedef vtkm::worklet::ScatterCounting ScatterType;
-%%   VTKM_CONT_EXPORT
+%%   VTKM_CONT
 %%   ScatterType GetScatter() const
 %%   {
 %%     return this->Scatter;
@@ -220,7 +220,7 @@ components of a worklet.
 %%   template<typename CellShapeTag,
 %%            typename ConnectivityInVec,
 %%            typename ConnectivityOutVec>
-%%   VTKM_EXEC_EXPORT
+%%   VTKM_EXEC
 %%   void operator()(
 %%       CellShapeTag shape,
 %%       const ConnectivityInVec &connectivityIn,
@@ -421,8 +421,8 @@ from the parenthesis operator method.
 There are some constraints on the parenthesis operator. First, it must have
 the same arity as the \executionsignature, and the types of the parameters
 and return must be compatible. Second, because it runs in the execution
-environment, it must be declared with the \vtkmexecexport (or
-\vtkmexeccontexport) modifier. Third, the method must be declared
+environment, it must be declared with the \vtkmexecmodifier (or
+\vtkmexeccontmodifier) modifier. Third, the method must be declared
 \textcode{const} to help preserve thread safety.
 
 \section{Worklet Type Reference}
@@ -1134,7 +1134,7 @@ parameters of its \executionsignature.
 %% #include <dax/cont/UniformGrid.h>
 %% #include <dax/cont/UnstructuredGrid.h>
 
-%% DAX_EXEC_CONSTANT_EXPORT
+%% DAX_EXEC_CONSTANT
 %% const unsigned char VoxelFaces[6][4] = {
 %%   { 0, 3, 7, 4 },
 %%   { 0, 4, 5, 1 },
@@ -1150,10 +1150,10 @@ parameters of its \executionsignature.
 %%   typedef void ControlSignature(Topology, Field(Out), Field(Out));
 %%   typedef _3 ExecutionSignature(WorkId, _2);
 
-%%   DAX_CONT_EXPORT
+%%   DAX_CONT
 %%   CountFaceOut(dax::Id3 dimensions) : Dimensions(dimensions) {  }
 
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   dax::Id operator()(dax::Id workId, dax::Tuple<unsigned char,6> &faceToOutput) const
 %%   {
 %%     dax::Id3 index3D;
@@ -1188,7 +1188,7 @@ parameters of its \executionsignature.
 %%   typedef void ControlSignature(Topology, Topology(Out), Field);
 %%   typedef void ExecutionSignature(Vertices(_1), Vertices(_2), _3, VisitIndex);
 
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   void operator()(const dax::exec::CellVertices<dax::CellTagVoxel> &inVertices,
 %%                   dax::exec::CellVertices<dax::CellTagQuadrilateral> &outVertices,
 %%                   const dax::Tuple<unsigned char,6> outputFaces,
@@ -1202,7 +1202,7 @@ parameters of its \executionsignature.
 %%   }
 %% };
 
-%% DAX_CONT_EXPORT
+%% DAX_CONT
 %% dax::cont::UnstructuredGrid<dax::CellTagQuadrilateral>
 %% InvokeExtraceFaces(const dax::cont::UniformGrid<> &inputGrid)
 %% {
@@ -1353,10 +1353,10 @@ parameters of its \executionsignature.
 %%   typedef void ControlSignature(Topology, Field(Point), Field(Out));
 %%   typedef _3 ExecutionSignature(_2);
 
-%%   DAX_CONT_EXPORT
+%%   DAX_CONT
 %%   CountXSliceOut(dax::Scalar xIntercept) : XIntercept(xIntercept) {  }
 
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   dax::Id operator()(
 %%       const dax::exec::CellField<dax::Vector3, dax::CellTagVoxel> &pointCoordinates) const
 %%   {
@@ -1376,10 +1376,10 @@ parameters of its \executionsignature.
 %%   typedef void ControlSignature(Topology, Geometry(Out), Field(Point));
 %%   typedef void ExecutionSignature(Vertices(_1), _2, _3);
 
-%%   DAX_CONT_EXPORT
+%%   DAX_CONT
 %%   XSlice(dax::Scalar xIntercept) : XIntercept(xIntercept) {  }
 
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   void operator()(
 %%       const dax::exec::CellVertices<dax::CellTagVoxel> &inVertices,
 %%       dax::exec::InterpolatedCellPoints<dax::CellTagQuadrilateral> &outVertices,
@@ -1399,7 +1399,7 @@ parameters of its \executionsignature.
 %%   dax::Scalar XIntercept;
 %% };
 
-%% DAX_CONT_EXPORT
+%% DAX_CONT
 %% dax::cont::UnstructuredGrid<dax::CellTagQuadrilateral>
 %% InvokeXSlice(const dax::cont::UniformGrid<> &inputGrid, dax::Scalar xIntercept)
 %% {
@@ -1600,7 +1600,7 @@ parameters of its \executionsignature.
 %%   typedef void ExecutionSignature(Vertices(_1), _2, _3, _4, VisitIndex);
 
 %%   template<typename CellTag>
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   void operator()(const dax::exec::CellVertices<CellTag> &cellVertices,
 %%                   dax::Scalar fieldValue,
 %%                   dax::Id &outKey,
@@ -1619,7 +1619,7 @@ parameters of its \executionsignature.
 %%   typedef _2 ExecutionSignature(KeyGroup(_1));
 
 %%   template<typename KeyGroupType>
-%%   DAX_EXEC_EXPORT
+%%   DAX_EXEC
 %%   dax::Scalar operator()(KeyGroupType keyGroup) const
 %%   {
 %%     dax::Scalar sum = keyGroup[0];
@@ -1632,7 +1632,7 @@ parameters of its \executionsignature.
 %% };
 
 %% template<typename CellTag>
-%% DAX_CONT_EXPORT
+%% DAX_CONT
 %% dax::cont::ArrayHandle<dax::Scalar>
 %% InvokePointAverage(dax::cont::UnstructuredGrid<CellTag> grid,
 %%                    dax::cont::ArrayHandle<dax::Scalar> inputCellField)
@@ -1733,7 +1733,7 @@ The execution object must be a subclass of \vtkmexec{ExecutionObjectBase}.
 Also, it must be possible to copy the object from the control environment
 to the execution environment and be usable in the execution environment,
 and any method of the execution object used within the worklet must be
-declared with \vtkmexecexport or \vtkmexeccontexport.
+declared with \vtkmexecmodifier or \vtkmexeccontmodifier.
 
 An execution object can refer to an array, but the array reference must be
 through an array portal for the execution environment. This can be

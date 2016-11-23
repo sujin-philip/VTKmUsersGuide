@@ -12,7 +12,7 @@ namespace {
 struct FunctionFunctor
 {
   template<typename T>
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Vec<T,2> operator()(const vtkm::Vec<T,2> &x) const
   {
     return vtkm::make_Vec(vtkm::dot(x,x), x[0]*x[1]);
@@ -26,7 +26,7 @@ struct FunctionFunctor
 struct JacobianFunctor
 {
   template<typename T>
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Matrix<T,2,2> operator()(const vtkm::Vec<T,2> &x) const
   {
     vtkm::Matrix<T,2,2> jacobian;
@@ -39,7 +39,7 @@ struct JacobianFunctor
   }
 };
 
-VTKM_EXEC_EXPORT
+VTKM_EXEC
 void SolveNonlinear()
 {
   // Use Newton's method to solve the nonlinear system of equations:

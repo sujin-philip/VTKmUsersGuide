@@ -10,7 +10,7 @@ namespace {
 ////
 //// BEGIN-EXAMPLE UsePointElevationWorklet.cxx
 ////
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::FloatDefault>
 ComputeAirPressure(
     vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,3> > pointCoordinates)

@@ -1,5 +1,7 @@
 #include <vtkm/internal/FunctionInterface.h>
 
+#include <vtkm/StaticAssert.h>
+
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/DynamicArrayHandle.h>
@@ -8,8 +10,6 @@
 #include <vtkm/cont/internal/DynamicTransform.h>
 
 #include <vtkm/cont/testing/Testing.h>
-
-#include <boost/static_assert.hpp>
 
 #include <string.h>
 
@@ -59,7 +59,7 @@ void BasicFunctionInterface()
   ////
   //// BEGIN-EXAMPLE FunctionInterfaceArity.cxx
   ////
-  BOOST_STATIC_ASSERT(
+  VTKM_STATIC_ASSERT(
         vtkm::internal::FunctionInterface<size_t(const char *)>::ARITY == 1);
 
   vtkm::IdComponent arity = strncpyInterface.GetArity();  // arity = 3
@@ -174,13 +174,13 @@ namespace TransformedInvokeNamespace {
 struct TransformFunctor
 {
   template<typename T>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   const T &operator()(const T &x) const
   {
     return x;
   }
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   const vtkm::Int32 operator()(const char *x) const
   {
     return atoi(x);
@@ -191,7 +191,7 @@ struct TransformFunctor
 struct IsSameFunctor
 {
   template<typename T1, typename T2>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   bool operator()(const T1 &x, const T2 &y) const
   {
     return x == y;
@@ -234,7 +234,7 @@ template<typename ResultType, bool Valid> struct PrintReturnFunctor;
 template<typename ResultType>
 struct PrintReturnFunctor<ResultType, true>
 {
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(
       const vtkm::internal::FunctionInterfaceReturnContainer<ResultType> &x)
   const
@@ -246,7 +246,7 @@ struct PrintReturnFunctor<ResultType, true>
 template<typename ResultType>
 struct PrintReturnFunctor<ResultType, false>
 {
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(
       const vtkm::internal::FunctionInterfaceReturnContainer<ResultType> &)
   const
@@ -437,14 +437,14 @@ struct ParametersToPointersFunctor {
   };
 
   template<typename T, vtkm::IdComponent Index>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   const T *operator()(const T &x, vtkm::internal::IndexTag<Index>) const {
     return &x;
   }
 };
 
 template<typename FunctionInterfaceType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 typename FunctionInterfaceType::
     template StaticTransformType<ParametersToPointersFunctor>::type
 ParametersToPointers(const FunctionInterfaceType &functionInterface)
@@ -487,7 +487,7 @@ struct UnpackNumbersTransformFunctor {
   template<typename InputType,
            typename ContinueFunctor,
            vtkm::IdComponent Index>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const InputType &input,
                   const ContinueFunctor &continueFunction,
                   vtkm::internal::IndexTag<Index>) const
@@ -496,7 +496,7 @@ struct UnpackNumbersTransformFunctor {
   }
 
   template<typename ContinueFunctor, vtkm::IdComponent Index>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const std::string &input,
                   const ContinueFunctor &continueFunction,
                   vtkm::internal::IndexTag<Index>) const
@@ -520,7 +520,7 @@ struct UnpackNumbersTransformFunctor {
 ////
 struct CheckFunctor
 {
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(vtkm::Float32 value1, std::string value2) const
   {
     VTKM_TEST_ASSERT(test_equal(value1, 42), "Wrong converted value.");
@@ -528,7 +528,7 @@ struct CheckFunctor
   }
 
   template<typename T1, typename T2>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(T1, T2) const
   {
     VTKM_TEST_FAIL("Called wrong form of CheckFunctor");
@@ -539,7 +539,7 @@ struct CheckFunctor
 ////
 struct UnpackNumbersFinishFunctor {
   template<typename FunctionInterfaceType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(FunctionInterfaceType &functionInterface) const
   {
     // Do something
@@ -583,7 +583,7 @@ namespace DynamicTransformFunctorNamespace {
 template<typename Device>
 struct ArrayCopyFunctor {
   template<typename Signature>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(
       vtkm::internal::FunctionInterface<Signature> functionInterface) const
   {
@@ -591,7 +591,7 @@ struct ArrayCopyFunctor {
   }
 
   template<typename T, class CIn, class COut>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const vtkm::cont::ArrayHandle<T, CIn> &input,
                   vtkm::cont::ArrayHandle<T, COut> &output) const
   {
@@ -599,7 +599,7 @@ struct ArrayCopyFunctor {
   }
 
   template<typename TIn, typename TOut, class CIn, class COut>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const vtkm::cont::ArrayHandle<TIn, CIn> &,
                   vtkm::cont::ArrayHandle<TOut, COut> &) const
   {
@@ -654,7 +654,7 @@ namespace ForEachNamespace {
 ////
 struct PrintArgumentFunctor{
   template<typename T, vtkm::IdComponent Index>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const T &argument, vtkm::internal::IndexTag<Index>) const
   {
     std::cout << Index << ":" << argument << " ";
@@ -662,7 +662,7 @@ struct PrintArgumentFunctor{
 };
 
 template<typename FunctionInterfaceType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 void PrintArguments(const FunctionInterfaceType &functionInterface)
 {
   std::cout << "( ";

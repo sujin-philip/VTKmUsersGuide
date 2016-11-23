@@ -4,7 +4,7 @@
 
 namespace {
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void BuildMatrix()
 {
   std::cout << "Building matrix containing " << std::endl

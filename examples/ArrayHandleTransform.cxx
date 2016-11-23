@@ -6,11 +6,11 @@
 template<typename T>
 struct ScaleBiasFunctor
 {
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ScaleBiasFunctor(T scale = T(1), T bias = T(0))
     : Scale(scale), Bias(bias) {  }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   T operator()(T x) const
   {
     return this->Scale*x + this->Bias;
@@ -45,7 +45,7 @@ public:
          ScaleBiasFunctor<typename ArrayHandleType::ValueType> >)
       );
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayHandleScaleBias(const ArrayHandleType &array,
                        ValueType scale,
                        ValueType bias)
@@ -53,7 +53,7 @@ public:
 };
 
 template<typename ArrayHandleType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 ArrayHandleScaleBias<ArrayHandleType>
 make_ArrayHandleScaleBias(const ArrayHandleType &array,
                           typename ArrayHandleType::ValueType scale,

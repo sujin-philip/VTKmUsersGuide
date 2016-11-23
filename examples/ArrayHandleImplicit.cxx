@@ -11,16 +11,16 @@ class ArrayPortalEvenNumbers
 public:
   typedef vtkm::Id ValueType;
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ArrayPortalEvenNumbers() : NumberOfValues(0) {  }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ArrayPortalEvenNumbers(vtkm::Id numValues) : NumberOfValues(numValues) {  }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ValueType Get(vtkm::Id index) const { return 2*index; }
 
 private:
@@ -52,7 +52,7 @@ public:
       ArrayHandleEvenNumbers,
       (vtkm::cont::ArrayHandle<vtkm::Id,StorageTagEvenNumbers>));
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayHandleEvenNumbers(vtkm::Id length)
     : Superclass(ArrayPortalEvenNumbers(length)) {  }
 };
@@ -65,7 +65,7 @@ public:
 ////
 struct DoubleIndexFunctor
 {
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Id operator()(vtkm::Id index) const
   {
     return 2*index;
@@ -88,7 +88,7 @@ public:
       ArrayHandleDoubleIndex,
       (vtkm::cont::ArrayHandleImplicit<vtkm::Id,DoubleIndexFunctor>));
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ArrayHandleDoubleIndex(vtkm::Id numberOfValues)
     : Superclass(DoubleIndexFunctor(), numberOfValues) {  }
 };

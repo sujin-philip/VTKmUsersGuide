@@ -23,8 +23,8 @@ set(example_src
   DeviceAdapterTag.cxx
   DeviceAdapterAlgorithms.cxx
   DynamicArrayHandle.cxx
+  EnvironmentModifierMacros.cxx
   ErrorHandling.cxx
-  ExportMacro.cxx
   FunctionInterface.cxx
   IO.cxx
   ListTags.cxx

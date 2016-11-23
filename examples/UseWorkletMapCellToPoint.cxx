@@ -24,7 +24,7 @@ public:
   typedef _1 InputDomain;
 
   template<typename InputCellFieldType, typename OutputFieldType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void
   operator()(vtkm::IdComponent numCells,
              const InputCellFieldType &inputCellField,
@@ -44,7 +44,7 @@ public:
 
 private:
   template<typename InputCellFieldType, typename OutputFieldType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void DoAverage(vtkm::IdComponent numCells,
                  const InputCellFieldType &inputCellField,
                  OutputFieldType &fieldAverage,
@@ -76,7 +76,7 @@ private:
   }
 
   template<typename T1, typename T2, typename T3>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void DoAverage(vtkm::IdComponent, T1, T2, T3) const
   {
     this->RaiseError("Incompatible types for input and output.");
@@ -86,7 +86,7 @@ private:
 }
 } // namespace vtkm::worklet
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::DataSet
 ConvertCellFieldsToPointFields(const vtkm::cont::DataSet &inData)
 {

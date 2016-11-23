@@ -15,7 +15,7 @@ namespace {
 ////
 //// BEGIN-EXAMPLE CreateDynamicArrayHandle.cxx
 ////
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::DynamicArrayHandle
 LoadDynamicArray(const void *buffer, vtkm::Id length, std::string type)
 {
@@ -178,7 +178,7 @@ void QueryCastDynamicArrayHandle()
 struct PrintArrayContentsFunctor
 {
   template<typename T, typename Storage>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void operator()(const vtkm::cont::ArrayHandle<T,Storage> &array) const
   {
     this->PrintArrayPortal(array.GetPortalConstControl());
@@ -186,7 +186,7 @@ struct PrintArrayContentsFunctor
 
 private:
   template<typename PortalType>
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   void PrintArrayPortal(const PortalType &portal) const
   {
     for (vtkm::Id index = 0; index < portal.GetNumberOfValues(); index++)

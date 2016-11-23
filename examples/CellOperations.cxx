@@ -22,7 +22,7 @@ struct CellCenters : vtkm::worklet::WorkletMapPointToCell
   typedef _1 InputDomain;
 
   template<typename CellShapeTag,typename FieldInVecType,typename FieldOutType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(CellShapeTag shape,
                   vtkm::IdComponent pointCount,
                   const FieldInVecType &inputField,
@@ -77,7 +77,7 @@ struct CellDerivatives : vtkm::worklet::WorkletMapPointToCell
            typename FieldInVecType,
            typename PointCoordVecType,
            typename FieldOutType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(CellShapeTag shape,
                   vtkm::IdComponent pointCount,
                   const FieldInVecType &inputField,

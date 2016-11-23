@@ -111,7 +111,7 @@ void AllocateAndFillArrayHandle()
 ////
 //// BEGIN-EXAMPLE ArrayOutOfScope.cxx
 ////
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32> BadDataLoad()
 {
   ////
@@ -143,7 +143,7 @@ vtkm::cont::ArrayHandle<vtkm::Float32> BadDataLoad()
   // ArrayHandle is used.
 }
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32> SafeDataLoad()
 {
   std::vector<vtkm::Float32> dataBuffer;
@@ -198,20 +198,20 @@ public:
 
   // There is no specification for creating array portals, but they generally
   // need a constructor like this to be practical.
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   SimpleScalarArrayPortal(ValueType *array, vtkm::Id numberOfValues)
     : Array(array), NumberOfValues(numberOfValues) {  }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   SimpleScalarArrayPortal() : Array(NULL), NumberOfValues(0) {  }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   vtkm::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   ValueType Get(vtkm::Id index) const { return this->Array[index]; }
 
-  VTKM_EXEC_CONT_EXPORT
+  VTKM_EXEC_CONT
   void Set(vtkm::Id index, ValueType value) const {
     this->Array[index] = value;
   }
@@ -228,7 +228,7 @@ private:
 //// BEGIN-EXAMPLE ArrayPortalToIterators.cxx
 ////
 template<typename PortalType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 std::vector<typename PortalType::ValueType>
 CopyArrayPortalToVector(const PortalType &portal)
 {
@@ -329,11 +329,11 @@ struct DoubleFunctor : public vtkm::exec::FunctorBase
   typedef typename vtkm::cont::ArrayHandle<T>::
       template ExecutionTypes<Device>::Portal OutputPortalType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   DoubleFunctor(InputPortalType inputPortal, OutputPortalType outputPortal)
     : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
 
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(vtkm::Id index) const {
     this->OutputPortal.Set(index, 2*this->InputPortal.Get(index));
   }

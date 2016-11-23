@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 //// BEGIN-EXAMPLE Assert.cxx
 ////
 template<typename T>
-VTKM_CONT_EXPORT
+VTKM_CONT
 T GetArrayValue(vtkm::cont::ArrayHandle<T> arrayHandle, vtkm::Id index)
 {
   VTKM_ASSERT(index >= 0);
@@ -48,7 +48,7 @@ T GetArrayValue(vtkm::cont::ArrayHandle<T> arrayHandle, vtkm::Id index)
   return arrayHandle.GetPortalConstControl().Get(index);
 }
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void TryGetArrayValue()
 {
   vtkm::Float32 buffer[] = {2.0f, 5.0f};
@@ -66,7 +66,7 @@ public:
   typedef _2 ExecutionSignature(_1);
 
   template<typename T>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   T operator()(T x) const
   {
     if (x < 0)
@@ -80,7 +80,7 @@ public:
 //// END-EXAMPLE ExecutionErrors.cxx
 ////
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void TrySquareRoot()
 {
   vtkm::cont::ArrayHandle<vtkm::Float32> output;

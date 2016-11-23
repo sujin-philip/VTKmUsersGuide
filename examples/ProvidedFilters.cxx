@@ -10,7 +10,7 @@ namespace {
 ////
 //// BEGIN-EXAMPLE PointElevation.cxx
 ////
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::DataSet ComputeAirPressure(vtkm::cont::DataSet dataSet)
 {
   vtkm::filter::PointElevation elevationFilter;

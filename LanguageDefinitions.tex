@@ -58,6 +58,7 @@
                    TypeTraitsRealTag,TypeTraitsIntegerTag,
                    TypeTraitsScalarTag,TypeTraitsVectorTag,
                    VecTraits,ComponentType,HasMultipleComponents,
+                   IsSizeStatic,VecTraitsTagSizeStatic,VecTraitsTagSizeVariable,
                    VecTraitsTagMultipleComponents,
                    VecTraitsTagSingleComponent,
                    Error, ErrorExecution, ErrorControl,
@@ -245,8 +246,8 @@
                    TopologyElementTagFace,
                    VTKDataSetReader,VTKDataSetWriter
                    },
-  morekeywords={[3]VTKM_CONT_EXPORT,VTKM_EXEC_EXPORT,VTKM_EXEC_CONT_EXPORT,
-                   VTKM_EXEC_CONSTANT_EXPORT,
+  morekeywords={[3]VTKM_CONT,VTKM_EXEC,VTKM_EXEC_CONT,
+                   VTKM_EXEC_CONSTANT,
                    VTKM_SUPPRESS_EXEC_WARNINGS,
                    VTKM_DEVICE_ADAPTER,
                    VTKM_DEVICE_ADAPTER_SERIAL,
@@ -261,7 +262,7 @@
                    VTKM_STORAGE_UNDEFINED,
                    VTKM_DEFAULT_STORAGE_TAG,
                    VTKM_ARRAY_HANDLE_SUBCLASS,VTKM_ARRAY_HANDLE_SUBCLASS_NT,
-                   VTKM_ASSERT,
+                   VTKM_ASSERT,VTKM_STATIC_ASSERT,
                    VTKM_DEFAULT_TYPE_LIST_TAG,
                    VTKM_DEFAULT_CONTAINER_LIST_TAG,
                    VTKM_DEFAULT_POINT_COORDINATES_LIST_TAG,
@@ -316,9 +317,9 @@
 
 \newcommand*{\vtkmmacro}[1]{\textmacro{#1}\index{#1}}
 
-\newcommand{\vtkmcontexport}{\vtkmmacro{VTKM\_CONT\_EXPORT}\index{export!control}\index{function~export}\index{method~export}\xspace}
-\newcommand{\vtkmexecexport}{\vtkmmacro{VTKM\_EXEC\_EXPORT}\index{export!execution}\index{function~export}\index{method~export}\xspace}
-\newcommand{\vtkmexeccontexport}{\vtkmmacro{VTKM\_EXEC\_CONT\_EXPORT}\index{export!control}\index{export!execution}\index{function~export}\index{method~export}\xspace}
+\newcommand{\vtkmcontmodifier}{\vtkmmacro{VTKM\_CONT}\index{modifier!control}\index{function~modifier}\index{method~modifier}\xspace}
+\newcommand{\vtkmexecmodifier}{\vtkmmacro{VTKM\_EXEC}\index{modifier!execution}\index{function~modifier}\index{method~modifier}\xspace}
+\newcommand{\vtkmexeccontmodifier}{\vtkmmacro{VTKM\_EXEC\_CONT}\index{modifier!control}\index{modifier!execution}\index{function~modifier}\index{method~modifier}\xspace}
 
 \newcommand{\controlsignature}{\textsignature{ControlSignature}\index{control~signature}\index{signature!control}\xspace}
 \newcommand{\executionsignature}{\textsignature{ExecutionSignature}\index{execution~signature}\index{signature!execution}\xspace}

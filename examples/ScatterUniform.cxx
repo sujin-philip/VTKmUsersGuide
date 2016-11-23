@@ -19,11 +19,11 @@ struct InterleaveArrays : vtkm::worklet::WorkletMapField
 
   typedef vtkm::worklet::ScatterUniform ScatterType;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   ScatterType GetScatter() const { return vtkm::worklet::ScatterUniform(2); }
 
   template<typename T>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(const T &input0,
                   const T &input1,
                   T &output,

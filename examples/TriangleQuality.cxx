@@ -18,7 +18,7 @@ static const vtkm::Id TRIANGLE_QUALITY_TABLE_DIMENSION = 8;
 static const vtkm::Id TRIANGLE_QUALITY_TABLE_SIZE =
     TRIANGLE_QUALITY_TABLE_DIMENSION*TRIANGLE_QUALITY_TABLE_DIMENSION;
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32> GetTriangleQualityTable()
 {
   // Use these precomputed values for the array. A real application would
@@ -40,7 +40,7 @@ vtkm::cont::ArrayHandle<vtkm::Float32> GetTriangleQualityTable()
 }
 
 template<typename T>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 vtkm::Vec<T,3> TriangleEdgeLengths(const vtkm::Vec<T,3> &point1,
                                    const vtkm::Vec<T,3> &point2,
                                    const vtkm::Vec<T,3> &point3)
@@ -52,7 +52,7 @@ vtkm::Vec<T,3> TriangleEdgeLengths(const vtkm::Vec<T,3> &point1,
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template<typename PortalType, typename T>
-VTKM_EXEC_CONT_EXPORT
+VTKM_EXEC_CONT
 vtkm::Float32 LookupTriangleQuality(const PortalType &triangleQualityPortal,
                                     const vtkm::Vec<T,3> &point1,
                                     const vtkm::Vec<T,3> &point2,
@@ -94,7 +94,7 @@ struct TriangleQualityWorklet : vtkm::worklet::WorkletMapPointToCell
   template<typename CellShape,
            typename PointCoordinatesType,
            typename TriangleQualityTablePortalType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   vtkm::Float32 operator()(
       CellShape shape,
       const PointCoordinatesType &pointCoordinates,
@@ -116,7 +116,7 @@ struct TriangleQualityWorklet : vtkm::worklet::WorkletMapPointToCell
 // Normally we would encapsulate this call in a filter, but for demonstrative
 // purposes we are just calling the worklet directly.
 template<typename DeviceAdapterTag>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32>
 RunTriangleQuality(vtkm::cont::DataSet dataSet,
                    DeviceAdapterTag)
@@ -146,7 +146,7 @@ template<typename DeviceAdapterTag>
 class TriangleQualityTable : public vtkm::exec::ExecutionObjectBase
 {
 public:
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   TriangleQualityTable()
   {
     this->TablePortal =
@@ -154,7 +154,7 @@ public:
   }
 
   template<typename T>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   vtkm::Float32 GetQuality(const vtkm::Vec<T,3> &point1,
                            const vtkm::Vec<T,3> &point2,
                            const vtkm::Vec<T,3> &point3) const
@@ -181,7 +181,7 @@ struct TriangleQualityWorklet2 : vtkm::worklet::WorkletMapPointToCell
   template<typename CellShape,
            typename PointCoordinatesType,
            typename TriangleQualityTableType>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   vtkm::Float32 operator()(
       CellShape shape,
       const PointCoordinatesType &pointCoordinates,
@@ -202,7 +202,7 @@ struct TriangleQualityWorklet2 : vtkm::worklet::WorkletMapPointToCell
 // Normally we would encapsulate this call in a filter, but for demonstrative
 // purposes we are just calling the worklet directly.
 template<typename DeviceAdapterTag>
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32>
 RunTriangleQuality2(vtkm::cont::DataSet dataSet,
                     DeviceAdapterTag)
@@ -237,7 +237,7 @@ RunTriangleQuality2(vtkm::cont::DataSet dataSet,
 namespace TriangleQualityNamespace {
 
 template<typename T>
-VTKM_EXEC_EXPORT
+VTKM_EXEC
 T TriangleQuality(const vtkm::Vec<T,3> &edgeLengths)
 {
   // Heron's formula for triangle area.
@@ -266,14 +266,14 @@ struct ComputeTriangleQualityValues : vtkm::worklet::WorkletMapField
   typedef _2 ExecutionSignature(_1);
 
   template<typename T>
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   T operator()(const vtkm::Vec<T,3> &edgeLengths) const
   {
     return TriangleQuality(edgeLengths);
   }
 };
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::ArrayHandle<vtkm::Float32>
 BuildTriangleQualityTable()
 {
@@ -296,7 +296,7 @@ BuildTriangleQualityTable()
 }
 
 template<typename PortalType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 void PrintTriangleQualityTable(const PortalType &portal)
 {
   for (vtkm::Id index = 0; index < portal.GetNumberOfValues(); index++)
@@ -310,7 +310,7 @@ void PrintTriangleQualityTable(const PortalType &portal)
   std::cout << std::endl << std::endl;
 }
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 vtkm::cont::DataSet BuildDataSet()
 {
   static const vtkm::Id NUM_ROWS = 5;
@@ -342,7 +342,7 @@ vtkm::cont::DataSet BuildDataSet()
   return dataSetBuilder.Create();
 }
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void CheckQualityArray(vtkm::cont::ArrayHandle<vtkm::Float32> qualities)
 {
   vtkm::cont::printSummary_ArrayHandle(qualities, std::cout);
@@ -381,7 +381,7 @@ void CheckQualityArray(vtkm::cont::ArrayHandle<vtkm::Float32> qualities)
                    "First quality not better than last.");
 }
 
-VTKM_CONT_EXPORT
+VTKM_CONT
 void TestTriangleQuality()
 {
   std::cout << "Building triangle quality array." << std::endl;

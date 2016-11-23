@@ -34,17 +34,17 @@ struct SetPortalFunctor : vtkm::exec::FunctorBase
        ExecutionTypes<Device>::Portal ExecPortalType;
   ExecPortalType Portal;
 
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   SetPortalFunctor(vtkm::cont::ArrayHandle<vtkm::Id> array, vtkm::Id size)
     : Portal(array.PrepareForOutput(size, Device()))
   {  }
 
   //// PAUSE-EXAMPLE
-  VTKM_CONT_EXPORT
+  VTKM_CONT
   SetPortalFunctor(const ExecPortalType &portal) : Portal(portal)
   {  }
   //// RESUME-EXAMPLE
-  VTKM_EXEC_EXPORT
+  VTKM_EXEC
   void operator()(vtkm::Id index) const
   {
     //// PAUSE-EXAMPLE
@@ -62,7 +62,7 @@ struct SetPortalFunctor : vtkm::exec::FunctorBase
 template<typename ExecPortalType,
          typename ArrayHandleType,
          typename Device>
-VTKM_CONT_EXPORT
+VTKM_CONT
 void TryUsingExecPortal(const ExecPortalType &execPortal,
                         const ArrayHandleType &arrayHandle,
                         Device)

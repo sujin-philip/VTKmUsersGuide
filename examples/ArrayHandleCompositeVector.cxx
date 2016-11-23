@@ -93,7 +93,7 @@ void ArrayHandleCompositeVectorBasic()
 //// BEGIN-EXAMPLE ArrayHandleCompositeVectorComponents.cxx
 ////
 template<typename CoordinateArrayType, typename ElevationArrayType>
-VTKM_CONT_EXPORT
+VTKM_CONT
 typename vtkm::cont::ArrayHandleCompositeVectorType<
     CoordinateArrayType, CoordinateArrayType, ElevationArrayType>::type
 ElevateCoordianteArray(const CoordinateArrayType &coordinateArray,

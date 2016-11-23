@@ -1,3 +1,7 @@
+#include <vtkm/Assert.h>
+#include <vtkm/StaticAssert.h>
+#include <vtkm/TypeTraits.h>
+
 #include <vtkm/cont/ArrayHandleCounting.h>
 #include <vtkm/cont/Error.h>
 #include <vtkm/cont/ErrorControlBadValue.h>
@@ -6,6 +10,8 @@
 #include <vtkm/worklet/WorkletMapField.h>
 
 #include <vtkm/cont/testing/Testing.h>
+
+#include <type_traits>
 
 namespace ErrorHandlingNamespace {
 
@@ -54,6 +60,35 @@ void TryGetArrayValue()
   vtkm::Float32 buffer[] = {2.0f, 5.0f};
   GetArrayValue(vtkm::cont::make_ArrayHandle(buffer,2), 0);
   GetArrayValue(vtkm::cont::make_ArrayHandle(buffer,2), 1);
+}
+
+////
+//// BEGIN-EXAMPLE StaticAssert.cxx
+////
+template<typename T>
+VTKM_EXEC_CONT
+void MyMathFunction(T &value)
+{
+  VTKM_STATIC_ASSERT(
+        (std::is_same<typename vtkm::TypeTraits<T>::DimensionalityTag,
+                      vtkm::TypeTraitsScalarTag>::value));
+
+  VTKM_STATIC_ASSERT_MSG(
+        sizeof(T) >= 4, "MyMathFunction needs types with at least 32 bits.");
+////
+//// END-EXAMPLE StaticAssert.cxx
+////
+  for (vtkm::IdComponent iteration = 0; iteration < 5; iteration++)
+  {
+    value = value*value;
+  }
+}
+
+VTKM_EXEC_CONT
+void TryMyMathFunction()
+{
+  vtkm::Id value(4);
+  MyMathFunction(value);
 }
 
 ////
@@ -111,6 +146,7 @@ void Test()
 {
   VTKM_TEST_ASSERT(ErrorHandlingNamespace::main(0, NULL) != 0, "No error?");
   TryGetArrayValue();
+  TryMyMathFunction();
   TrySquareRoot();
 }
 

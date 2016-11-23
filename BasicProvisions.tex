@@ -274,84 +274,6 @@ placed before the environment modifier macro.
 \vtkmlisting{Suppressing warnings about functions from mixed environments.}{SuppressExecWarnings.cxx}
 
 
-\section{Error Handling}
-\label{sec:ErrorHandlingControl}
-
-\index{errors|(}
-
-\index{errors!control~environment|(}
-
-VTK-m uses exceptions to report errors. All exceptions thrown by VTK-m will
-be a subclass of \vtkmcont{Error}. For simple error reporting, it is
-possible to simply catch a \vtkmcont{Error} and report the error message
-string reported by the \textcode{GetMessage} method.
-
-\vtkmlisting{Simple error reporting.}{CatchingErrors.cxx}
-
-There are several subclasses to \vtkmcont{Error}. The specific subclass
-gives an indication of the type of error that occured when the exception
-was thrown. Catching one of these subclasses may help a program better
-recover from errors.
-\begin{description}
-\item[\vtkmcont{ErrorControlBadAllocation}] Thrown when there is a problem
-  accessing or manipulating memory. Often this is thrown when an allocation
-  fails because there is insufficient memory, but other memory access
-  errors can cause this to be thrown as well.
-\item[\vtkmcont{ErrorControlBadType}] Thrown when VTK-m attempts to perform
-  an operation on an object that is of an incompatible type.
-\item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
-  method encounters an invalid value that inhibits progress.
-\item[\vtkmcont{ErrorExecution}] \index{errors!execution~environment} Throw
-  when an error is signaled in the execution environment for example when a
-  worklet is being executed.
-\item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
-  internal state that should never be reached. This error usually indicates
-  a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
-  should have.
-\item[\vtkmio{ErrorIO}] Thrown by a reader or writer when a file error is
-  encountered.
-\end{description}
-
-\index{errors!control~environment|)}
-
-\index{assert|(}
-\index{errors!assert|(}
-
-In addition to the aforementioned error signaling, the
-\vtkmheader{vtkm}{Assert.h} header file defines a macro named
-\vtkmmacro{VTKM\_ASSERT}. This macro behaves the same as the POSIX
-\textmacro{assert} macro. It takes a single argument that is a condition
-that is expected to be true. If it is not true, the program is halted and a
-message is printed. Asserts are useful debugging tools to ensure that
-software is behaving and being used as expected.
-
-\vtkmlisting{Using \protect\vtkmmacro{VTKM\_ASSERT}.}{Assert.cxx}
-
-\begin{didyouknow}
-  Like the POSIX \textmacro{assert}, if the \vtkmmacro{NDEBUG} macro is
-  defined, then \vtkmmacro{VTKM\_ASSERT} will become an empty expression.
-  Typically \vtkmmacro{NDEBUG} is defined with a compiler flag (like
-  \textcode{-DNDEBUG}) for release builds to better optimize the code.
-  CMake will automatically add this flag for release builds.
-\end{didyouknow}
-
-\begin{commonerrors}
-  A helpful warning provided by many compilers alerts you of unused
-  variables. (This warning is commonly enabled on VTK-m regression test
-  nightly builds.) If a function argument is used only in a
-  \vtkmmacro{VTKM\_ASSERT}, then it will be required for debug builds and
-  be unused in release builds. To get around this problem, add a statement
-  to the function of the form \textcode{(void)\textit{variableName};}. This
-  statement will have no effect on the code generated but will suppress the
-  warning for release builds.
-\end{commonerrors}
-
-\index{errors!assert|)}
-\index{assert|)}
-
-\index{errors|)}
-
-
 \section{Core Data Types}
 \label{sec:CoreDataTypes}
 
@@ -877,3 +799,110 @@ Chapter~\ref{chap:DynamicArrayHandle}).
 
 \index{lists|)}
 \index{tag!lists|)}
+
+
+\section{Error Handling}
+\label{sec:ErrorHandlingControl}
+
+\index{errors|(}
+
+\index{errors!control~environment|(}
+
+VTK-m uses exceptions to report errors. All exceptions thrown by VTK-m will
+be a subclass of \vtkmcont{Error}. For simple error reporting, it is
+possible to simply catch a \vtkmcont{Error} and report the error message
+string reported by the \textcode{GetMessage} method.
+
+\vtkmlisting{Simple error reporting.}{CatchingErrors.cxx}
+
+There are several subclasses to \vtkmcont{Error}. The specific subclass
+gives an indication of the type of error that occured when the exception
+was thrown. Catching one of these subclasses may help a program better
+recover from errors.
+\begin{description}
+\item[\vtkmcont{ErrorControlBadAllocation}] Thrown when there is a problem
+  accessing or manipulating memory. Often this is thrown when an allocation
+  fails because there is insufficient memory, but other memory access
+  errors can cause this to be thrown as well.
+\item[\vtkmcont{ErrorControlBadType}] Thrown when VTK-m attempts to perform
+  an operation on an object that is of an incompatible type.
+\item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
+  method encounters an invalid value that inhibits progress.
+\item[\vtkmcont{ErrorExecution}] \index{errors!execution~environment} Throw
+  when an error is signaled in the execution environment for example when a
+  worklet is being executed.
+\item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
+  internal state that should never be reached. This error usually indicates
+  a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
+  should have.
+\item[\vtkmio{ErrorIO}] Thrown by a reader or writer when a file error is
+  encountered.
+\end{description}
+
+\index{errors!control~environment|)}
+
+\index{assert|(}
+\index{errors!assert|(}
+
+In addition to the aforementioned error signaling, the
+\vtkmheader{vtkm}{Assert.h} header file defines a macro named
+\vtkmmacro{VTKM\_ASSERT}. This macro behaves the same as the POSIX
+\textmacro{assert} macro. It takes a single argument that is a condition
+that is expected to be true. If it is not true, the program is halted and a
+message is printed. Asserts are useful debugging tools to ensure that
+software is behaving and being used as expected.
+
+\vtkmlisting{Using \protect\vtkmmacro{VTKM\_ASSERT}.}{Assert.cxx}
+
+\begin{didyouknow}
+  Like the POSIX \textmacro{assert}, if the \vtkmmacro{NDEBUG} macro is
+  defined, then \vtkmmacro{VTKM\_ASSERT} will become an empty expression.
+  Typically \vtkmmacro{NDEBUG} is defined with a compiler flag (like
+  \textcode{-DNDEBUG}) for release builds to better optimize the code.
+  CMake will automatically add this flag for release builds.
+\end{didyouknow}
+
+\begin{commonerrors}
+  A helpful warning provided by many compilers alerts you of unused
+  variables. (This warning is commonly enabled on VTK-m regression test
+  nightly builds.) If a function argument is used only in a
+  \vtkmmacro{VTKM\_ASSERT}, then it will be required for debug builds and
+  be unused in release builds. To get around this problem, add a statement
+  to the function of the form \textcode{(void)\textit{variableName};}. This
+  statement will have no effect on the code generated but will suppress the
+  warning for release builds.
+\end{commonerrors}
+
+\index{assert!static|(}
+\index{static assert|(}
+
+Because \VTKm makes heavy use of C++ templates, it is possible that these templates could be used with inappropriate types in the arguments.
+Using an unexpected type in a template can lead to very confusing errors, so it is better to catch such problems as early as possible.
+The \vtkmmacro{VTKM\_STATIC\_ASSERT} macro, defined in \vtkmheader{vtkm}{StaticAssert.h} makes this possible.
+This macro takes a constant expression that can be evaluated at compile time and verifies that the result is true.
+
+In the following example, \vtkmmacro{VTKM\_STATIC\_ASSERT} and its sister macro \vtkmmacro{VTKM\_STATIC\_ASSERT\_MSG}, which allows you to give a descriptive message for the failure, are used to implement checks on a templated function that is designed to work on any scalar type that is represented by 32 or more bits.
+
+\vtkmlisting[ex:StaticAssert]{Using \protect\vtkmmacro{VTKM\_STATIC\_ASSERT}.}{StaticAssert.cxx}
+
+\begin{didyouknow}
+  \index{is\_same}
+  In addition to the several trait template classes provided by \VTKm to introspect C++ types, the C++ standard \textfilename{type\_traits} header file contains several helpful templates for general queries on types.
+  Example~\ref{ex:StaticAssert} demonstrates the use of one such template: \textcode{std::is\_same}.
+\end{didyouknow}
+
+\begin{commonerrors}
+  \index{true\_type} \index{false\_type} \index{type\_traits}
+  Many templates used to introspect types resolve to the tags \textcode{std::true\_type} and \textcode{std::false\_type} rather than the constant values \textcode{true} and \textcode{false} that \vtkmmacro{VTKM\_STATIC\_ASSERT} expects.
+  The \textcode{std::true\_type} and \textcode{std::false\_type} tags can be converted to the Boolean literal by adding \textcode{::value} to the end of them.
+  Failing to do so will cause \vtkmmacro{VTKM\_STATIC\_ASSERT} to behave incorrectly.
+  Example~\ref{ex:StaticAssert} demonstrates getting the Boolean literal from the result of \textcode{std::is\_same}.
+\end{commonerrors}
+
+\index{static assert|)}
+\index{assert!static|)}
+
+\index{errors!assert|)}
+\index{assert|)}
+
+\index{errors|)}

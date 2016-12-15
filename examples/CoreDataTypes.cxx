@@ -1,5 +1,6 @@
 #include <vtkm/Range.h>
 #include <vtkm/Types.h>
+#include <vtkm/VecVariable.h>
 
 #include <vtkm/testing/Testing.h>
 
@@ -79,9 +80,9 @@ void EquilateralTriangle()
   //// BEGIN-EXAMPLE EquilateralTriangle.cxx
   ////
   vtkm::Vec<vtkm::Vec<vtkm::Float32,2>, 3> equilateralTriangle(
-                                                   vtkm::make_Vec(0.0, 0.0),
-                                                   vtkm::make_Vec(1.0, 0.0),
-                                                   vtkm::make_Vec(0.5, 0.866));
+                                                vtkm::make_Vec(0.0, 0.0),
+                                                vtkm::make_Vec(1.0, 0.0),
+                                                vtkm::make_Vec(0.5, 0.8660254));
   ////
   //// END-EXAMPLE EquilateralTriangle.cxx
   ////
@@ -97,6 +98,94 @@ void EquilateralTriangle()
                    "Bad edge length.");
   VTKM_TEST_ASSERT(test_equal(vtkm::dot(edges[2],edges[2]), edgeLengthSqr),
                    "Bad edge length.");
+}
+
+////
+//// BEGIN-EXAMPLE VecCExample.cxx
+////
+VTKM_EXEC_CONSTANT
+static const vtkm::IdComponent HexagonIndexToIJKTable[8][3] = {
+  { 0, 0, 0 },
+  { 1, 0, 0 },
+  { 1, 1, 0 },
+  { 0, 1, 0 },
+  { 0, 0, 1 },
+  { 1, 0, 1 },
+  { 1, 1, 1 },
+  { 0, 1, 1 }
+};
+
+VTKM_EXEC_CONSTANT
+static const vtkm::IdComponent HexagonIJKToIndexTable[2][2][2] = {
+  { // i=0
+    { 0, 4 }, // j=0
+    { 3, 7 }, // j=1
+  },
+  { // i=1
+    { 1, 5 }, // j=0
+    { 2, 6 }, // j=1
+  }
+};
+
+VTKM_EXEC
+vtkm::VecCConst<vtkm::IdComponent> HexagonIndexToIJK(vtkm::IdComponent index)
+{
+  return vtkm::make_VecC(HexagonIndexToIJKTable[index], 3);
+}
+
+VTKM_EXEC
+vtkm::IdComponent HexagonIJKToIndex(vtkm::VecCConst<vtkm::IdComponent> ijk)
+{
+  return HexagonIJKToIndexTable[ijk[0]][ijk[1]][ijk[2]];
+}
+////
+//// END-EXAMPLE VecCExample.cxx
+////
+
+////
+//// BEGIN-EXAMPLE VecVariableExample.cxx
+////
+vtkm::VecVariable<vtkm::IdComponent,4>
+HexagonShortestPath(vtkm::IdComponent startPoint, vtkm::IdComponent endPoint)
+{
+  vtkm::VecCConst<vtkm::IdComponent> startIJK = HexagonIndexToIJK(startPoint);
+  vtkm::VecCConst<vtkm::IdComponent> endIJK = HexagonIndexToIJK(endPoint);
+
+  vtkm::Vec<vtkm::IdComponent,3> currentIJK;
+  startIJK.CopyInto(currentIJK);
+
+  vtkm::VecVariable<vtkm::IdComponent,4> path;
+  path.Append(startPoint);
+  for (vtkm::IdComponent dimension = 0; dimension < 3; dimension++)
+  {
+    if (currentIJK[dimension] != endIJK[dimension])
+    {
+      currentIJK[dimension] = endIJK[dimension];
+      path.Append(HexagonIJKToIndex(currentIJK));
+    }
+  }
+
+  return path;
+}
+////
+//// END-EXAMPLE VecVariableExample.cxx
+////
+
+void UsingVecCAndVecVariable()
+{
+  vtkm::VecVariable<vtkm::IdComponent,4> path;
+
+  path = HexagonShortestPath(2, 2);
+  VTKM_TEST_ASSERT(test_equal(path, vtkm::Vec<vtkm::IdComponent,1>(2)),
+                   "Bad path");
+
+  path = HexagonShortestPath(0, 7);
+  VTKM_TEST_ASSERT(test_equal(path, vtkm::Vec<vtkm::IdComponent,3>(0,3,7)),
+                   "Bad path");
+
+  path = HexagonShortestPath(5,3);
+  VTKM_TEST_ASSERT(test_equal(path, vtkm::Vec<vtkm::IdComponent,4>(5,4,7,3)),
+                   "Bad path");
 }
 
 void UsingRange()
@@ -211,6 +300,7 @@ void Test()
   VectorOperations();
   LongerVector();
   EquilateralTriangle();
+  UsingVecCAndVecVariable();
   UsingRange();
   UsingBounds();
 }

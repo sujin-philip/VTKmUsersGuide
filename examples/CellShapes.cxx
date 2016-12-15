@@ -6,7 +6,7 @@
 
 #include <vtkm/testing/Testing.h>
 
-namespace {
+namespace CellShapesExamples {
 
 ////
 //// BEGIN-EXAMPLE CellShapeIdToTag.cxx
@@ -144,9 +144,9 @@ void Run()
   VTKM_TEST_ASSERT(errorMessage.IsErrorRaised(), "Expected error not raised.");
 }
 
-} // anonymous namespace
+} // namespace CellShapesExamples
 
 int CellShapes(int, char*[])
 {
-  return vtkm::testing::Testing::Run(Run);
+  return vtkm::testing::Testing::Run(CellShapesExamples::Run);
 }

@@ -14,6 +14,7 @@ set(example_src
   ArrayHandleTransform.cxx
   ArrayHandleZip.cxx
   BasicGlut.cxx
+  CellEdgesFaces.cxx
   CellOperations.cxx
   CellShapes.cxx
   ColorTables.cxx

@@ -10,7 +10,7 @@
 
 #include <vtkm/Math.h>
 //// PAUSE-EXAMPLE
-namespace {
+namespace TraitsExamples {
 //// RESUME-EXAMPLE
 
 template<typename T>
@@ -86,14 +86,14 @@ void TryRemainder()
   VTKM_TEST_ASSERT(test_equal(m4, vtkm::make_Vec(3, 3, 3)), "Got bad remainder");
 }
 
-} // anonymous namespace
+} // namespace TraitsExamples
 
 ////
 //// BEGIN-EXAMPLE VecTraits.cxx
 ////
 #include <vtkm/VecTraits.h>
 //// PAUSE-EXAMPLE
-namespace {
+namespace TraitsExamples {
 //// RESUME-EXAMPLE
 
 // This functor provides a total ordering of vectors. Every compared vector
@@ -178,9 +178,9 @@ void Test()
   TryLess();
 }
 
-} // anonymous namespace
+} // namespace TraitsExamples
 
 int Traits(int, char *[])
 {
-  return vtkm::testing::Testing::Run(Test);
+  return vtkm::testing::Testing::Run(TraitsExamples::Test);
 }

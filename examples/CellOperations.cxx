@@ -3,7 +3,7 @@
 #include <vtkm/exec/ParametricCoordinates.h>
 
 #include <vtkm/worklet/DispatcherMapTopology.h>
-#include <vtkm/worklet/DispatcherMapTopology.h>
+#include <vtkm/worklet/WorkletMapTopology.h>
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>

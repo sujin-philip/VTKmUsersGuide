@@ -25,6 +25,7 @@ set(images
   images/CellConnectionsTriangle.pdf
   images/CellConnectionsVertex.pdf
   images/CellConnectionsWedge.pdf
+  images/CellConstituents.pdf
   images/ExplicitCellConnections.pdf
   images/MCCompareCuda.png
   images/MCComparePiston.png

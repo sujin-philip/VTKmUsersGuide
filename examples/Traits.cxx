@@ -3,6 +3,8 @@
 
 #include <vtkm/testing/Testing.h>
 
+#include <typeinfo>
+
 ////
 //// BEGIN-EXAMPLE TypeTraits.cxx
 ////
@@ -84,6 +86,58 @@ void TryRemainder()
   vtkm::Vec<vtkm::Float32,3> m4 =
       AnyRemainder(vtkm::make_Vec(10, 9, 8), vtkm::make_Vec(7, 6, 5));
   VTKM_TEST_ASSERT(test_equal(m4, vtkm::make_Vec(3, 3, 3)), "Got bad remainder");
+}
+
+template<typename T>
+struct TypeTraits;
+
+////
+//// BEGIN-EXAMPLE TypeTraitsImpl.cxx
+////
+//// PAUSE-EXAMPLE
+#if 0
+//// RESUME-EXAMPLE
+namespace vtkm {
+//// PAUSE-EXAMPLE
+#endif
+//// RESUME-EXAMPLE
+
+template<>
+struct TypeTraits<vtkm::Float32>
+{
+  using NumericTag = vtkm::TypeTraitsRealTag;
+  using DimensionalityTag = vtkm::TypeTraitsScalarTag;
+
+  VTKM_EXEC_CONT
+  static vtkm::Float32 ZeroInitialization() { return vtkm::Float32(0); }
+};
+
+//// PAUSE-EXAMPLE
+#if 0
+//// RESUME-EXAMPLE
+}
+//// PAUSE-EXAMPLE
+#endif
+//// RESUME-EXAMPLE
+////
+//// END-EXAMPLE TypeTraitsImpl.cxx
+////
+
+void TryCustomTypeTraits()
+{
+  using CustomTraits = TraitsExamples::TypeTraits<vtkm::Float32>;
+  using OriginalTraits = vtkm::TypeTraits<vtkm::Float32>;
+
+  VTKM_STATIC_ASSERT((std::is_same<
+                        CustomTraits::NumericTag,
+                        OriginalTraits::NumericTag>::value));
+  VTKM_STATIC_ASSERT((std::is_same<
+                        CustomTraits::DimensionalityTag,
+                        OriginalTraits::DimensionalityTag>::value));
+
+  VTKM_TEST_ASSERT(CustomTraits::ZeroInitialization()
+                   == OriginalTraits::ZeroInitialization(),
+                   "Bad zero initialization.");
 }
 
 } // namespace TraitsExamples
@@ -172,10 +226,112 @@ void TryLess()
   VTKM_TEST_ASSERT(partialLess3(vtkm::Id3(1,2,3),vtkm::Id3(2,3,4)), "Bad less.");
 }
 
+template<typename T>
+struct VecTraits;
+
+////
+//// BEGIN-EXAMPLE VecTraitsImpl.cxx
+////
+//// PAUSE-EXAMPLE
+#if 0
+//// RESUME-EXAMPLE
+namespace vtkm {
+//// PAUSE-EXAMPLE
+#endif
+//// RESUME-EXAMPLE
+
+template<>
+struct VecTraits<vtkm::Id3>
+{
+  typedef vtkm::Id ComponentType;
+  static const int NUM_COMPONENTS = 3;
+  typedef vtkm::VecTraitsTagSizeStatic IsSizeStatic;
+  typedef vtkm::VecTraitsTagMultipleComponents HasMultipleComponents;
+
+  VTKM_EXEC_CONT
+  static vtkm::IdComponent GetNumberOfComponents(const vtkm::Id3 &) {
+    return NUM_COMPONENTS;
+  }
+
+  VTKM_EXEC_CONT
+  static const vtkm::Id &GetComponent(const vtkm::Id3 &vector, int component) {
+    return vector[component];
+  }
+  VTKM_EXEC_CONT
+  static vtkm::Id &GetComponent(vtkm::Id3 &vector, int component) {
+    return vector[component];
+  }
+
+  VTKM_EXEC_CONT
+  static void SetComponent(vtkm::Id3 &vector, int component, vtkm::Id value) {
+    vector[component] = value;
+  }
+
+  template<vtkm::IdComponent DestSize>
+  VTKM_EXEC_CONT
+  static void
+  CopyInto(const vtkm::Id3 &src, vtkm::Vec<vtkm::Id,DestSize> &dest)
+  {
+    for (vtkm::IdComponent index = 0;
+         (index < NUM_COMPONENTS) && (index < DestSize);
+         index++)
+    {
+      dest[index] = src[index];
+    }
+  }
+};
+
+//// PAUSE-EXAMPLE
+#if 0
+//// RESUME-EXAMPLE
+} // namespace vtkm
+//// PAUSE-EXAMPLE
+#endif
+//// RESUME-EXAMPLE
+////
+//// END-EXAMPLE VecTraitsImpl.cxx
+////
+
+void TryCustomVecTriats()
+{
+  using CustomTraits = TraitsExamples::VecTraits<vtkm::Id3>;
+  using OriginalTraits = vtkm::VecTraits<vtkm::Id3>;
+
+  VTKM_STATIC_ASSERT((std::is_same<
+                        CustomTraits::ComponentType,
+                        OriginalTraits::ComponentType>::value));
+  VTKM_STATIC_ASSERT(CustomTraits::NUM_COMPONENTS
+                     == OriginalTraits::NUM_COMPONENTS);
+  VTKM_STATIC_ASSERT((std::is_same<
+                        CustomTraits::HasMultipleComponents,
+                        OriginalTraits::HasMultipleComponents>::value));
+  VTKM_STATIC_ASSERT((std::is_same<
+                        CustomTraits::IsSizeStatic,
+                        OriginalTraits::IsSizeStatic>::value));
+
+  vtkm::Id3 value = TestValue(10, vtkm::Id3());
+  VTKM_TEST_ASSERT(CustomTraits::GetNumberOfComponents(value)
+                   == OriginalTraits::GetNumberOfComponents(value),
+                   "Wrong size.");
+  VTKM_TEST_ASSERT(CustomTraits::GetComponent(value, 1)
+                   == OriginalTraits::GetComponent(value, 1),
+                   "Wrong component.");
+
+  CustomTraits::SetComponent(value, 2, 0);
+  VTKM_TEST_ASSERT(value[2] == 0, "Did not set component.");
+
+  vtkm::Id2 shortValue;
+  CustomTraits::CopyInto(value, shortValue);
+  VTKM_TEST_ASSERT(test_equal(shortValue, TestValue(10, vtkm::Id2())),
+                   "Bad extract.");
+}
+
 void Test()
 {
   TryRemainder();
+  TryCustomTypeTraits();
   TryLess();
+  TryCustomVecTriats();
 }
 
 } // namespace TraitsExamples

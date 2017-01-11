@@ -551,22 +551,13 @@ elements.
   \index{tag!dimensionality} This type is set to either
   \vtkm{TypeTraitsScalarTag} or \vtkm{TypeTraitsVectorTag} to signal that
   the type represents either a single scalar value or a tuple of values.
+\item[\textidentifier{ZeroInitialization}] \index{ZeroInitialization}
+  A static member function that takes no arguments and returns 0 (or the closest equivalent to it) cast to the type.
 \end{description}
 
 The definition of \vtkm{TypeTraits} for \vtkm{Float32} could like something
 like this.
-\begin{vtkmexample}{Definition of \protect \vtkm{TypeTraits}\tparams{\protect \vtkm{Float32}}.}
-namespace vtkm {
-
-template<>
-struct TypeTraits<vtkm::Float32>
-{
-  typedef vtkm::TypeTraitsRealTag NumericTag;
-  typedef vtkm::TypeTraitsScalarTag DimensionalityTag;
-};
-
-}
-\end{vtkmexample}
+\vtkmlisting{Definition of \protect \vtkm{TypeTraits}\tparams{\protect \vtkm{Float32}}.}{TypeTraitsImpl.cxx}
 
 Here is a simple example of using \vtkm{TypeTraits} to implement a generic
 function that behaves like the remainder operator (\textcode{\%}) for all
@@ -626,48 +617,7 @@ It contains the following elements.
 
 The definition of \vtkm{VecTraits} for \vtkm{Id3} could look something like
 this.
-\begin{vtkmexample}{Definition of \protect \vtkm{VecTraits}\tparams{\protect \vtkm{Id3}}.}
-namespace vtkm {
-
-template<>
-struct VecTraits<vtkm::Id3>
-{
-  typedef vtkm::Id ComponentType;
-  static const int NUM_COMPONENTS = 3;
-  typedef vtkm::VecTraitsTagSizeStatic IsSizeStatic;
-  typedef VecTraitsTagMultipleComponents HasMultipleComponents;
-
-  VTKM_EXEC_CONT
-  static vtkm::IdComponent GetNumberOfComponents(const VecType &vec) {
-    return NUM_COMPONENTS;
-  }
-
-  VTKM_EXEC_CONT
-  static vtkm::Id &GetComponent(vtkm::Id3 &vector, int component) {
-    return vector[component];
-  }
-
-  VTKM_EXEC_CONT
-  static void SetComponent(vtkm::Id3 &vector, int component, vtkm::Id value) {
-    vector[component] = value;
-  }
-
-  template<vtkm::IdComponent destSize>
-  VTKM_EXEC_CONT
-  static void
-  CopyInto(const VecType &src, vtkm::Vec<vtkm::Id,destSize> &dest)
-  {
-    for (vtkm::IdComponent index = 0;
-         (index < NUM_COMPONENTS) && (index < OtherSize);
-         index++)
-    {
-      dest[index] = src[index];
-    }
-  }
-};
-
-} // namespace vtkm
-\end{vtkmexample}
+\vtkmlisting{Definition of \protect \vtkm{VecTraits}\tparams{\protect \vtkm{Id3}}.}{VecTraitsImpl.cxx}
 
 \index{tag!vector traits|)}
 

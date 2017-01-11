@@ -90,15 +90,18 @@ void DoTransport(const MyExecObject &inExecObject,
   // The executive object transport just passes the object through.
   typedef Transport<TransportTagExecObject,MyExecObject,Device>
       ExecObjectTransport;
-  MyExecObject passedExecObject = ExecObjectTransport()(inExecObject, 10);
+  MyExecObject passedExecObject =
+      ExecObjectTransport()(inExecObject, inArray, 10);
 
   // The array in transport returns a read-only array portal.
   typedef Transport<TransportTagArrayIn,ArrayType,Device> ArrayInTransport;
-  ArrayInTransport::ExecObjectType inPortal = ArrayInTransport()(inArray, 10);
+  ArrayInTransport::ExecObjectType inPortal =
+      ArrayInTransport()(inArray, inArray, 10);
 
   // The array out transport returns an allocated array portal.
   typedef Transport<TransportTagArrayOut,ArrayType,Device> ArrayOutTransport;
-  ArrayOutTransport::ExecObjectType outPortal =ArrayOutTransport()(outArray,10);
+  ArrayOutTransport::ExecObjectType outPortal =
+      ArrayOutTransport()(outArray, inArray, 10);
   ////
   //// PAUSE-EXAMPLE
   ////

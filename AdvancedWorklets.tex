@@ -95,13 +95,9 @@ perform. The second parameter is the type of the control parameter (after any
 dynamic casts). The third parameter is a device adapter tag for the device
 on which the data will be loaded.
 
-A \textidentifier{Transport} contains a \textcode{typedef} named
-\textcode{ExecObjectType} that is the type used after data is moved to the
-execution environment. A \textidentifier{Transport} also has a
-\textcode{const} parenthesis operator that takes the control-side object
-and the size of the domain and returns an execution-side object. This
-operator is called in the control environment, and the returned object must
-be ready to be passed to the execution environment.
+A \textidentifier{Transport} contains a \textcode{typedef} named \textcode{ExecObjectType} that is the type used after data is moved to the execution environment.
+A \textidentifier{Transport} also has a \textcode{const} parenthesis operator that takes the control-side object that is to be transported to the execution environment, the control-side object that represents the input domain, and the size of the output domain and returns an execution-side object.
+This operator is called in the control environment, and the returned object must be ready to be passed to the execution environment.
 
 Transports are implemented with a defined transport tag (which, by
 convention, is defined in the \vtkmcontarg{} namespace and starts with

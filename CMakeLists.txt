@@ -74,10 +74,13 @@ if (BUILD_EXAMPLES)
   include(CTest)
 endif ()
 
+set(VTKm_GUIDE_VERSION 1.1)
+
 add_subdirectory(examples)
 
 set(add_latex_document_args
   INPUTS ${input_docs}
+  CONFIGURE TitlePage.tex
   IMAGES ${images}
   IMAGE_DIRS images/ColorTables
   DEPENDS example-listings

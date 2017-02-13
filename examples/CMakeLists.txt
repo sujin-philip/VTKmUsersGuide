@@ -52,6 +52,18 @@ if (BUILD_EXAMPLES)
     )
   include_directories(${VTKm_INCLUDE_DIRS})
 
+  if(VTKm_VERSION_FULL MATCHES "[0-9]+.[0-9]+.[0-9]+-.*")
+    # If we are in between VTK-m versions, change the version to give the
+    # commit we are currently documenting.
+    set(VTKm_GUIDE_VERSION ${VTKm_VERSION_FULL} PARENT_SCOPE)
+  else()
+    # If we are at an actual release (as far as we can tell), make sure the
+    # version matches up.
+    if(NOT VTKm_GUIDE_VERSION STREQUAL VTKm_VERSION)
+      message(SEND_ERROR "VTKm_GUIDE_VERSION seems to be set wrong. Change in CMakeLists.txt")
+    endif()
+  endif()
+
   set(test_prog ExampleTests)
   create_test_sourcelist(test_src ${test_prog}.cxx ${example_src})
   add_executable(${test_prog} ${test_src})

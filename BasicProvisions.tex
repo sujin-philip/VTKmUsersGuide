@@ -902,3 +902,62 @@ In the following example, \vtkmmacro{VTKM\_STATIC\_ASSERT} and its sister macro 
 \index{assert|)}
 
 \index{errors|)}
+
+
+\section{\VTKm Version}
+\label{sec:Version}
+
+\index{version|(}
+
+As the \VTKm code evolves, changes to the interface and behavior will inevitably happen.
+Consequently, code that links into \VTKm might need a specific version of \VTKm or changes its behavior based on what version of \VTKm it is using.
+To facilitate this, \VTKm software is managed with a versioning system and advertises its version in multiple ways.
+As with many software products, \VTKm has three version numbers: major, minor, and patch.
+The major version represents significant changes in the \VTKm implementation and interface.
+Changes in the major version include backward incompatible changes.
+The minor version represents added functionality.
+Generally, changes in the minor version to not introduce changes to the API (although the early 1.X versions of \VTKm violate this).
+The patch version represents fixes provided after a release occurs.
+Patch versions represent minimal change and do not add features.
+
+\index{version!CMake|(}
+\index{CMake|(}
+\index{CMake!version|(}
+\index{CMake!VTK-m package!version|(}
+\index{VTK-m CMake package!version|(}
+
+If you are writing a software package that is managed by CMake and load \VTKm with the \textcode{find\_package} command as described in Section~\ref{sec:LinkingToVTKm}, then you can query the \VTKm version directly in the CMake configuration.
+When you load \VTKm with \textcode{find\_package}, CMake sets the variables \cmakevar{VTKm\_VERSION\_MAJOR}, \cmakevar{VTKm\_VERSION\_MINOR}, and \cmakevar{VTKm\_VERSION\_PATCH} to the major, minor, and patch versions, respectively.
+Additionally, \cmakevar{VTKm\_VERSION} is set to the ``major.minor'' version number and \cmakevar{VTKm\_VERSION\_FULL} is set to the ``major.minor.patch'' version number.
+If the current version of \VTKm is actually a development version that is in between releases of \VTKm, then and abbreviated SHA of the git commit is also included as part of \cmakevar{VTKm\_VERSION\_FULL}.
+
+\begin{didyouknow}
+  If you have a specific version of \VTKm required for your software, you can also use the version option to the \textcode{find\_package} CMake command.
+  The \textcode{find\_package} command takes an optional version argument that causes the command to fail if the wrong version of the package is found.
+\end{didyouknow}
+
+\index{VTK-m CMake package!version|)}
+\index{CMake!VTK-m package!version|)}
+\index{CMake!version|)}
+\index{CMake|)}
+\index{version!CMake|)}
+
+\index{version!macro|(}
+
+It is also possible to query the \VTKm version directly in your code through preprocessor macros.
+The \vtkmheader{vtkm}{Version.h} header file defines the following preprocessor macros to identify the \VTKm version.
+\vtkmmacro{VTKM\_VERSION\_MAJOR}, \vtkmmacro{VTKM\_VERSION\_MINOR}, and \vtkmmacro{VTKM\_VERSION\_PATCH} are set to integer numbers representing the major, minor, and patch versions, respectively.
+Additionally, \vtkmmacro{VTKM\_VERSION} is set to the ``major.minor'' version number as a string and \vtkmmacro{VTKM\_VERSION\_FULL} is set to the ``major.minor.patch'' version number (also as a string).
+If the current version of \VTKm is actually a development version that is in between releases of \VTKm, then and abbreviated SHA of the git commit is also included as part of \vtkmmacro{VTKM\_VERSION\_FULL}.
+
+\begin{commonerrors}
+  Note that the CMake variables all begin with \textcode{VTKm\_} (lowercase ``m'') whereas the preprocessor macros begin with \textcode{VTKM\_} (all uppercase).
+  This follows the respective conventions of CMake variables and preprocessor macros.
+\end{commonerrors}
+
+Note that \vtkmheader{vtkm}{Version.h} does not include any other \VTKm header files.
+This gives your code a chance to load, query, and react to the \VTKm version before loading any \VTKm code proper.
+
+\index{version!macro|)}
+
+\index{version|)}

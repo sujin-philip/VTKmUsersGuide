@@ -28,7 +28,7 @@ vtkm::cont::DataSet ComputeAirPressure(vtkm::cont::DataSet dataSet)
 
   if (!result.IsValid())
   {
-    throw vtkm::cont::ErrorControlBadValue("Failed to run elevation filter.");
+    throw vtkm::cont::ErrorBadValue("Failed to run elevation filter.");
   }
 
   return result.GetDataSet();
@@ -65,7 +65,7 @@ void DoVertexClustering()
 
   if (!result.IsValid())
   {
-    throw vtkm::cont::ErrorControlBadValue("Failed to run vertex clustering.");
+    throw vtkm::cont::ErrorBadValue("Failed to run vertex clustering.");
   }
 
   for (vtkm::IdComponent fieldIndex = 0;
@@ -102,7 +102,7 @@ void DoMarchingCubes()
 
   if (!result.IsValid())
   {
-    throw vtkm::cont::ErrorControlBadValue("Failed to run Marching Cubes.");
+    throw vtkm::cont::ErrorBadValue("Failed to run Marching Cubes.");
   }
 
   for (vtkm::IdComponent fieldIndex = 0;

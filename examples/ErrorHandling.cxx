@@ -4,7 +4,7 @@
 
 #include <vtkm/cont/ArrayHandleCounting.h>
 #include <vtkm/cont/Error.h>
-#include <vtkm/cont/ErrorControlBadValue.h>
+#include <vtkm/cont/ErrorBadValue.h>
 
 #include <vtkm/worklet/DispatcherMapField.h>
 #include <vtkm/worklet/WorkletMapField.h>
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     // Do something cool with VTK-m
     // ...
     //// PAUSE-EXAMPLE
-    throw vtkm::cont::ErrorControlBadValue("Oh, no!");
+    throw vtkm::cont::ErrorBadValue("Oh, no!");
     //// RESUME-EXAMPLE
   }
   catch (vtkm::cont::Error error)

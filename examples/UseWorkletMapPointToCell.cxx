@@ -116,7 +116,7 @@ CellCenters::DoExecute(const vtkm::cont::DataSet &inDataSet,
 
   if (!fieldMetadata.IsPointField())
   {
-    throw vtkm::cont::ErrorControlBadType(
+    throw vtkm::cont::ErrorBadType(
           "Cell Centers filter operates on point data.");
   }
 

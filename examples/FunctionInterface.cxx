@@ -5,7 +5,7 @@
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/DynamicArrayHandle.h>
-#include <vtkm/cont/ErrorControlBadType.h>
+#include <vtkm/cont/ErrorBadType.h>
 
 #include <vtkm/cont/internal/DynamicTransform.h>
 
@@ -603,8 +603,7 @@ struct ArrayCopyFunctor {
   void operator()(const vtkm::cont::ArrayHandle<TIn, CIn> &,
                   vtkm::cont::ArrayHandle<TOut, COut> &) const
   {
-    throw vtkm::cont::ErrorControlBadType(
-          "Arrays to copy must be the same type.");
+    throw vtkm::cont::ErrorBadType("Arrays to copy must be the same type.");
   }
 };
 

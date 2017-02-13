@@ -816,18 +816,18 @@ gives an indication of the type of error that occured when the exception
 was thrown. Catching one of these subclasses may help a program better
 recover from errors.
 \begin{description}
-\item[\vtkmcont{ErrorControlBadAllocation}] Thrown when there is a problem
+\item[\vtkmcont{ErrorBadAllocation}] Thrown when there is a problem
   accessing or manipulating memory. Often this is thrown when an allocation
   fails because there is insufficient memory, but other memory access
   errors can cause this to be thrown as well.
-\item[\vtkmcont{ErrorControlBadType}] Thrown when VTK-m attempts to perform
+\item[\vtkmcont{ErrorBadType}] Thrown when VTK-m attempts to perform
   an operation on an object that is of an incompatible type.
-\item[\vtkmcont{ErrorControlBadValue}] Thrown when a VTK-m function or
+\item[\vtkmcont{ErrorBadValue}] Thrown when a VTK-m function or
   method encounters an invalid value that inhibits progress.
 \item[\vtkmcont{ErrorExecution}] \index{errors!execution~environment} Throw
   when an error is signaled in the execution environment for example when a
   worklet is being executed.
-\item[\vtkmcont{ErrorControlInternal}] Thrown when VTK-m detects an
+\item[\vtkmcont{ErrorInternal}] Thrown when VTK-m detects an
   internal state that should never be reached. This error usually indicates
   a bug in VTK-m or, at best, VTK-m failed to detect an invalid input it
   should have.

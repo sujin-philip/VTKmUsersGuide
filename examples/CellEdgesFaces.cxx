@@ -96,10 +96,11 @@ struct ExtractEdges {
           vtkm::cont::make_ArrayHandleGroupVec<2>(edgeIndices));
 
     // Construct the resulting cell set and return
-    vtkm::cont::CellSetSingleType<> cellSetOut(vtkm::CellShapeTagLine(),
-                                               cellSetIn.GetNumberOfPoints(),
-                                               cellSetIn.GetName());
-    cellSetOut.Fill(edgeIndices);
+    vtkm::cont::CellSetSingleType<> cellSetOut(cellSetIn.GetName());
+    cellSetOut.Fill(cellSetIn.GetNumberOfPoints(),
+                    vtkm::CELL_SHAPE_LINE,
+                    2,
+                    edgeIndices);
     return cellSetOut;
   }
 };
@@ -266,9 +267,12 @@ struct ExtractFaces {
                                                        faceIndexOffsets));
 
     // Construct the resulting cell set and return
-    vtkm::cont::CellSetExplicit<> cellSetOut(cellSetIn.GetNumberOfPoints(),
-                                             cellSetIn.GetName());
-    cellSetOut.Fill(faceShapes, pointsPerFace, faceIndices, faceIndexOffsets);
+    vtkm::cont::CellSetExplicit<> cellSetOut(cellSetIn.GetName());
+    cellSetOut.Fill(cellSetIn.GetNumberOfPoints(),
+                    faceShapes,
+                    pointsPerFace,
+                    faceIndices,
+                    faceIndexOffsets);
     return cellSetOut;
   }
 };

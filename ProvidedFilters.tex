@@ -120,6 +120,35 @@ following methods.
 \index{average|}
 \index{cell~average|)}
 
+\subsection{Point Average}
+
+\index{point~average|(}
+\index{average|(}
+
+\vtkmfilter{PointAverage} is the point average filter.
+It will take a data set with a collection of cells and a field defined on the cells of the data set and create a new field defined on the points.
+The values of this new derived field are computed by averaging the values of the input field at all the incident cells.
+This is a simple way to convert a cell field to a point field.
+Both the input data set and the input field are specified as arguments to the \textcode{Execute} method.
+
+The default name for the output cell field is the same name as the input point field.
+The name can be overridden using the \textcode{SetOutputFieldName} method.
+
+In addition the standard \textcode{SetOutputFieldName} and \textcode{Execute} methods, \textidentifier{PointAverage} provides the following methods.
+
+\begin{description}
+\item[\textcode{SetActiveCellSet}]
+  Sets the index for the cell set to use from the \textidentifier{DataSet} provided to the \textcode{Execute} method.
+  The default index is 0, which is the first cell set.
+  If you want to set the active cell set by name, you can use the \textidentifier{GetCellSetIndex} method on the \textidentifier{DataSet} object that will be used with \textcode{Execute}.
+\item[\textcode{GetActiveCellSetIndex}]
+  Returns the index to be used when getting a cell set from the \textidentifier{DataSet} passed to \textcode{Execute}.
+  Set with \textcode{SetActiveCellSet}.
+\end{description}
+
+\index{average|}
+\index{point~average|)}
+
 \subsection{Point Elevation}
 
 \index{point~elevation|(}
@@ -228,6 +257,38 @@ the data set filters.
 \vtkmlisting[ex:VertexClustering]{Using \textidentifier{VertexClustering},
   which is a data set filter.}{VertexClustering.cxx}
 
+\subsection{Clean Grid}
+
+\index{clean grid|(}
+\index{data~set!clean|(}
+
+\vtkmfilter{CleanGrid} is a filter that converts a cell set to an explicit representation and potentially removes redundant or unused data.
+It does this by iterating over all cells in the data set, and for each one creating the explicit cell representation that is stored in the output.
+(Explicit cell sets are described in Section~\ref{sec:ExplicitCellSets}.)
+One benefit of using \textidentifier{CleanGrid} is that it can optionally remove unused points\fix{ and combine coincident points when implemented}.
+Another benefit is that the resulting cell set will be of a known specific type.
+
+\begin{commonerrors}
+  The result of \vtkmfilter{CleanGrid} is not necessarily smaller, memory-wise, than its input.
+  For example, ``cleaning'' a data set with a structured topology will actually result in a data set that requires much more memory to store an explicit topology.
+\end{commonerrors}
+
+In addition to the standard \textcode{Execute},
+\textcode{MapFieldOntoOutput}, and other methods,
+\textidentifier{CleanGrid} provides the following methods.
+
+\begin{description}
+\item[\textcode{SetCompactPointFields}]
+  Sets a Boolean flag that determines whether unused points are removed from the output.
+  If true (the default), then the output data set will have a new coordinate system containing only those points being used by the cell set, and the indices of the cells will be adjusted to the new ordering of points.
+  If false, then the output coordinate systems will be a shallow copy of the input coordinate systems.
+\item[\textcode{GetCompactPointFields}]
+  Returns the Boolean flag set in the latest call to \textcode{SetCompactPointFields}.
+\end{description}
+
+\index{data~set!clean|)}
+\index{clean grid|)}
+
 \subsection{External Faces}
 
 \index{external~faces|(}
@@ -252,9 +313,6 @@ its operations.
 
 \index{face!external|)}
 \index{external~faces|)}
-
-\index{data set filter|)}
-\index{filter!data set|)}
 
 \subsection{Vertex Clustering}
 
@@ -286,6 +344,9 @@ In addition to the standard \textcode{Execute},
 
 \index{surface~simplification|}
 \index{vertex~clustering|)}
+
+\index{data set filter|)}
+\index{filter!data set|)}
 
 
 \section{Data Set and Field Filters}

@@ -478,6 +478,13 @@ use.
   what data types are acceptable for the array. The type tags are described
   in Section~\ref{sec:TypeListTags} starting on page~\pageref{TypeTagList}.
 
+\item[\sigtag{AtomicArrayInOut}]
+  This tag represents an array where any entry can be read or written by any worklet invocation.
+  A \sigtag{AtomicArrayInOut} argument expects an \textidentifier{ArrayHandle} in the associated parameter of the dispatcher's \textcode{Invoke}.
+  A \vtkmexec{AtomicArray} object capable of performing atomic operations to the entries in the array is given to the worklet.
+  Atomic arrays can help avoid race conditions but can slow down the running of a parallel algorithm.
+  Atomic arrays are discussed in detail in Section~\ref{sec:AtomicArrays} starting on page~\pageref{sec:AtomicArrays}.
+
 \item[\sigtag{ExecObject}] This tag represents an execution object that is
   passed directly from the control environment to the worklet. A
   \sigtag{ExecObject} argument expects a subclass of
@@ -1680,11 +1687,20 @@ Chapter~\ref{chap:AdvancedWorklets} describes how to create completely new
 worklet types and parameter tags. However, designing such a system for a
 one-time use is overkill.
 
-Instead, all VTK-m worklets provide a couple of mechanisms that allow you
-to pass arbitrary data to a worklet. In this section, we will explore a
-\keyterm{whole array} argument that provides random access to an entire
-array. In the following section we describe an even more general mechanism
-to describe any execution object.
+Instead, all VTK-m worklets provide a trio of mechanisms that allow you to pass arbitrary data to a worklet.
+In this section, we will explore a \keyterm{whole array} argument that provides random access to an entire array.
+In the following section we describe an even more general mechanism to describe any execution object.
+
+\begin{commonerrors}
+  The \VTKm worklet dispatching mechanism performs many safety checks to prevent race conditions across concurrently running worklets.
+  Using a whole array within a worklet circumvents this guarantee of safety, so be careful when using whole arrays, especially when writing to whole arrays.
+\end{commonerrors}
+
+A whole array is declared by adding a \sigtag{WholeArrayIn}, a \sigtag{WholeArrayInOut}, or a \sigtag{WholeArrayOut} to the \controlsignature.
+The corresponding argument to the dispatcher's \textcode{Invoke} should be an \textidentifier{ArrayHandle}.
+The \textidentifier{ArrayHandle} must already be allocated in all cases, including when using \sigtag{WholeArrayOut}.
+When the data are passed to the operator of the worklet, it is passed as an array portal object.
+This means that the worklet can access any entry in the array with \textcode{Get} and/or \textcode{Set} methods.
 
 We have already seen a demonstration of using a whole array in
 Example~\ref{ex:WholeArray} to perform a simple array copy. Here we will
@@ -1713,6 +1729,56 @@ accessible.
 \index{control~signature!whole~array|)}
 \index{worklet!whole~array|)}
 \index{whole~array|)}
+
+\section{Atomic Arrays}
+\label{sec:AtomicArrays}
+
+\index{atomic array|(}
+\index{worklet!atomic array|(}
+\index{control~signature!atomic array|(}
+
+One of the problems with writing to whole arrays is that it is difficult to coordinate the access to an array from multiple threads.
+If multiple threads are going to write to a common index of an array, then you will probably need to use an \keyterm{atomic array}.
+
+An atomic array allows random access into an array of data, similar to a whole array.
+However, the operations on the values in the atomic array allow you to perform an operation that modifies its value that is guaranteed complete without being interrupted and potentially corrupted.
+
+\begin{commonerrors}
+  Due to limitations in available atomic operations, atomic arrays can currently only contain \vtkm{Float32} or \vtkm{Float64} values.
+\end{commonerrors}
+
+To use an array as an atomic array, first add the \sigtag{AtomicArrayInOut} tag to the worklet's \controlsignature.
+The corresponding argument to the dispatcher's \textcode{Invoke} should be an \textidentifier{ArrayHandle}, which must already be allocated and initialized with values.
+
+When the data are passed to the operator of the worklet, it is passed in a \vtkmexec{AtomicArray} structure.
+\textidentifier{AtomicArray} has two important methods:
+\begin{description}
+\item[\textcode{Add}]
+  Takes as arguments an index and a value.
+  The entry in the array corresponding to the index will have the value added to it.
+  If multiple threads attempt to add to the same index in the array, the requests will be serialized so that the final result is the sum of all the additions.
+\item[\textcode{CompareAndSwap}]
+  Takes as arguments an index, a new value, and an old value.
+  If the entry in the array corresponding to the index has the same value as the ``old value,'' then it is changed to the ``new value'' and the original value is return from the method.
+  If the entry in the array is not the same as the ``old value,'' then nothing happens to the array and the value that is actually stored in the array is returned.
+  If multiple threads attempt to compare and swap to the same index in the array, the requests are serialized.
+\end{description}
+
+\begin{commonerrors}
+  Atomic arrays help resolve hazards in parallel algorithms, but they come at a cost.
+  Atomic operations are more costly than non-thread-safe ones, and they can slow a parallel program immensely if used incorrectly.
+\end{commonerrors}
+
+The following example uses an atomic array to count the bins in a histogram.
+It does this by making the array of histogram bins an atomic array and then using an atomic add.
+Note that this is not the fastest way to create a histogram.
+In fact, \VTKm comes with a histogram worklet that is faster.
+
+\vtkmlisting{Using \protect\sigtag{AtomicArrayInOut} to count histogram bins in a worklet.}{SimpleHistogram.cxx}
+
+\index{control~signature!atomic array|)}
+\index{worklet!atomic array|)}
+\index{atomic array|)}
 
 \section{Execution Objects}
 \label{sec:ExecutionObjects}

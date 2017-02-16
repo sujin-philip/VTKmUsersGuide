@@ -8,6 +8,7 @@ set(example_src
   ArrayHandleCoordinateSystems.cxx
   ArrayHandleCounting.cxx
   ArrayHandleDerived.cxx
+  ArrayHandleDiscard.cxx
   ArrayHandleGroupVec.cxx
   ArrayHandleImplicit.cxx
   ArrayHandlePermutation.cxx

@@ -240,6 +240,26 @@ cast-to type as a template argument.
 \index{cast~array~handle|)}
 \index{array~handle!cast|)}
 
+\subsection{Discard Arrays}
+\label{sec:DiscardArrays}
+
+\index{discard array handle|(}
+\index{array~handle!discard|(}
+
+It is sometimes the case where you will want to run an operation in \VTKm that fills values in two (or more) arrays, but you only want the values that are stored in one of the arrays.
+It is possible to allocate space for both arrays and then throw away the values that you do not want, but that is a waste of memory.
+It is also possible to rewrite the functionality to output only what you want, but that is a poor use of developer time.
+
+To solve this problem easily, \VTKm provides \vtkmcont{ArrayHandleDiscard}.
+This array behaves similar to a regular \textidentifier{ArrayHandle} in that it can be ``allocated'' and has size, but any values that are written to it are immediately discarded.
+\textidentifier{ArrayHandleDiscard} takes up no memory.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleDiscard}.}{ArrayHandleDiscard.cxx}
+
+\index{array~handle!discard|)}
+\index{discard array handle|)}
+
+
 \subsection{Permuted Arrays}
 \label{sec:PermutedArrays}
 

@@ -475,6 +475,48 @@ when using \vtkmcont{make\_ArrayHandleGroupVec}.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleGroupVec}.}{MakeArrayHandleGroupVec.cxx}
 
+\textidentifier{ArrayHandleGroupVec} is handy when you need to build an array of vectors that are all of the same length, but what about when you need an array of vectors of different lengths?
+One common use case for this is if you are defining a collection of polygons of different sizes (triangles, quadrilaterals, pentagons, and so on).
+We would like to define an array such that the data for each polygon were stored in its own \textidentifier{Vec} (or, rather, \Veclike) object.
+\vtkmcont{ArrayHandleGroupVecVariable} does just that.
+
+\textidentifier{ArrayHandleGroupVecVariable} takes two arrays. The first array, identified as the ``source'' array, is a flat representation of the values (much like the array used with \textidentifier{ArrayHandleGroupVec}).
+The second array, identified as the ``offsets'' array, provides for each vector the index into the source array where the start of the vector is.
+The offsets array must be monotonically increasing.
+The first and second template parameters to \textidentifier{ArrayHandleGroupVecVariable} are the types for the source and offset arrays, respectively.
+
+It is often the case that you will start with a group of vector lengths rather than offsets into the source array.
+If this is the case, then the \vtkmcont{ConvertNumComponentsToOffsets} helper function can convert an array of vector lengths to an array of offsets.
+The first argument to this function is always the array of vector lengths.
+The second argument, which is optional, is a reference to a \textidentifier{ArrayHandle} into which the offsets should be stored.
+If this offset array is not specified, an \textidentifier{ArrayHandle} will be returned from the function instead.
+The third argument, which is also optional, is a reference to a \vtkm{Id} into which the expected size of the source array is put.
+Having the size of the source array is often helpful, as it can be used to allocate data for the source array or check the source array's size.
+It is also OK to give the expected size reference but not the offset array reference.
+
+\vtkmlisting{Using \textidentifier{ArrayHandleGroupVecVariable}.}{ArrayHandleGroupVecVariable.cxx}
+
+The \vtkmheader{vtkm/cont}{ArrayHandleGroupVecVariable.h} header also contains the templated convenience function \vtkmcont{make\_ArrayHandleGroupVecVariable} that takes an instance of the source array to group into \Veclike objects and the offset array.
+
+\vtkmlisting{Using \textidentifier{MakeArrayHandleGroupVecVariable}.}{MakeArrayHandleGroupVecVariable.cxx}
+
+\begin{didyouknow}
+  You can write to \textidentifier{ArrayHandleGroupVec} and \textidentifier{ArrayHandleGroupVecVariable} by, for example, using it as an output array.
+  Writes to these arrays will go to the respective location in the source array.
+  \textidentifier{ArrayHandleGroupVec} can also be allocated and resized (which in turn causes the source array to be allocated).
+  However, \textidentifier{ArrayHandleGroupVecVariable} cannot be resized and the source array must be pre-allocated.
+  You can use the source array size value returned from \textidentifier{ConvertNumComponentsToOffsets} to allocate source arrays.
+\end{didyouknow}
+
+\begin{commonerrors}
+  Keep in mind that the values stored in a \textidentifier{ArrayHandleGroupVecVariable} are not actually \vtkm{Vec} objects.
+  Rather, they are ``\Veclike'' objects, which has some subtle but important ramifications.
+  First, the type will not match the \vtkm{Vec} template, and there is no automatic conversion to \vtkm{Vec} objects.
+  Thus, many functions that accept \vtkm{Vec} objects as parameters will not accept the \Veclike object.
+  Second, the size of \Veclike objects are not known until runtime.
+  See Sections \ref{sec:VectorTypes} and \ref{sec:VectorTraits} for more information on the difference between \vtkm{Vec} and \Veclike objects.
+\end{commonerrors}
+
 \index{group~vector~array~handle|)}
 \index{array~handle!group~vector|)}
 

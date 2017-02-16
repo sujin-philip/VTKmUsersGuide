@@ -90,6 +90,8 @@
                    ArrayHandleConstant,make_ArrayHandleConstant,
                    ArrayHandleCounting,make_ArrayHandleCounting,
                    ArrayHandleGroupVec,make_ArrayHandleGroupVec,
+                   ArrayHandleGroupVecVariable,make_ArrayHandleGroupVecVariable,
+                   ConvertNumComponentsToOffsets,
                    ArrayHandleImplicit,make_ArrayHandleImplicit,
                    ArrayHandleIndex,
                    ArrayHandleTransform,make_ArrayHandleTransform,
@@ -467,6 +469,9 @@
 \newcommand*{\vtkmlisting}[3][]{
   \lstinputlisting[language=VTKm, label=#1, caption={#2}]{examples/listing_#3}
 }
+
+% This is an ``odd'' identifier that comes up a lot.
+\newcommand*{\Veclike}{\textidentifier{Vec}-like}
 
 % Used for source code, shell, CMake, or other examples that are not worth
 % creating a ``language'' for.

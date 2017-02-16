@@ -387,12 +387,12 @@ The \vtkm{Vec} class provides a convenient structure for holding and passing sma
 However, there are times when using \textidentifier{Vec} is inconvenient or inappropriate.
 For example, the size of \vtkm{Vec} must be known at compile time, but there may be need for a vector whose size is unknown until compile time.
 Also, the data populating a \vtkm{Vec} might come from a source that makes it inconvenient or less efficient to construct a \vtkm{Vec}.
-For this reason, \VTKm also provides several \keyterm{Vec-like} objects that behave much like \vtkm{Vec} but are a different class.
-These Vec-like objects have the same interface as \vtkm{Vec} except that the \textidentifier{NUM\_COMPONENTS} constant is not available on those that are sized at run time.
-Vec-like objects also come with a \textcode{CopyInto} method that will take their contents and copy them into a standard \textidentifier{Vec} class.
+For this reason, \VTKm also provides several \keyterm{\Veclike} objects that behave much like \vtkm{Vec} but are a different class.
+These \Veclike objects have the same interface as \vtkm{Vec} except that the \textidentifier{NUM\_COMPONENTS} constant is not available on those that are sized at run time.
+\Veclike objects also come with a \textcode{CopyInto} method that will take their contents and copy them into a standard \textidentifier{Vec} class.
 (The standard \textidentifier{Vec} class also has a \textcode{CopyInto} method for consistency.)
 
-The first Vec-like object is \vtkm{VecC}, which exposes a C-type array as a \textidentifier{Vec}.
+The first \Veclike object is \vtkm{VecC}, which exposes a C-type array as a \textidentifier{Vec}.
 The constructor for \vtkm{VecC} takes a C array and a size of that array.
 There is also a constant version of \textidentifier{VecC} named \vtkm{VecCConst}, which takes a constant array and cannot be mutated.
 The \vtkmheader{vtkm}{Types.h} header defines both \textidentifier{VecC} and \textidentifier{VecCConst} as well as multiple versions of \vtkm{make\_VecC} to easily convert a C array to either a \textidentifier{VecC} or \textidentifier{VecCConst}.
@@ -409,7 +409,7 @@ The table and associated methods define how 8 points come together to form a hex
   Make sure that the scope of the \vtkm{VecC} or \vtkm{VecCConst} does not outlive the scope of the data it points to.
 \end{commonerrors}
 
-The next Vec-like object is \vtkm{VecVariable}, which provides a Vec-like object that can be resized at run time to a maximum value.
+The next \Veclike object is \vtkm{VecVariable}, which provides a \Veclike object that can be resized at run time to a maximum value.
 Unlike \textidentifier{VecC}, \textidentifier{VecVariable} holds its own memory, which makes it a bit safer to use.
 But also unlike \textidentifier{VecC}, you must define the maximum size of \textidentifier{VecVariable} at compile time.
 Thus, \textidentifier{VecVariable} is really only appropriate to use when there is a predetermined limit to the vector size that is fairly small.
@@ -419,10 +419,10 @@ This example uses the methods defined in Example~\ref{ex:VecCConst}.
 
 \vtkmlisting{Using \protect\vtkm{VecVariable}.}{VecVariableExample.cxx}
 
-\VTKm provides further examples of Vec-like objects as well.
+\VTKm provides further examples of \Veclike objects as well.
 For example, the \vtkm{VecFromPortal} and \vtkm{VecFromPortalPermute} objects allow you to treat a subsection of an arbitrarily large array as a \textidentifier{Vec}.
 These objects work by attaching to array portals, which are described in Section~\ref{sec:ArrayPortals}.
-Another example of a Vec-like object is \vtkm{VecRectilinearPointCoordinates}, which efficiently represents the point coordinates in an axis-aligned hexahedron.
+Another example of a \Veclike object is \vtkm{VecRectilinearPointCoordinates}, which efficiently represents the point coordinates in an axis-aligned hexahedron.
 Such shapes are common in structured grids.
 These and other data sets are described in Chapter~\ref{chap:DataSets}.
 
@@ -572,13 +572,14 @@ types including floating points and vectors.
 
 
 \subsection{Vector Traits}
+\label{sec:VectorTraits}
 
 \index{traits!vector|(}
 \index{vector traits|(}
 
 The templated \vtkm{Vec} class contains several items for introspection (such as the component type and its size).
 However, there are other types behave similarly to \textidentifier{Vec} objects but have different ways to perform this introspection.
-\index{Vec-like} For example, \VTKm contains \textidentifier{Vec}-like objects that essentially behave the same but might have different features such as a variable number of components.
+\index{Vec-like} For example, \VTKm contains \Veclike objects that essentially behave the same but might have different features such as a variable number of components.
 Also, there may be reason to interchangeably use basic scalar values, like an integer or floating point number, with vectors.
 
 To provide a consistent interface to access these multiple types that represents vectors, the \vtkm{VecTraits}\tparams{T} templated class provides information and accessors to vector types.

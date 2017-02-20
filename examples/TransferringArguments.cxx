@@ -6,6 +6,8 @@
 #include <vtkm/cont/arg/TransportTagArrayOut.h>
 #include <vtkm/cont/arg/TransportTagExecObject.h>
 
+#include <vtkm/cont/DeviceAdapter.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 namespace {

@@ -54,25 +54,20 @@ specific device adapter as a template parameter.
 \label{sec:DefaultDeviceAdapter}
 
 A default device adapter tag is specified in
-\vtkmheader{vtkm/cont}{DeviceAdapter.h} (although it can also by specified
-in many other VTK-m headers via header dependencies). If no other
+\vtkmheader{vtkm/cont}{DeviceAdapter.h}. If no other
 information is given, VTK-m attempts to choose a default device adapter
 that is a best fit for the system it is compiled on. VTK-m currently select
 the default device adapter with the following sequence of conditions.
 
 \begin{itemize}
-\item \index{CUDA} If the source code is being compiled by CUDA, the CUDA
-  device is used.
-\item \index{OpenMP} If the CUDA compiler is not being used and the current
-  compiler supports OpenMP, then the OpenMP device is used.
-  \fix{Technically, OpenMP is not yet supported in VTK-m, so this will
-    never actually be picked. But once it is implemented, this will be the
-    chain.}
-\item \index{Intel Threading Building Blocks} \index{TBB} If the compiler
-  supports neither CUDA nor OpenMP and VTK-m was configured to use Intel
-  Threading Building Blocks, then that device is used.
-\item \index{serial} If no parallel device adapters are found, then VTK-m
-  falls back to a serial device.
+\item \index{CUDA}
+  If the source code is being compiled by CUDA, the CUDA device is used.
+%% \item \index{OpenMP} If the CUDA compiler is not being used and the current
+%%   compiler supports OpenMP, then the OpenMP device is used.
+\item \index{Intel Threading Building Blocks} \index{TBB}
+  If the compiler does not support CUDA and VTK-m was configured to use Intel Threading Building Blocks, then that device is used.
+\item \index{serial}
+  If no parallel device adapters are found, then VTK-m falls back to a serial device.
 \end{itemize}
 
 You can also set the default device adapter specifically by setting the
@@ -87,11 +82,10 @@ You can also set the default device adapter specifically by setting the
 \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_CUDA}] Uses a CUDA capable GPU
   device. For this device to work, VTK-m must be configured to use CUDA and
   the code must be compiled by the CUDA \textfilename{nvcc} compiler.
-\item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_OPENMP}] Uses OpenMP compiler
-  extensions to run algorithms on multiple threads. For this device to
-  work, VTK-m must be configured to use OpenMP and the code must be
-  compiled with a compiler that supports OpenMP pragmas. \fix{Not currently
-    implemented.}
+%% \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_OPENMP}] Uses OpenMP compiler
+%%   extensions to run algorithms on multiple threads. For this device to
+%%   work, VTK-m must be configured to use OpenMP and the code must be
+%%   compiled with a compiler that supports OpenMP pragmas.
 \item[\vtkmmacro{VTKM\_DEVICE\_ADAPTER\_TBB}] Uses the Intel Threading
   Building Blocks library to run algorithms on multiple threads. For this
   device to work, VTK-m must be configured to use TBB and the executable
@@ -140,12 +134,11 @@ available in VTK-m.
   and the code must be compiled by the CUDA \textfilename{nvcc}
   compiler. This tag is defined in
   \vtkmheader{vtkm/cont/cuda}{DeviceAdapterCuda.h}.
-\item[\vtkmcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
-  compiler extensions to run algorithms on multiple threads. For this
-  device to work, VTK-m must be configured to use OpenMP and the code must be
-  compiled with a compiler that supports OpenMP pragmas. This tag is
-  defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}. \fix{Not
-    currently implemented.}
+%% \item[\vtkmcont{DeviceAdapterTagOpenMP}] \index{OpenMP} Uses OpenMP
+%%   compiler extensions to run algorithms on multiple threads. For this
+%%   device to work, VTK-m must be configured to use OpenMP and the code must be
+%%   compiled with a compiler that supports OpenMP pragmas. This tag is
+%%   defined in \vtkmheader{vtkm/openmp/cont}{DeviceAdapterOpenMP.h}.
 \item[\vtkmcont{DeviceAdapterTagTBB}]
   \index{Intel Threading Building Blocks} \index{TBB} Uses the Intel
   Threading Building Blocks library to run algorithms on multiple

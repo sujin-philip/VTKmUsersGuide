@@ -500,12 +500,14 @@ use.
 }
 
 \newcommand{\commonexecutionsignaturetags}{
-\item[\sigtag{WorkIndex}] This tag produces a \vtkm{Id} that uniquely
-  identifies the invocation of the worklet.
-\item[\sigtag{VisitIndex}] This tag produces a \vtkm{IdComponent} that
-  uniquely identifies when multiple worklet invocations operate on the same
-  input item, which can happen when defining a worklet with scatter (as
-  described in Section~\ref{sec:WorkletScatter}).
+\item[\sigtag{WorkIndex}]
+  This tag produces a \vtkm{Id} that uniquely identifies the invocation of the worklet.
+\item[\sigtag{VisitIndex}]
+  This tag produces a \vtkm{IdComponent} that uniquely identifies when multiple worklet invocations operate on the same input item, which can happen when defining a worklet with scatter (as described in Section~\ref{sec:WorkletScatter}).
+\item[\sigtag{InputIndex}]
+  This tag produces a \vtkm{Id} that identifies the index of the input element, which can differ from the \sigtag{WorkIndex} in a worklet with a scatter (as described in Section~\ref{sec:WorkletScatter}).
+\item[\sigtag{OutputIndex}]
+  This tag produces a \vtkm{Id} that identifies the index of the output element. (This is generally the same as \sigtag{WorkIndex}.)
 }
 
 \subsection{Field Map}
@@ -1865,25 +1867,22 @@ for a worklet. The following types of scatter are provided by VTK-m.
 \end{description}
 
 To define a scatter procedure, the worklet must provide two items. The
-first item is a \textcode{typedef} named \scattertype. The \scattertype
-must be \textcode{typedef}ed to one of the aforementioned
+first item is a type definition named \scattertype. The \scattertype
+must be set to one of the aforementioned
 \textidentifier{Scatter*} classes. The second item is a \textcode{const}
 method named \textcode{GetScatter} that returns an object of type
 \scattertype.
 
 \vtkmlisting{Declaration of a scatter type in a worklet.}{DeclareScatter.cxx}
 
-\index{visit~index|(}
+When using a scatter that produces multiple outputs for a single input, the worklet is invoked multiple times with the same input values.
+In such an event the worklet operator needs to distinguish these calls to produce the correct associated output.
+This is done by declaring one of the \executionsignature arguments as \index{visit~index} \sigtag{VisitIndex}.
+This tag will pass a \vtkm{IdComponent} to the worklet that identifies which invocation is being called.
 
-When using a scatter that produces multiple outputs for a single input, the
-worklet is invoked multiple times with the same input values. In such an
-event the worklet operator needs to distinguish these calls to produce the
-correct associated output. This is done by declaring one of the
-\executionsignature arguments as \sigtag{VisitIndex}. This tag will pass a
-\vtkm{IdComponent} to the worklet that identifies which invocation is being
-called.
-
-\index{visit~index|)}
+It is also the case that the when a scatter can produce multiple outputs for some input that the index of the input element is not the same as the \sigtag{WorkIndex}.
+If the index to the input element is needed, you can use the \index{input index} \sigtag{InputIndex} tag in the \executionsignature.
+It is also good practice to use the \index{output index} \sigtag{OutputIndex} tag if the index to the output element is needed.
 
 To demonstrate using scatters with worklets, we provide some contrived but
 illustrative examples. The first example is a worklet that takes a pair of

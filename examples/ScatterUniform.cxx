@@ -15,9 +15,9 @@ struct InterleaveArrays : vtkm::worklet::WorkletMapField
 {
   typedef void ControlSignature(FieldIn<>, FieldIn<>, FieldOut<>);
   typedef void ExecutionSignature(_1, _2, _3, VisitIndex);
-  typedef _1 InputDomain;
+  using InputDomain = _1;
 
-  typedef vtkm::worklet::ScatterUniform ScatterType;
+  using ScatterType = vtkm::worklet::ScatterUniform;
 
   VTKM_CONT
   ScatterType GetScatter() const { return vtkm::worklet::ScatterUniform(2); }

@@ -298,14 +298,14 @@ void TryExtractFaces()
                    "Face wrong");
   vtkm::Vec<vtkm::Id,4> quadIndices;
   faceCells.GetIndices(0, quadIndices);
-  VTKM_TEST_ASSERT(test_equal(quadIndices, vtkm::Vec<vtkm::Id,4>(0,3,2,1)),
+  VTKM_TEST_ASSERT(test_equal(quadIndices, vtkm::Vec<vtkm::Id,4>(0,3,7,4)),
                    "Face wrong");
 
   VTKM_TEST_ASSERT(faceCells.GetCellShape(12) == vtkm::CELL_SHAPE_TRIANGLE,
                    "Face wrong");
   vtkm::Vec<vtkm::Id,3> triIndices;
   faceCells.GetIndices(12, triIndices);
-  VTKM_TEST_ASSERT(test_equal(triIndices, vtkm::Id3(10,8,6)),
+  VTKM_TEST_ASSERT(test_equal(triIndices, vtkm::Id3(8,10,6)),
                    "Face wrong");
 }
 

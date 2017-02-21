@@ -88,6 +88,7 @@ public:
 //// RESUME-EXAMPLE
 
 #include <vtkm/cont/DeviceAdapterAlgorithm.h>
+#include <vtkm/cont/ErrorExecution.h>
 #include <vtkm/cont/internal/DeviceAdapterAlgorithmGeneral.h>
 
 #include <thread>

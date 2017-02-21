@@ -56,7 +56,7 @@ struct GaussianCurvature
                     const PointCoordsPortalType &pointCoordsPortal,
                     SumType &outSum) const
     {
-      using CoordType = PointCoordsPortalType::ValueType;
+      using CoordType = typename PointCoordsPortalType::ValueType;
 
       CoordType thisPoint = pointCoordsPortal.Get(pointIndex);
 

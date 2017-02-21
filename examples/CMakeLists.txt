@@ -36,6 +36,7 @@ set(example_src
   ProvidedFilters.cxx
   ScatterCounting.cxx
   ScatterUniform.cxx
+  SumOfAngles.cxx
   SimpleHistogram.cxx
   Timer.cxx
   Traits.cxx

@@ -31,6 +31,7 @@ set(images
   images/MCComparePiston.png
   images/MCCompareVTKm.png
   images/PackageHierarchy.pdf
+  images/PointIncidentAngles.pdf
   images/StructuredCellSet.pdf
   images/VTKmEnvironments.pdf
   images/WorkletExampleAnnotated.pdf

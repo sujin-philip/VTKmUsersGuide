@@ -745,11 +745,9 @@ A field map worklet supports the following tags in the parameters of its
   \commonexecutionsignaturetags
 \end{description}
 
-Point to cell field maps are a powerful construct that allow you to
-interpolate point fields throughout the space of the data set. The
-following example provides a simple demonstration that finds the geometric
-center of each cell by interpolating the point coordinates to the cell
-centers.
+Point to cell field maps are a powerful construct that allow you to interpolate point fields throughout the space of the data set.
+See Chapter~\ref{chap:WorkingWithCells} for a description on how to work with the cell information provided to the worklet.
+The following example provides a simple demonstration that finds the geometric center of each cell by interpolating the point coordinates to the cell centers.
 
 \vtkmlisting[ex:UseWorkletMapPointToCell]{Implementation and use of a map point to cell worklet.}{UseWorkletMapPointToCell.cxx}
 
@@ -1691,7 +1689,7 @@ one-time use is overkill.
 
 Instead, all VTK-m worklets provide a trio of mechanisms that allow you to pass arbitrary data to a worklet.
 In this section, we will explore a \keyterm{whole array} argument that provides random access to an entire array.
-In the following section we describe an even more general mechanism to describe any execution object.
+In a later section we describe an even more general mechanism to describe any execution object.
 
 \begin{commonerrors}
   The \VTKm worklet dispatching mechanism performs many safety checks to prevent race conditions across concurrently running worklets.
@@ -1782,6 +1780,94 @@ In fact, \VTKm comes with a histogram worklet that is faster.
 \index{worklet!atomic array|)}
 \index{atomic array|)}
 
+\section{Whole Cell Sets}
+\label{sec:WholeCellSets}
+
+\index{whole cell set|(}
+\index{cell~set!whole|(}
+\index{worklet!whole cell set|(}
+\index{control~signature!whole cell set|(}
+
+Section~\ref{sec:TopologyMaps} describes how to make a topology map filter that performs an operation on cell sets.
+The worklet has access to a single cell element (such as point or cell) and its immediate connections.
+But there are cases when you need more general queries on a topology.
+For example, you might need more detailed information than the topology map gives or you might need to trace connections from one cell to the next.
+To do this \VTKm allows you to provide a \keyterm{whole cell set} argument to a worklet that provides random access to the entire topology.
+
+A whole cell set is declared by adding a \sigtag{WholeCellSetIn} to the worklet's \controlsignature.
+The corresponding argument to the dispatcher's \textcode{Invoke} should be a \textidentifier{CellSet} subclass or a \textidentifier{DynamicCellSet} (both of which are described in Section~\ref{sec:DataSets:CellSets}).
+
+The \sigtag{WholeCellSetIn} is templated and takes two arguments: the ``from'' topology type and the ``to'' topology type, respectively.
+These template arguments must be one of the topology element tags, but for convenience you can use \sigtag{Point} and \sigtag{Cell} in lieu of \vtkm{TopologyElementTagPoint} and \vtkm{TopologyElementTagCell}, respectively.
+The ``from'' and ``to'' topology types define which topological elements can be queried and which incident elements are returned.
+The semantics of the ``from'' and ``to'' topology is the same as that for the general topology maps described in Section~\ref{sec:WorkletMapTopology}.
+You can look up an element of the ``to'' topology by index and then get all of the ``from'' elements that are incident from it.
+
+For example, a \sigtag{WholeCellSetIn}\tparams{\sigtag{Point}, \sigtag{Cell}} allows you to find all the points that are incident on each cell (as well as querying the cell shape). Likewise, a \sigtag{WholeCellSetIn}\tparams{\sigtag{Cell}, \sigtag{Point}} allows you to find all the cells that are incident on each point.
+The default parameters of \sigtag{WholeCellSetIn} are from point to cell.
+That is, \sigtag{WholeCellSetIn}\tparams{} is equivalent to \sigtag{WholeCellSetIn}\tparams{\sigtag{Point}, \sigtag{Cell}}.
+
+When the cell set is passed to the operator of the worklet, it is passed in a special connectivity object.
+The actual object type depends on the cell set, but \vtkmexec{CellSetStructured} and are two common examples \vtkmexec{CellSetExplicit}.
+All these connectivity objects share a common interface.
+First, they all declare the following public types.
+
+\begin{description}
+\item[\textcode{CellShapeTag}]
+  The tag for the cell shapes of the cell set.
+  (Cell shape tags are described in Section~\ref{sec:CellShapeTagsIds}.)
+  If the connectivity potentially contains more than one type of cell shape, then this type will be \vtkm{CellShapeTagGeneric}.
+\item[\textcode{IndicesType}]
+  A \Veclike type that stores all the incident indices.
+\end{description}
+
+Second they all provide the following methods.
+
+\begin{description}
+\item[\textcode{GetNumberOfElements}]
+  Get the number of ``to'' topology elements in the cell set.
+  All the other methods require an element index, and this represents the range of valid indices.
+  The return type is \vtkm{Id}.
+\item[\textcode{GetCellShape}]
+  Takes an index for an element and returns a \textcode{CellShapeTag} object of the corresponding cell shape.
+  If the ``to'' topology elements are not strictly cell, then a reasonably close shape is returned.
+  For example, if the ``to'' topology elements are points, then the shape is returned as a vertex.
+\item[\textcode{GetNumberOfIndices}]
+  Takes an index for an element and returns the number of incident ``from'' elements are connected to it.
+  The returned type is \vtkm{IdComponent}.
+\item[\textcode{GetIndices}]
+  Takes an index for an element and returns a \Veclike object of type \textcode{IndicesType} containing the indices of all incident ``from'' elements.
+  The size of the \Veclike object is the same as that returned from \textcode{GetNumberOfIndicices}.
+\end{description}
+
+\VTKm comes with several functions to work with the shape and index information returned from these connectivity objects.
+Most of these methods are documented in Chapter~\ref{chap:WorkingWithCells}.
+
+Let us use the whole cell set feature to help us determine the ``flatness'' of a polygonal mesh.
+We will do this by summing up all the angles incident on each on each point.
+That is, for each point, we will find each incident polygon, then find the part of that polygon using the given point, then computing the angle at that point, and then summing for all such angles.
+So, for example, in the mesh fragment shown here one of the angles attached to the middle point is labeled $\theta_{j}$.
+
+~\hfill
+\includegraphics{images/PointIncidentAngles}
+\hfill~
+
+\noindent
+We want a worklet to compute $\sum_{j} \theta$ for all such attached angles.
+This measure is related (but not the same as) the curvature of the surface.
+A flat surface will have a sum of $2\pi$.
+Convex and concave surfaces have a value less than $2\pi$, and saddle surfaces have a value greater than $2\pi$.
+
+To do this, we create a map cell to point worklet (Section~\ref{sec:WorkletMapCellToPoint}) that visits every point and gives the index of every incident cell.
+The worklet then uses a whole cell set to inspect each incident cell to measure the attached angle and sum them together.
+
+\vtkmlisting{Using \protect\sigtag{WholeCellSetIn} to sum the angles around each point.}{SumOfAngles.cxx}
+
+\index{control~signature!whole cell set|)}
+\index{worklet!whole cell set|)}
+\index{cell~set!whole|)}
+\index{whole cell set|)}
+
 \section{Execution Objects}
 \label{sec:ExecutionObjects}
 
@@ -1789,13 +1875,9 @@ In fact, \VTKm comes with a histogram worklet that is faster.
 \index{worklet!execution~object|(}
 \index{control~signature!execution~object|(}
 
-Although passing whole arrays into a worklet is a convenient way to provide
-data to a worklet that is not divided by the input or output domain, it is
-sometimes not the best structure to represent data. Thus, all worklets
-support a second type of argument called an \keyterm{execution object}, or
-exec object for short, that passes the given object directly to each
-invocation of the worklet. This is defined by an \sigtag{ExecObject} tag in
-the \controlsignature.
+Although passing whole arrays and cell sets into a worklet is a convenient way to provide data to a worklet that is not divided by the input or output domain, they is sometimes not the best structures to represent data.
+Thus, all worklets support a another type of argument called an \keyterm{execution object}, or exec object for short, that passes the given object directly to each invocation of the worklet.
+This is defined by an \sigtag{ExecObject} tag in the \controlsignature.
 
 The execution object must be a subclass of \vtkmexec{ExecutionObjectBase}.
 Also, it must be possible to copy the object from the control environment

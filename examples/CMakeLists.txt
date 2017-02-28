@@ -27,6 +27,7 @@ set(example_src
   DynamicArrayHandle.cxx
   EnvironmentModifierMacros.cxx
   ErrorHandling.cxx
+  FractalWorklets.cxx
   FunctionInterface.cxx
   IO.cxx
   ListTags.cxx

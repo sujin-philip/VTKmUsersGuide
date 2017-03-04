@@ -650,7 +650,7 @@ public:
 ////
 
 ////
-//// BEGIN-EXAMPLE KochSnowflake
+//// BEGIN-EXAMPLE KochSnowflake.cxx
 ////
 struct KochSnowflake
 {
@@ -705,7 +705,7 @@ struct KochSnowflake
   }
 };
 ////
-//// END-EXAMPLE KochSnowflake
+//// END-EXAMPLE KochSnowflake.cxx
 ////
 
 static void TryKoch()
@@ -738,10 +738,232 @@ static void TryKoch()
   WriteSVG("Koch5.svg", points, 0.1);
 }
 
+////
+//// BEGIN-EXAMPLE DragonFractal.cxx
+////
+struct DragonFractal
+{
+  struct FractalWorklet : vtkm::worklet::WorkletLineFractal
+  {
+    typedef void ControlSignature(SegmentsIn, SegmentsOut<2>);
+    typedef void ExecutionSignature(Transform, _2);
+    using InputDomain = _1;
+
+    template<typename SegmentsOutVecType>
+    void operator()(const vtkm::exec::LineFractalTransform &transform,
+                    SegmentsOutVecType &segmentsOutVec) const
+    {
+      segmentsOutVec[0][0] = transform(0.5f, 0.5f);
+      segmentsOutVec[0][1] = transform(0.0f, 0.0f);
+
+      segmentsOutVec[1][0] = transform(0.5f, 0.5f);
+      segmentsOutVec[1][1] = transform(1.0f, 0.0f);
+    }
+  };
+
+  VTKM_CONT
+  static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
+  Run(vtkm::IdComponent numIterations)
+  {
+    using VecType = vtkm::Vec<vtkm::Float32,2>;
+
+    vtkm::cont::ArrayHandle<VecType> points;
+
+    // Initialize points array with a single line
+    points.Allocate(2);
+    points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
+    points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
+
+    vtkm::worklet::DispatcherLineFractal<DragonFractal::FractalWorklet>
+        dispatcher;
+
+    for (vtkm::IdComponent i = 0; i < numIterations; ++i)
+    {
+      vtkm::cont::ArrayHandle<VecType> outPoints;
+      dispatcher.Invoke(points, outPoints);
+      points = outPoints;
+    }
+
+    return points;
+  }
+};
+////
+//// END-EXAMPLE DragonFractal.cxx
+////
+
+static void TryDragon()
+{
+  // Demonstrate a single line.
+  using VecType = vtkm::Vec<vtkm::Float32,2>;
+  vtkm::cont::ArrayHandle<VecType> points;
+
+  for (vtkm::IdComponent numIterations = 1;
+       numIterations <= 13;
+       ++numIterations)
+  {
+    points = DragonFractal::Run(numIterations);
+    char filename[FILENAME_MAX];
+    sprintf(filename, "Dragon%02d.svg", numIterations);
+    WriteSVG(filename, points, 2.0/numIterations);
+  }
+}
+
+////
+//// BEGIN-EXAMPLE HilbertCurve.cxx
+////
+struct HilbertCurve
+{
+  struct FractalWorklet : vtkm::worklet::WorkletLineFractal
+  {
+    typedef void ControlSignature(SegmentsIn, SegmentsOut<4>);
+    typedef void ExecutionSignature(Transform, _2);
+    using InputDomain = _1;
+
+    template<typename SegmentsOutVecType>
+    void operator()(const vtkm::exec::LineFractalTransform &transform,
+                    SegmentsOutVecType &segmentsOutVec) const
+    {
+      segmentsOutVec[0][0] = transform(0.0f, 0.5f);
+      segmentsOutVec[0][1] = transform(0.0f, 0.0f);
+
+      segmentsOutVec[1][0] = transform(0.0f, 0.5f);
+      segmentsOutVec[1][1] = transform(0.5f, 0.5f);
+
+      segmentsOutVec[2][0] = transform(0.5f, 0.5f);
+      segmentsOutVec[2][1] = transform(1.0f, 0.5f);
+
+      segmentsOutVec[3][0] = transform(1.0f, 0.0f);
+      segmentsOutVec[3][1] = transform(1.0f, 0.5f);
+    }
+  };
+
+  VTKM_CONT
+  static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
+  Run(vtkm::IdComponent numIterations)
+  {
+    using VecType = vtkm::Vec<vtkm::Float32,2>;
+
+    vtkm::cont::ArrayHandle<VecType> points;
+
+    // Initialize points array with a single line
+    points.Allocate(2);
+    points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
+    points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
+
+    vtkm::worklet::DispatcherLineFractal<HilbertCurve::FractalWorklet>
+        dispatcher;
+
+    for (vtkm::IdComponent i = 0; i < numIterations; ++i)
+    {
+      vtkm::cont::ArrayHandle<VecType> outPoints;
+      dispatcher.Invoke(points, outPoints);
+      points = outPoints;
+    }
+
+    return points;
+  }
+};
+////
+//// END-EXAMPLE HilbertCurve.cxx
+////
+
+static void TryHilbert()
+{
+  // Demonstrate a single line.
+  using VecType = vtkm::Vec<vtkm::Float32,2>;
+  vtkm::cont::ArrayHandle<VecType> points;
+
+  for (vtkm::IdComponent numIterations = 1;
+       numIterations <= 6;
+       ++numIterations)
+  {
+    points = HilbertCurve::Run(numIterations);
+    char filename[FILENAME_MAX];
+    sprintf(filename, "Hilbert%02d.svg", numIterations);
+    WriteSVG(filename, points, 2.0/numIterations);
+  }
+}
+
+////
+//// BEGIN-EXAMPLE TreeFractal.cxx
+////
+struct TreeFractal
+{
+  struct FractalWorklet : vtkm::worklet::WorkletLineFractal
+  {
+    typedef void ControlSignature(SegmentsIn, SegmentsOut<3>);
+    typedef void ExecutionSignature(Transform, _2);
+    using InputDomain = _1;
+
+    template<typename SegmentsOutVecType>
+    void operator()(const vtkm::exec::LineFractalTransform &transform,
+                    SegmentsOutVecType &segmentsOutVec) const
+    {
+      segmentsOutVec[0][0] = transform(0.0f, 0.0f);
+      segmentsOutVec[0][1] = transform(1.0f, 0.0f);
+
+      segmentsOutVec[1][0] = transform(1.0f, 0.0f);
+      segmentsOutVec[1][1] = transform(1.5f, -0.25f);
+
+      segmentsOutVec[2][0] = transform(1.0f, 0.0f);
+      segmentsOutVec[2][1] = transform(1.5f, 0.35f);
+    }
+  };
+
+  VTKM_CONT
+  static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
+  Run(vtkm::IdComponent numIterations)
+  {
+    using VecType = vtkm::Vec<vtkm::Float32,2>;
+
+    vtkm::cont::ArrayHandle<VecType> points;
+
+    // Initialize points array with a single line
+    points.Allocate(2);
+    points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
+    points.GetPortalControl().Set(1, VecType(0.0f, 1.0f));
+
+    vtkm::worklet::DispatcherLineFractal<TreeFractal::FractalWorklet>
+        dispatcher;
+
+    for (vtkm::IdComponent i = 0; i < numIterations; ++i)
+    {
+      vtkm::cont::ArrayHandle<VecType> outPoints;
+      dispatcher.Invoke(points, outPoints);
+      points = outPoints;
+    }
+
+    return points;
+  }
+};
+////
+//// END-EXAMPLE TreeFractal.cxx
+////
+
+static void TryTree()
+{
+  // Demonstrate a single line.
+  using VecType = vtkm::Vec<vtkm::Float32,2>;
+  vtkm::cont::ArrayHandle<VecType> points;
+
+  for (vtkm::IdComponent numIterations = 1;
+       numIterations <= 8;
+       ++numIterations)
+  {
+    points = TreeFractal::Run(numIterations);
+    char filename[FILENAME_MAX];
+    sprintf(filename, "Tree%02d.svg", numIterations);
+    WriteSVG(filename, points, 2.0/numIterations);
+  }
+}
+
 static void RunTests()
 {
   TryVecLineSegments();
   TryKoch();
+  TryDragon();
+  TryHilbert();
+  TryTree();
 }
 
 int FractalWorklets(int, char *[])

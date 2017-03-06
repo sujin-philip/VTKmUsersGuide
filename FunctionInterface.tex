@@ -1,0 +1,283 @@
+% -*- latex -*-
+
+\chapter{Function Interface Objects}
+\label{sec:FunctionInterfaceObjects}
+
+\index{function interface|(}
+
+For flexibility's sake a worklet is free to declare a \controlsignature
+with whatever number of arguments are sensible for its operation. The
+\textcode{Invoke} method of the dispatcher is expected to support arguments
+that match these arguments, and part of the dispatching operation may
+require these arguments to be augmented before the worklet is
+scheduled. This leaves dispatchers with the tricky task of managing some
+collection of arguments of unknown size and unknown types.
+
+\fix{\textidentifier{FunctionInterface} is in the \vtkminternal{}
+  interface. I still can't decide if it should be moved to the \vtkm{}
+  interface.}
+
+To simplify this management, VTK-m has the \vtkminternal{FunctionInterface}
+class. \textidentifier{FunctionInterface} is a templated class that manages
+a generic set of arguments and return value from a function. An instance of
+\textidentifier{FunctionInterface} holds an instance of each argument. You
+can apply the arguments in a \textidentifier{FunctionInterface} object to a
+functor of a compatible prototype, and the resulting value of the function
+call is saved in the \textidentifier{FunctionInterface}.
+
+\section{Declaring and Creating}
+
+\vtkminternal{FunctionInterface} is a templated class with a single
+parameter. The parameter is the \index{function~signature}
+\index{signature} \keyterm{signature} of the function. A signature is a
+function type. The syntax in C++ is the return type followed by the
+argument types encased in parentheses.
+
+\vtkmlisting{Declaring \protect\vtkminternal{FunctionInterface}.}{DefineFunctionInterface.cxx}
+
+The \vtkminternal{make\_FunctionInterface} function provies an easy way to
+create a \textidentifier{FunctionInterface} and initialize the state of all
+the parameters. \textidentifier{make\_FunctionInterface} takes a variable
+number of arguments, one for each parameter. Since the return type is not
+specified as an argument, you must always specify it as a template
+parameter.
+
+\vtkmlisting{Using \protect\vtkminternal{make\_FunctionInterface}.}{UseMakeFunctionInterface.cxx}
+
+\section{Parameters}
+
+One created, \textidentifier{FunctionInterface} contains methods to query
+and manage the parameters and objects associated with them. The number of
+parameters can be retrieved either with the constant field \index{arity}
+\textcode{ARITY} or with the \textcode{GetArity} method.
+
+\vtkmlisting{Getting the arity of a \textidentifier{FunctionInterface}.}{FunctionInterfaceArity.cxx}
+
+To get a particular parameter, \textidentifier{FunctionInterface} has the
+templated method \textcode{GetParameter}. The template parameter is the
+index of the parameter. Note that the parameters in
+\textidentifier{FunctionInterface} start at index 1. Although this is
+uncommon in C++, it is customary to number function arguments starting at
+1.
+
+There are two ways to specify the index for \textcode{GetParameter}. The
+first is to directly specify the template parameter (e.g.
+\textcode{GetParameter<1>()}). However, note that in a templated function
+or method where the type is not fully resolved the compiler will not
+register \textcode{GetParameter} as a templated method and will fail to
+parse the template argument without a \textcode{template} keyword. The
+second way to specify the index is to provide a \vtkminternal{IndexTag}
+object as an argument to \textcode{GetParameter}. Although this syntax is
+more verbose, it works the same whether the
+\textidentifier{FunctionInterface} is fully resolved or not. The following
+example shows both methods in action.
+
+\vtkmlisting{Using \textidentifier{FunctionInterface}\textcode{::GetParameter().}}{FunctionInterfaceGetParameter.cxx}
+
+Likewise, there is a \textcode{SetParmeter} method for changing parameters.
+The same rules for indexing and template specification apply.
+
+\vtkmlisting{Using \textidentifier{FunctionInterface}\textcode{::SetParameter().}}{FunctionInterfaceSetParameter.cxx}
+
+\section{Invoking}
+
+\index{function interface!invoke|(}
+
+\textidentifier{FunctionInterface} can invoke a functor of a matching
+signature using the parameters stored within. If the functor returns a
+value, that return value will be stored in the
+\textidentifier{FunctionInterface} object for later retrieval. There are
+several versions of the invoke method. There are always seperate versions
+of invoke methods for the control and execution environments so that
+functors for either environment can be executed. The basic version of
+invoke passes the parameters directly to the function and directly stores
+the result.
+
+\vtkmlisting{Invoking a \textidentifier{FunctionInterface}.}{FunctionInterfaceBasicInvoke.cxx}
+
+Another form of the invoke methods takes a second transform functor that is
+applied to each argument before passed to the main function. If the main
+function returns a value, the transform is applied to that as well before
+being stored back in the \textidentifier{FunctionInterface}.
+
+\vtkmlisting{Invoking a \textidentifier{FunctionInterface} with a transform.}{FunctionInterfaceTransformInvoke.cxx}
+
+\index{function interface!invoke|)}
+
+As demonstrated in the previous examples,
+\textidentifier{FunctionInterface} has a method named
+\textcode{GetReturnValue} that returns the value from the last invoke. Care
+should be taken to only use \textcode{GetReturnValue} when the function
+specification has a return value. If the function signature has a
+\textcode{void} return type, using \textcode{GetReturnValue} will cause a
+compile error.
+
+\textidentifier{FunctionInterface} has an alternate method named
+\textcode{GetReturnValueSafe} that returns the value wrapped in a templated
+structure named \vtkminternal{FunctionInterfaceReturnContainer}. This
+structure always has a static constant Boolean named \textcode{VALID} that
+is \textcode{false} if there is no return type and \textcode{true}
+otherwise. If the container is valid, it also has an entry named
+\textcode{Value} containing the result.
+
+\vtkmlisting{Getting return value from \textidentifier{FunctionInterface} safely.}{FunctionInterfaceReturnContainer.cxx}
+
+\section{Modifying Parameters}
+
+In addition to storing and querying parameters and invoking functions,
+\textidentifier{FunctionInterface} also contains multiple ways to modify
+the parameters to augment the function calls. This can be used in the same
+use case as a chain of function calls that generally pass their parameters
+but also augment the data along the way.
+
+\index{function interface!append parameter|(}
+
+The \textcode{Append} method returns a new
+\textidentifier{FunctionInterface} object with the same parameters plus a
+new parameter (the argument to \textcode{Append}) to the end of the
+parameters. There is also a matching \textcode{AppendType} templated
+structure that can return the type of an augmented
+\textidentifier{FunctionInterface} with a new type appended.
+
+\vtkmlisting{Appending parameters to a \textidentifier{FunctionInterface}.}{FunctionInterfaceAppend.cxx}
+
+\index{function interface!append parameter|)}
+
+\index{function interface!replace parameter|(}
+
+\textcode{Replace} is a similar method that returns a new
+\textidentifier{FunctionInterface} object with the same paraemters except
+with a specified parameter replaced with a new parameter (the argument to
+\textcode{Replace}). There is also a matching \textcode{ReplaceType}
+templated structure that can return the type of an augmented
+\textidentifier{FunctionInterface} with one of the parameters replaced.
+
+\vtkmlisting{Replacing parameters in a \textidentifier{FunctionInterface}.}{FunctionInterfaceReplace.cxx}
+
+\index{function interface!replace parameter|)}
+
+It is sometimes desirable to make multiple modifications at a time. This
+can be achieved by chaining modifications by calling \textcode{Append} or
+\textcode{Replace} on the result of a previous call.
+
+\vtkmlisting{Chaining \textcode{Replace} and \textcode{Append} with a \textidentifier{FunctionInterface}.}{FunctionInterfaceAppendAndReplace.cxx}
+
+\section{Transformations}
+
+Rather than replace a single item in a \textidentifier{FunctionInterface},
+it is sometimes desirable to change them all in a similar
+way. \textidentifier{FunctionInterface} supports two basic transform
+operations on its parameters: a static transform and a dynamic
+transform. The static transform determines its types at compile-time
+whereas the dynamic transform happens at run-time.
+
+\index{function interface!static transform|(}
+
+The static transform methods (named \textcode{StaticTransformCont} and
+\textcode{StaticTransformExec}) operate by accepting a functor that defines
+a function with two arguments. The first argument is the
+\textidentifier{FunctionInterface} parameter to transform. The second
+argument is an instance of the \vtkminternal{IndexTag} templated class that
+statically identifies the parameter index being transformed. An
+\textidentifier{IndexTag} object has no state, but the class contains a
+static integer named \textidentifier{INDEX}. The function returns the
+transformed argument.
+
+The functor must also contain a templated class named \textcode{ReturnType}
+with an internal type named \textcode{type} that defines the return type of
+the transform for a given parameter type. \textcode{ReturnType} must have
+two template parameters. The first template parameter is the type of the
+\textidentifier{FunctionInterface} parameter to transform. It is the same
+type as passed to the operator. The second template parameter is a
+\vtkm{IdComponent} specifying the index.
+
+The transformation is only applied to the parameters of the function. The
+return argument is unaffected.
+
+The return type can be determined with the \textcode{StaticTransformType}
+template in the \textidentifier{FunctionInterface}
+class. \textcode{StaticTransformType} has a single parameter that is the
+transform functor and contains a type named \textcode{type} that is the
+transformed \textidentifier{FunctionInterface}.
+
+In the following example, a static transform is used to convert a
+\textidentifier{FunctionInterface} to a new object that has the pointers to
+the parameters rather than the values themselves. The parameter index is
+always ignored as all parameters are uniformly transformed.
+
+\vtkmlisting{Using a static transform of function interface class.}{FunctionInterfaceStaticTransform.cxx}
+
+\index{function interface!static transform|)}
+
+\index{function interface!dynamic transform|(}
+
+There are cases where one set of parameters must be transformed to another
+set, but the types of the new set are not known until run-time. That is,
+the transformed type depends on the contents of the data. The
+\textcode{DynamicTransformCont} method achieves this using a templated
+callback that gets called with the correct type at run-time.
+
+The dynamic transform works with two functors provided by the user code (as
+opposed to the one functor in static transform). These functors are called
+the transform functor and the finish functor. The transform functor accepts
+three arguments. The first argument is a parameter to transform. The second
+argument is a continue function. Rather than return the transformed value,
+the transform functor calls the continue function, passing the transformed
+value as an argument. The third argument is a \vtkminternal{IndexTag} for
+the index of the argument being transformed.
+
+Unlike its static counterpart, the dynamic transform method does not return
+the transformed \textidentifier{FunctionInterface}. Instead, it passes the
+transformed \textidentifier{FunctionInterface} to the finish functor passed
+into \textcode{DynamicTransformCont}.
+
+In the following contrived but illustrative example, a dynamic transform is
+used to convert strings containing numbers into number arguments. Strings
+that do not have numbers and all other arguments are passed through. Note
+that because the types for strings are not determined till run-time, this
+transform cannot be determined at compile time with meta-template
+programming. The index argument is ignored because all arguments are
+transformed the same way.
+
+
+\vtkmlisting{Using a dynamic transform of a function interface.}{FunctionInterfaceDynamicTransform.cxx}
+
+One common use for the \textidentifier{FunctionInterface} dynamic transform
+is to convert parameters of virtual polymorphic type like
+\vtkmcont{DynamicArrayHandle} and \vtkmcont{DynamicPointCoordinates}. This
+use case is handled with a functor named
+\vtkmcontinternal{DynamicTransform}. When used as the dynamic transform
+functor, it will convert all of these dynamic types to their static
+counterparts.
+
+\vtkmlisting{Using \textidentifier{DynamicTransform} to cast dynamic arrays in a function interface.}{DynamicTransform.cxx}
+
+\index{function interface!dynamic transform|)}
+
+\section{For Each}
+\label{sec:FunctionInterface:ForEach}
+
+\index{function interface!for each|(}
+
+The invoke methods (principally) make a single function call passing all of
+the parameters to this function. The transform methods call a function on
+each parameter to convert it to some other data type. It is also sometimes
+helpful to be able to call a unary function on each parameter that is not
+expected to return a value. Typically the use case is for the function to
+have some sort of side effect. For example, the function might print out
+some value (such as in the following example) or perform some check on the
+data and throw an exception on failure.
+
+This feature is implemented in the for each methods of
+\textidentifier{FunctionInterface}.  As with all the
+\textidentifier{FunctionInterface} methods that take functors, there are
+separate implementations for the control environment and the execution
+environment. There are also separate implementations taking
+\textcode{const} and non-\textcode{const} references to functors to
+simplify making functors with side effects.
+
+\vtkmlisting{Using the \textcode{ForEach} feature of \textidentifier{FunctionInterface}.}{FunctionInterfaceForEach.cxx}
+
+\index{function interface!for each|)}
+
+\index{function interface|)}

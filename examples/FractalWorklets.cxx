@@ -121,8 +121,11 @@ struct Transport<
   VTKM_CONT
   ExecObjectType operator()(const ContObjectType &object,
                             const InputDomainType &,
-                            vtkm::Id) const
+                            vtkm::Id size) const
   {
+    VTKM_ASSERT(object.GetNumberOfValues() == size*2);
+    (void)size;  // Shut up, compiler.
+
     GroupedArrayType groupedArray(object);
     return groupedArray.PrepareForInput(Device());
   }

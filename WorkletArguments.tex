@@ -1,0 +1,331 @@
+% -*- latex -*-
+
+\chapter{Worklet Arguments}
+\label{chap:TransferringArguments}
+\label{chap:WorkletArguments}
+
+From the \controlsignature and \executionsignature defined in worklets, VTK-m uses template meta-programming to build the code required to manage data from control to execution environment.
+These signatures contain tags that define the meaning of each argument and control how the argument data are transferred from the control to execution environments and broken up for each worklet instance.
+
+Chapter~\ref{chap:Worklets} documents the many \controlsignature and \executionsignature tags that come with the worklet types.
+This chapter discusses the internals of these tags and how they control data management.
+Defining new worklet argument types can allow you to define new data structures in VTK-m.
+New worklet arguments are also usually a critical components for making new worklet types, as described in Chapter~\ref{chap:NewWorkletTypes}.
+
+The management of data in worklet arguments is handled by three classes that provide type checking, transportation, and fetching.
+This chapter will first describe these type checking, transportation, and fetching classes and then describe how \controlsignature and \executionsignature tags specify these classes.
+
+Throughout this chapter we demonstrate the definition of worklet arguments using an example of a worklet argument that represents line segments in 2D.
+The input for such an argument expects an \textidentifier{ArrayHandle} containing floating point \vtkm{Vec}s of size 2 to represent coordinates in the plane.
+The values in the array are paired up to define the two endpoints of each segment, and the worklet instance will receive a \textidentifier{Vec}-2 of \textidentifier{Vec}-2's representing the two endpoints.
+In practice, it is generally easier to use a \vtkmcont{ArrayHandleGroupVec} (see Section~\ref{sec:GroupedVectorArrays}), but this is a simple example for demonstration purposes.
+Plus, we will use this special worklet argument for our example of a custom worklet type in Chapter~\ref{chap:NewWorkletTypes}.
+
+
+\section{Type Checks}
+\label{sec:TypeChecks}
+
+\index{type check|(}
+
+Before attempting to move data from the control to the execution
+environment, the VTK-m dispatchers check the input types to ensure that
+they are compatible with the associated \controlsignature concept. This is
+done with the \vtkmcontarg{TypeCheck} \textcode{struct}.
+
+The \textidentifier{TypeCheck} \textcode{struct} is templated with two
+parameters. The first parameter is a tag that identifies which check to
+perform. The second parameter is the type of the control argument (after any
+dynamic casts). The \textidentifier{TypeCheck} class contains a static
+constant Boolean named \textcode{value} that is \textcode{true} if the type
+in the second parameter is compatible with the tag in the first or
+\textcode{false} otherwise.
+
+Type checks are implemented with a defined type check tag (which, by
+convention, is defined in the \vtkmcontarg{} namespace and starts with
+\textcode{TypeCheckTag}) and a partial specialization of the
+\vtkmcontarg{TypeCheck} structure. The following type checks (identified by
+their tags) are provided in VTK-m.
+
+\begin{description}
+\item[\vtkmcontarg{TypeCheckTagExecObject}]
+  \index{type check!execution~object} True if the type is an execution
+  object. All execution objects must derive from
+  \vtkmexec{ExecutionObjectBase} and must be copyable through
+  \textcode{memcpy} or similar mechanism.
+\item[\vtkmcontarg{TypeCheckTagArray}] \index{type check!array} True if the
+  type is a \vtkmcont{ArrayHandle}. \textidentifier{TypeCheckTagArray} also
+  has a template parameter that is a type list. The
+  \textidentifier{ArrayHandle} must also have a value type contained in
+  this type list.
+\item[\vtkmcontarg{TypeCheckTagAtomicArray}] \index{type check!atomic array}
+  Similar to \textidentifier{TypeCheckTagArray} except it only returns true for array types with values that are supported for atomic arrays.
+\item[\vtkmcontarg{TypeCheckTagCellSet}] \index{type check!cell set}
+  True if and only if the object is a \vtkmcont{CellSet} or one of its subclasses.
+\item[\vtkmcontarg{TypeCheckTagKeys}] \index{type check!keys}
+  True if and only if the object is a \vtkmworklet{Keys} class.
+\end{description}
+
+Here are some trivial examples of using
+\textidentifier{TypeCheck}. Typically these checks are done internally in
+the base VTK-m dispatcher code, so these examples are for demonstration
+only.
+
+\vtkmlisting{Behavior of \protect\vtkmcontarg{TypeCheck}.}{TypeCheck.cxx}
+
+A type check is created by first defining a type check tag object, which by convention is placed in the \vtkmcontarg{} namespace and whose name starts with \textidentifier{TypeCheckTag}.
+Then, create a specialization of the \vtkmcontarg{TypeCheck} template class with the first template argument matching the aforementioned tag.
+As stated previously, the \textidentifier{TypeCheck} class must contain a \textcode{value} static constant Boolean representing whether the type is acceptable for the corresponding \textcode{Invoke} argument.
+
+This example of a \textidentifier{TypeCheck} returns true for control objects that are \textidentifier{ArrayHandle}s with a value type that is a floating point \vtkm{Vec} of size 2.
+
+\vtkmlisting[ex:TypeCheckTag2DCoordinates]{Defining a custom \textidentifier{TypeCheck}.}{TypeCheckImpl.h}
+
+\begin{didyouknow}
+  The type check defined in Example~\ref{ex:TypeCheckTag2DCoordinates} could actually be replaced by the more general \textidentifier{TypeCheckTagArray} that already comes with \VTKm (and, in fact, the implementation uses this type check internally for simplicity).
+  This example is mostly provided for demonstrative purposes.
+  In practice, it is often useful to use \textcode{std::is\_same} or \textcode{std::is\_base\_of}, which are provided by the standard template library starting with C++11, to determine \textcode{value} in a \textidentifier{TypeCheck}.
+\end{didyouknow}
+
+\index{type check|)}
+
+
+\section{Transport}
+\label{sec:Transport}
+
+\index{transport|(}
+
+After all the argument types are checked, the base dispatcher must load the
+data into the execution environment before scheduling a job to run
+there. This is done with the \vtkmcontarg{Transport} \textcode{struct}.
+
+The \textidentifier{Transport} \textcode{struct} is templated with three
+parameters. The first parameter is a tag that identifies which transport to
+perform. The second parameter is the type of the control parameter (after any
+dynamic casts). The third parameter is a device adapter tag for the device
+on which the data will be loaded.
+
+A \textidentifier{Transport} contains a \textcode{typedef} named \textcode{ExecObjectType} that is the type used after data is moved to the execution environment.
+A \textidentifier{Transport} also has a \textcode{const} parenthesis operator that takes the control-side object that is to be transported to the execution environment, the control-side object that represents the input domain, and the size of the output domain and returns an execution-side object.
+This operator is called in the control environment, and the returned object must be ready to be passed to the execution environment.
+
+Transports are implemented with a defined transport tag (which, by
+convention, is defined in the \vtkmcontarg{} namespace and starts with
+\textcode{TransportTag}) and a partial specialization of the
+\vtkmcontarg{Transport} structure. The following transports (identified by
+their tags) are provided in VTK-m.
+
+\begin{description}
+\item[\vtkmcontarg{TransportTagExecObject}]
+  \index{transport!execution~object} Simply returns the given execution
+  object, which should be ready to load onto the device.
+\item[\vtkmcontarg{TransportTagArrayIn}] \index{transport!input~array}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using
+  the array handle's \textcode{PrepareForInput} method. The returned
+  execution object is an array portal.
+\item[\vtkmcontarg{TransportTagArrayOut}] \index{transport!output~array}
+  Allocates data onto the specified device for a \vtkmcont{ArrayHandle}
+  using the array handle's \textcode{PrepareForOutput} method. The returned
+  execution object is an array portal.
+\item[\vtkmcontarg{TransportTagArrayInOut}] \index{transport!input/output array}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInPlace} method.
+  The returned execution object is an array portal.
+\item[\vtkmcontarg{TransportTagWholeArrayIn}] \index{transport!whole array input}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInput} method.
+  This transport is designed to be used with random access whole arrays, so unlike \textidentifier{TransportTagArrayIn} the array size can be unassociated with the input domain.
+  The returned execution object is an array portal.
+\item[\vtkmcontarg{TransportTagWholeArrayOut}] \index{transport!whole array output}
+  Readies data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForOutput} method.
+  This transport is designed to be used with random access whole arrays, so unlike \textidentifier{TransportTagArrayOut} the array size can be unassociated with the input domain.
+  Thus, the array must be pre-allocated and its size is not changed.
+  The returned execution object is an array portal.
+\item[\vtkmcontarg{TransportTagWholeArrayInOut}] \index{transport!whole array input/output}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInPlace} method.
+  This transport is designed to be used with random access whole arrays, so unlike \textidentifier{TransportTagArrayInOut} the array size can be unassociated with the input domain.
+  The returned execution object is an array portal.
+\item[\vtkmcontarg{TransportTagAtomicArray}] \index{transport!atomic array}
+  Loads data from a \vtkmcont{ArrayHandle} and creates a \vtkmexec{AtomicArray}.
+\item[\vtkmcontarg{TransportTagCellSetIn}] \index{transport!cell set}
+  Loads data from a \vtkmcont{CellSet} object.
+  The \textidentifier{TransportTagCellSetIn} it a templated class with two parameters: the ``from'' topology and the ``to'' topology.
+  (See Section~\ref{sec:WorkletMapTopology} for a description of ``from'' and ``to'' topologies.)
+  The returned execution object is a connectivity object (as described in Section~\ref{sec:WholeCellSets}).
+\item[\vtkmcontarg{TransportTagTopologyFieldIn}] \index{transport!topology mapped field}
+  Similar to \textidentifier{TransportTagArrayIn} except that the size is checked against the ``from'' topology of a cell set for the input domain.
+  The input domain object is assumed to be a \vtkmcont{CellSet}.
+\item[\vtkmcontarg{TransportTagKeysIn}] \index{transport!keys}
+  Loads data from a \vtkmworklet{Keys} object.
+  This transport is intended to be used for the input domain of a \vtkmworklet{WorkletReduceByKey}.
+  The returned execution object is of type \vtkmexecinternal{ReduceByKeyLookup}.
+\item[\vtkmcontarg{TransportTagKeyedValuesIn}] \index{transport!input array keyed values}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInput} method.
+  This transport uses the input domain object, which is expected to be a \vtkmworklet{Keys} object, and groups the entries in the array by unique keys.
+  The returned execution object is an array portal of grouped values.
+\item[\vtkmcontarg{TransportTagKeyedValuesOut}] \index{transport!output array keyed values}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForOutput} method.
+  This transport uses the input domain object, which is expected to be a \vtkmworklet{Keys} object, and groups the entries in the array by unique keys.
+  The returned execution object is an array portal of grouped values.
+\item[\vtkmcontarg{TransportTagKeyedValuesInOut}] \index{transport!input/output array keyed values}
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInPlace} method.
+  This transport uses the input domain object, which is expected to be a \vtkmworklet{Keys} object, and groups the entries in the array by unique keys.
+  The returned execution object is an array portal of grouped values.
+\item[\vtkmcontarg{TransportTagReducedValuesIn}] \index{transport!topology mapped field}
+  Similar to \textidentifier{TransportTagArrayIn} except that the size is checked against the number of reduced values (i.e. the number of reduced keys) for the input domain.
+  The input domain is assumed to be a \vtkmworklet{Keys} object.
+\end{description}
+
+Here are some trivial examples of using
+\textidentifier{Transport}. Typically this movement is done internally in
+the base VTK-m dispatcher code, so these examples are for demonstration
+only.
+
+\vtkmlisting{Behavior of \protect\vtkmcontarg{Transport}.}{Transport.cxx}
+
+A transport is created by first defining a transport tag object, which by convention is placed in the \vtkmcontarg{} namespace and whose name starts with \textidentifier{TransportTag}.
+Then, create a specialization of the \vtkmcontarg{Transport} template class with the first template argument matching the aforementioned tag.
+As stated previously, the \textidentifier{Transport} class must contain an \textcode{ExecObjectType} type and a parenthesis operator turning the associated control argument into an execution environment object.
+
+This example internally uses a \vtkmcont{ArrayHandleGroupVec} to take values from an input \textidentifier{ArrayHandle} and pair them up to represent line segments.
+The resulting execution object is an array portal containing \textidentifier{Vec}-2 values of \textidentifier{Vec}-2's.
+
+\vtkmlisting[ex:TransportImpl]{Defining a custom \textidentifier{Transport}.}{TransportImpl.h}
+
+\begin{commonerrors}
+  It is fair to assume that the \textidentifier{Transport}'s control object type matches whatever the associated \textidentifier{TypeCheck} allows.
+  However, it is good practice to provide a secondary compile-time check in the \textidentifier{Transport} class for debugging purposes in case there is a problem with the \textidentifier{TypeCheck} or this \textidentifier{Transport} is used with an unexpected \textidentifier{TypeCheck}.
+\end{commonerrors}
+
+\index{transport|)}
+
+
+\section{Fetch}
+\label{sec:Fetch}
+
+\index{fetch|(}
+
+Before the function of a worklet is invoked, the VTK-m internals pull the
+appropriate data out of the execution object and pass it to the worklet
+function. A class named \vtkmexecarg{Fetch} is responsible for pulling this
+data out and putting computed data in to the execution objects.
+
+The \textidentifier{Fetch} \textcode{struct} is templated with four
+parameters. The first parameter is a tag that identifies which type of
+fetch to perform. The second parameter is a different tag that identifies
+the aspect of the data to fetch. The third parameter is an
+\textidentifier{Invocation} type that provides details about how the
+worklet is being dispatched including a list of execution object parameters
+passed to the invocation. The fourth parameter is a \vtkm{IdComponent} that
+points to the invocation parameter that the data should be fetched from.
+
+A \textidentifier{Fetch} contains a \textcode{typedef} named
+\textcode{ValueType} that is the type of data that is passed to and from
+the worklet function. A \textidentifier{Fetch} also has a pair of methods
+named \textcode{Load} and \textcode{Store} that get data from and add data
+to the execution object at a given domain or thread index.
+
+\index{aspect|(}
+\index{fetch!aspect|see{aspect}}
+
+Fetches are specified with a pair of fetch and aspect tags. Fetch tags are by
+convention defined in the \vtkmexecarg{} namespace and start with
+\textcode{FetchTag}. Likewise, aspect tags are also defined in the
+\vtkmexecarg{} namespace and start with \textcode{AspectTag}. The
+\textidentifier{Fetch} \textcode{typedef} is partially specialized on these
+two tags.
+
+\index{aspect!default} The most common aspect tag is
+\vtkmexecarg{AspectTagDefault}, and all fetch tags should have a
+specialization of \vtkmexecarg{Fetch} with this tag. The following list of
+fetch tags describes the execution objects they work with and the data they
+pull for each aspect tag they support.
+
+\begin{description}
+\item[\vtkmexecarg{FetchTagExecObject}] \index{fetch!execution object}
+  Simply returns an execution object. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Load} returns the
+  executive object in the associated parameter. The \textcode{Store} does
+  nothing.
+\item[\vtkmexecarg{FetchTagWholeCellSetIn}] \index{fetch!whole cell set}
+  Loads data from a cell set.
+  The \textcode{Load} simply returns the execution object created with a \textidentifier{TransportTagCellSetIn} and the \textcode{Store} does nothing.
+\item[\vtkmexecarg{FetchTagArrayDirectIn}] \index{fetch!direct input array}
+  Loads data from an array portal. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Load} gets data
+  directly from the domain (thread) index. The \textcode{Store} does
+  nothing.
+\item[\vtkmexecarg{FetchTagArrayDirectOut}] \index{fetch!direct output array}
+  Stores data to an array portal. This fetch only supports the
+  \textidentifier{AspectTagDefault} aspect. The \textcode{Store} sets data
+  directly to the domain (thread) index. The \textcode{Load} does nothing.
+\item[\vtkmexecarg{FetchTagCellSetIn}] \index{fetch!cell set}
+  Load data from a cell set.
+  This fetch is used with the worklet topology maps to pull topology information from a cell set.
+  The \textcode{Load} simply returns the cell shape of the given input cells and the \textcode{Store} method does nothing.
+  This tag is typically used with the input domain object, and aspects like \vtkmexecarg{AspectTagFromCount} and \vtkmexecarg{AspectTagFromIndices} are used to get more detailed information.
+\item[\vtkmexecarg{FetchTagArrayTopologyMapIn}] \index{fetch!topology map array input}
+  Loads data from the ``from'' topology in a topology map.
+  For example, in a point to cell topology map, this fetch will get the field values for all points attached to the cell being visited.
+  The \textcode{Load} returns a \Veclike object containing all the incident field values whereas the \textcode{Store} method does nothing.
+  This fetch is designed for use in topology maps and expects the input domain to be a cell set.
+\end{description}
+
+A fetch is created by first defining a fetch tag object, which by convention is placed in the \vtkmexecarg{} namespace and whose name starts with \textidentifier{FetchTag}.
+Then, create a specialization of the \vtkmexecarg{Fetch} template class with the first template argument matching the aforementioned tag.
+As stated previously, the \textidentifier{Fetch} class must contain a \textcode{ValueType} type and a pair of \textcode{Load} and \textcode{Store} methods that get a value out of the data and store a value in the data, respectively.
+
+\vtkmlisting[ex:FetchImplBasic]{Defining a custom \textidentifier{Fetch}.}{FetchImplBasic.h}
+
+\begin{didyouknow}
+  The fetch defined in Example~\ref{ex:FetchImplBasic} could actually be replaced by the more general \textidentifier{FetchTagArrayDirectIn} that already comes with \VTKm.
+  This example is mostly provided for demonstrative purposes.
+\end{didyouknow}
+
+In addition to the aforementioned aspect tags that are explicitly paired
+with fetch tags, VTK-m also provides some aspect tags that either modify
+the behavior of a general fetch or simply ignore the type of fetch.
+
+\begin{description}
+\item[\vtkmexecarg{AspectTagWorkIndex}] \index{aspect!work index} Simply
+  returns the domain (or thread) index ignoring any associated data. This
+  aspect is used to implement the \sigtag{WorkIndex} execution signature
+  tag.
+\item[\vtkmexecarg{AspectTagInputIndex}] \index{aspect!input index}
+  Returns the index of the element being used from the input domain.
+  This is often the same as the work index but can be different if a scatter is being used.
+  (See Section~\ref{sec:WorkletScatter} for information on scatters in worklets.)
+\item[\vtkmexecarg{AspectTagOutputIndex}] \index{aspect!output index}
+  Returns the index of the element being written to the output.
+  This is generally the same as the work index.
+\item[\vtkmexecarg{AspectTagVisitIndex}] \index{aspect!visit index}
+  Returns the visit index corresponding to the current input.
+  Together the pair of input index and visit index are unique.
+\item[\vtkmexecarg{AspectTagCellShape}] \index{aspect!cell shape}
+  Returns the cell shape from the input domain.
+  This aspect is designed to be used with topology maps.
+\item[\vtkmexecarg{AspectTagFromCount}] \index{aspect!from count}
+  Returns the number of elements associated with the ``from'' topology that are incident to the input element of the ``to'' topology.
+  This aspect is designed to be used with topology maps.
+\item[\vtkmexecarg{AspectTagFromIndices}] \index{aspect!from indices}
+  Returns a \Veclike object containing the indices to the elements associated with the ``from'' topology that are incident to the input element of the ``to'' topology.
+  This aspect is designed to be used with topology maps.
+\item[\vtkmexecarg{AspectTagValueCount}] \index{aspect!value count}
+  Returns the number of times the key associated with the current input.
+  This aspect is designed to be used with reduce by key maps.
+\end{description}
+
+An aspect is created by first defining an aspect tag object, which by convention is placed in the \vtkmexecarg{} namespace and whose name starts with \textidentifier{AspectTag}.
+Then, create specializations of the \vtkmexecarg{Fetch} template class where appropriate with the second template argument matching the aforementioned tag.
+
+This example creates a specialization of a \textidentifier{Fetch} to retrieve the first point of a line segment.
+
+\vtkmlisting[ex:AspectImpl]{Defining a custom \textidentifier{Aspect}.}{AspectImpl.h}
+
+\index{aspect|)}
+\index{fetch|)}
+
+
+\section{Creating New \protect\controlsignature Tags}
+\label{sec:NewControlSignatureTags}
+
+
+\section{Creating New \protect\executionsignature Tags}
+\label{sec:NewExecutionSignatureTags}

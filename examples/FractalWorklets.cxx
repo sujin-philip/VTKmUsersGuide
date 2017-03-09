@@ -187,13 +187,12 @@ namespace vtkm {
 namespace exec {
 namespace arg {
 
-template<typename ArgTag>
 struct AspectTagFirstPoint {  };
 
-template<typename ArgTag, typename ThreadIndicesType, typename ExecObjectType>
+template<typename ThreadIndicesType, typename ExecObjectType>
 struct Fetch<
     vtkm::exec::arg::FetchTag2DLineSegmentsIn,
-    vtkm::exec::arg::AspectTagFirstPoint<ArgTag>,
+    vtkm::exec::arg::AspectTagFirstPoint,
     ThreadIndicesType,
     ExecObjectType>
 {
@@ -217,13 +216,12 @@ struct Fetch<
 };
 
 //// PAUSE-EXAMPLE
-template<typename ArgTag>
 struct AspectTagSecondPoint {  };
 
-template<typename ArgTag, typename ThreadIndicesType, typename ExecObjectType>
+template<typename ThreadIndicesType, typename ExecObjectType>
 struct Fetch<
     vtkm::exec::arg::FetchTag2DLineSegmentsIn,
-    vtkm::exec::arg::AspectTagSecondPoint<ArgTag>,
+    vtkm::exec::arg::AspectTagSecondPoint,
     ThreadIndicesType,
     ExecObjectType>
 {
@@ -256,31 +254,55 @@ struct Fetch<
 
 struct VecLineSegments : vtkm::worklet::WorkletMapField
 {
+  ////
+  //// BEGIN-EXAMPLE CustomControlSignatureTag.cxx
+  ////
   struct LineSegment2DCoordinatesIn : vtkm::cont::arg::ControlSignatureTagBase
   {
     using TypeCheckTag = vtkm::cont::arg::TypeCheckTag2DCoordinates;
     using TransportTag = vtkm::cont::arg::TransportTag2DLineSegmentsIn;
     using FetchTag = vtkm::exec::arg::FetchTag2DLineSegmentsIn;
   };
+  ////
+  //// END-EXAMPLE CustomControlSignatureTag.cxx
+  ////
 
+  ////
+  //// BEGIN-EXAMPLE CustomExecutionSignatureTag.cxx
+  ////
   template<typename ArgTag>
   struct FirstPoint : vtkm::exec::arg::ExecutionSignatureTagBase
   {
     static const vtkm::IdComponent INDEX = ArgTag::INDEX;
-    using AspectTag = vtkm::exec::arg::AspectTagFirstPoint<ArgTag>;
+    using AspectTag = vtkm::exec::arg::AspectTagFirstPoint;
   };
+  ////
+  //// END-EXAMPLE CustomExecutionSignatureTag.cxx
+  ////
 
   template<typename ArgTag>
   struct SecondPoint : vtkm::exec::arg::ExecutionSignatureTagBase
   {
     static const vtkm::IdComponent INDEX = ArgTag::INDEX;
-    using AspectTag = vtkm::exec::arg::AspectTagSecondPoint<ArgTag>;
+    using AspectTag = vtkm::exec::arg::AspectTagSecondPoint;
   };
 
+  ////
+  //// BEGIN-EXAMPLE UseCustomControlSignatureTag.cxx
+  ////
+  ////
+  //// BEGIN-EXAMPLE UseCustomExecutionSignatureTag.cxx
+  ////
   typedef void ControlSignature(LineSegment2DCoordinatesIn coordsIn,
                                 FieldOut<Vec2> vecOut,
                                 FieldIn<Index> index);
+  ////
+  //// END-EXAMPLE UseCustomControlSignatureTag.cxx
+  ////
   typedef void ExecutionSignature(FirstPoint<_1>, SecondPoint<_1>, _2);
+  ////
+  //// END-EXAMPLE UseCustomExecutionSignatureTag.cxx
+  ////
   using InputDomain = _3;
 
   template<typename T>

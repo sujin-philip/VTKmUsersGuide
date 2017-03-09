@@ -284,6 +284,9 @@ with fetch tags, VTK-m also provides some aspect tags that either modify
 the behavior of a general fetch or simply ignore the type of fetch.
 
 \begin{description}
+\item[\vtkmexecarg{AspectTagDefault}] \index{aspect!default}
+  Performs the ``default'' fetch.
+  Every fetch tag should have an implementation of \vtkmexecarg{Fetch} with that tag and \textidentifier{AspectTagDefault}.
 \item[\vtkmexecarg{AspectTagWorkIndex}] \index{aspect!work index} Simply
   returns the domain (or thread) index ignoring any associated data. This
   aspect is used to implement the \sigtag{WorkIndex} execution signature
@@ -326,6 +329,75 @@ This example creates a specialization of a \textidentifier{Fetch} to retrieve th
 \section{Creating New \protect\controlsignature Tags}
 \label{sec:NewControlSignatureTags}
 
+\index{control~signature!tags|(}
+\index{signature!control!tags|(}
+
+The type checks, transports, and fetches defined in the previous sections of this chapter conspire to interpret the arguments given to a dispatcher's \textcode{Invoke} method and provide data to an instance of a worklet.
+What remains to be defined are the tags used in the \controlsignature and \executionsignature that bring these three items together.
+These two types of tags are defined differently.
+In this section we discuss the \controlsignature tags.
+
+A \controlsignature tag is defined by a \textcode{struct} (or equivocally a \textcode{class}).
+This \textcode{struct} is typically defined inside a worklet (or, more typically, a worklet superclass) so that it can be used without qualifying its namespace.
+\VTKm has requirements for every defined \controlsignature tag.
+
+The first requirement of a \controlsignature tag is that it must inherit from \vtkmcontarg{ControlSignatureTagBase}.
+You will get a compile error if you attempt to use a type that is not a subclass of \textidentifier{ControlSignatureTagBase} in a \controlsignature.
+
+The second requirement of a \controlsignature tag is that it must contain the following three types: \textcode{TypeCheckTag}, \textcode{TransportTag}, and \textcode{FetchTag}.
+As the names would imply, these specify tags for \textidentifier{TypeCheck}, \textidentifier{Transport}, and \textidentifier{Fetch} classes, respectively, which were discussed earlier in this chapter.
+
+The following example defines a \controlsignature tag for an array that represents 2D line segments using the classes defined in previous examples.
+
+\vtkmlisting[ex:CustomControlSignatureTag]{Defining a new \protect\controlsignature tag.}{CustomControlSignatureTag.cxx}
+
+Once defined, this tag can be used like any other \controlsignature tag.
+
+\vtkmlisting{Using a custom \protect\controlsignature tag.}{UseCustomControlSignatureTag.cxx}
+
+\index{signature!control!tags|)}
+\index{control~signature!tags|)}
+
 
 \section{Creating New \protect\executionsignature Tags}
 \label{sec:NewExecutionSignatureTags}
+
+\index{execution~signature!tags|(}
+\index{signature!execution!tags|(}
+
+An \executionsignature tag is defined by a \textcode{struct} (or equivocally a \textcode{class}).
+This \textcode{struct} is typically defined inside a worklet (or, more typically, a worklet superclass) so that it can be used without qualifying its namespace.
+\VTKm has requirements for every defined \executionsignature tag.
+
+The first requirement of an \executionsignature tag is that it must inherit from \vtkmexecarg{ExecutionSignatureTagBase}.
+You will get a compile error if you attempt to use a type that is not a subclass of \textidentifier{ExecutionSignatureTagBase} in an \executionsignature.
+
+\index{aspect|(}
+
+The second requirement of an \executionsignature tag is that it must contain a type named \textcode{AspectTag}, which is set to an aspect tag.
+As discussed in Section~\ref{sec:Fetch}, the aspect tag is passed as a template argument to the \vtkmexecarg{Fetch} class to modify the data it loads and stores.
+The numerical \executionsignature tags (i.e. \sigtagnum{1}, \sigtagnum{2}, etc.) operate by setting the \textcode{AspectTag} to \vtkmexecarg{AspectTagDefault}, \index{aspect!default} effectively engaging the default fetch.
+
+\index{aspect|)}
+
+The third requirement of an \executionsignature tag is that it contains an \textcode{INDEX} member that is a \textcode{static} \textcode{const} \vtkm{IdComponent}.
+The number that \textcode{INDEX} is set to refers to the \controlsignature argument from which that data come from (indexed starting at 1).
+The numerical \executionsignature tags (i.e. \sigtagnum{1}, \sigtagnum{2}, etc.) operate by setting their \textcode{INDEX} values to the corresponding number (i.e. 1, 2, etc.).
+An \executionsignature tag might take another tag as a template argument and copy the \textcode{INDEX} from one to another.
+This allows you to use a tag to modify the aspect of another tag.
+Most often this is used to apply a particular aspect to a numerical \executionsignature tag (i.e. \sigtagnum{1}, \sigtagnum{2}, etc.).
+Still other \executionsignature tags might not need direct access to any \controlsignature arguments (such as those that pull information from thread indices).
+If the \textcode{INDEX} does not matter (because the execution object parameter to the \textidentifier{Fetch} \textcode{Load} and \textcode{Store} is ignored).
+In this case, the \executionsignature tag can set the \textcode{INDEX} to 1, because there is guaranteed to be at least one control argument.
+
+The following example defines an \executionsignature tag to get the coordinates for only the first point in a 2D line segment.
+The defined tag takes as an argument another tag (generally one of the numeric tags), which is expected to point to a \controlsignature argument with a \textcode{LineSegment2DCoordinatesIn} (as defined in Example~\ref{ex:CustomControlSignatureTag}).
+
+\vtkmlisting[ex:CustomExecutionSignatureTag]{Defining a new \protect\executionsignature tag.}{CustomExecutionSignatureTag.cxx}
+
+Once defined, this tag can be used like any other \executionsignature tag.
+
+\vtkmlisting{Using a custom \protect\executionsignature tag.}{UseCustomExecutionSignatureTag.cxx}
+
+\index{signature!execution!tags|)}
+\index{execution~signature!tags|)}

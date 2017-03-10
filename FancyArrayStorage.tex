@@ -3,7 +3,7 @@
 \chapter{Fancy Array Storage}
 \label{chap:Storage}
 
-\index{array~handle|(}
+\index{array handle|(}
 
 Chapter~\ref{chap:ArrayHandle} introduces the \vtkmcont{ArrayHandle} class.
 In it, we learned how an \textidentifier{ArrayHandle} manages the
@@ -11,7 +11,7 @@ memory allocation of an array, provides access to the data via array
 portals, and supervises the movement of data between the control and
 execution environments.
 
-\index{array~handle!storage|(}
+\index{array handle!storage|(}
 \index{storage|(}
 
 In addition to these data management features, \textidentifier{ArrayHandle}
@@ -51,7 +51,7 @@ many ways you can manipulate the \textidentifier{ArrayHandle} storage.
 
 \section{Basic Storage}
 
-\index{array~handle!storage!default}
+\index{array handle!storage!default}
 \index{storage!default}
 
 As previously discussed in Chapter~\ref{chap:ArrayHandle},
@@ -93,8 +93,8 @@ default tag. This macro is used to create new templates that have template
 parameters for storage that can use the default.
 
 
-\index{array~handle!fancy|(}
-\index{fancy~array~handle|(}
+\index{array handle!fancy|(}
+\index{fancy array handle|(}
 
 \section{Provided Fancy Arrays}
 \label{sec:ProvidedFancyArrays}
@@ -114,8 +114,8 @@ ways in which new fancy arrays can be implemented.
 \subsection{Constant Arrays}
 \label{sec:ConstantArrays}
 
-\index{array~handle!constant|(}
-\index{constant~array~handle|(}
+\index{array handle!constant|(}
+\index{constant array handle|(}
 
 A constant array is a fancy array handle that has the same value in all of
 its entries. The constant array provides this array without actually using
@@ -138,21 +138,21 @@ to avoid having to declare the full array type.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleConstant}.}{MakeArrayHandleConstant.cxx}
 
-\index{constant~array~handle|)}
-\index{array~handle!constant|)}
+\index{constant array handle|)}
+\index{array handle!constant|)}
 
 \subsection{Counting Arrays}
 \label{sec:CountingArrays}
 
-\index{array~handle!counting|(}
-\index{counting~array~handle|(}
+\index{array handle!counting|(}
+\index{counting array handle|(}
 
 A counting array is a fancy array handle that provides a sequence of
 numbers. These fancy arrays can represent the data without actually using
 any memory.
 
-\index{array~handle!index|(}
-\index{index~array~handle|(}
+\index{array handle!index|(}
+\index{index array handle|(}
 
 VTK-m provides two versions of a counting array. The first version is an
 index array that provides a specialized but common form of a counting array
@@ -167,8 +167,8 @@ The following example is a simple demonstration of the index array handle.
 
 \vtkmlisting{Using \textidentifier{ArrayHandleIndex}.}{ArrayHandleIndex.cxx}
 
-\index{index~array~handle|)}
-\index{array~handle!index|)}
+\index{index array handle|)}
+\index{array handle!index|)}
 
 The \vtkmcont{ArrayHandleCounting} class provides a more general form of
 counting. \textidentifier{ArrayHandleCounting} is a templated class with a
@@ -205,14 +205,14 @@ components.
 
 \vtkmlisting{Using \textidentifier{ArrayHandleCounting} with \protect\vtkm{Vec} objects.}{ArrayHandleCountingVec.cxx}
 
-\index{counting~array~handle|)}
-\index{array~handle!counting|)}
+\index{counting array handle|)}
+\index{array handle!counting|)}
 
 \subsection{Cast Arrays}
 \label{sec:CastArrays}
 
-\index{array~handle!cast|(}
-\index{cast~array~handle|(}
+\index{array handle!cast|(}
+\index{cast array handle|(}
 
 A cast array is a fancy array that changes the type of the elements in an
 array. The cast array provides this re-typed array without actually copying
@@ -237,14 +237,14 @@ cast-to type as a template argument.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleCast}.}{MakeArrayHandleCast.cxx}
 
-\index{cast~array~handle|)}
-\index{array~handle!cast|)}
+\index{cast array handle|)}
+\index{array handle!cast|)}
 
 \subsection{Discard Arrays}
 \label{sec:DiscardArrays}
 
 \index{discard array handle|(}
-\index{array~handle!discard|(}
+\index{array handle!discard|(}
 
 It is sometimes the case where you will want to run an operation in \VTKm that fills values in two (or more) arrays, but you only want the values that are stored in one of the arrays.
 It is possible to allocate space for both arrays and then throw away the values that you do not want, but that is a waste of memory.
@@ -256,15 +256,15 @@ This array behaves similar to a regular \textidentifier{ArrayHandle} in that it 
 
 \vtkmlisting{Using \textidentifier{ArrayHandleDiscard}.}{ArrayHandleDiscard.cxx}
 
-\index{array~handle!discard|)}
+\index{array handle!discard|)}
 \index{discard array handle|)}
 
 
 \subsection{Permuted Arrays}
 \label{sec:PermutedArrays}
 
-\index{array~handle!permutation|(}
-\index{permuted~array~handle|(}
+\index{array handle!permutation|(}
+\index{permuted array handle|(}
 
 A permutation array is a fancy array handle that reorders the elements in
 an array. Elements in the array can be skipped over or replicated. The
@@ -303,14 +303,14 @@ declare the full array type.
   \textidentifier{ArrayHandlePermutation} cannot be resized.
 \end{didyouknow}
 
-\index{permuted~array~handle|)}
-\index{array~handle!permutation|)}
+\index{permuted array handle|)}
+\index{array handle!permutation|)}
 
 \subsection{Zipped Arrays}
 \label{sec:ZippedArrays}
 
-\index{array~handle!zip|(}
-\index{zipped~array~handles|(}
+\index{array handle!zip|(}
+\index{zipped array handles|(}
 
 A zip array is a fancy array handle that combines two arrays of the same
 size to pair up the corresponding values. Each element in the zipped array
@@ -333,8 +333,8 @@ can sometimes be used to avoid having to declare the full array type.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleZip}.}{MakeArrayHandleZip.cxx}
 
-\index{zipped~array~handles|)}
-\index{array~handle!zip|)}
+\index{zipped array handles|)}
+\index{array handle!zip|)}
 
 \subsection{Coordinate System Arrays}
 \label{sec:CoordinateSystemArrays}
@@ -346,8 +346,8 @@ including a raw array of 3D vectors, there are some common patterns for
 point coordinates that we can use specialized arrays to better represent
 the data.
 
-\index{array~handle!uniform~point~coordinates|(}
-\index{uniform~point~coordinates~array~handle|(}
+\index{array handle!uniform point coordinates|(}
+\index{uniform point coordinates array handle|(}
 
 There are two fancy array handles that each handle a special form of
 coordinate system. The first such array handle is
@@ -364,13 +364,13 @@ $1$ in each direction.
 
 \vtkmlisting{Using \textidentifier{ArrayHandleUniformPointCoordinates}.}{ArrayHandleUniformPointCoordinates.cxx}
 
-\index{uniform~point~coordinates~array~handle|)}
-\index{array~handle!uniform~point~coordinates|)}
+\index{uniform point coordinates array handle|)}
+\index{array handle!uniform point coordinates|)}
 
-\index{array~handle!Cartesian~product|(}
-\index{array~handle!rectilinear~point~coordinates|(}
-\index{Cartesian~product~array~handle|(}
-\index{rectilinear~point~coordinates~array~handle|(}
+\index{array handle!Cartesian product|(}
+\index{array handle!rectilinear point coordinates|(}
+\index{Cartesian product array handle|(}
+\index{rectilinear point coordinates array handle|(}
 
 The second fancy array handle for special coordinate systems is
 \vtkmcont{ArrayHandleCartesianProduct}, which represents a rectilinear
@@ -396,10 +396,10 @@ sometimes be used to avoid having to declare the full array type.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleCartesianProduct}.}{MakeArrayHandleCartesianProduct.cxx}
 
-\index{rectilinear~point~coordinates~array~handle|)}
-\index{Cartesian~product~array~handle|)}
-\index{array~handle!rectilinear~point~coordinates|)}
-\index{array~handle!Cartesian~product|)}
+\index{rectilinear point coordinates array handle|)}
+\index{Cartesian product array handle|)}
+\index{array handle!rectilinear point coordinates|)}
+\index{array handle!Cartesian product|)}
 
 \begin{didyouknow}
   These specialized arrays for coordinate systems greatly reduce the code
@@ -413,8 +413,8 @@ sometimes be used to avoid having to declare the full array type.
 \subsection{Composite Vector Arrays}
 \label{sec:CompositeVectorArrays}
 
-\index{array~handle!composite~vector~arrays|(}
-\index{composite~vector~arrays~array~handle|(}
+\index{array handle!composite vector arrays|(}
+\index{composite vector arrays array handle|(}
 
 A composite vector array is a fancy array handle that combines two to four
 arrays of the same size and value type and combines their corresponding
@@ -462,14 +462,14 @@ coordinates.
 
 \vtkmlisting{Combining vector components with \textidentifier{ArrayHandleCompositeVector}.}{ArrayHandleCompositeVectorComponents.cxx}
 
-\index{composite~vector~arrays~array~handle|)}
-\index{array~handle!composite~vector~arrays|)}
+\index{composite vector arrays array handle|)}
+\index{array handle!composite vector arrays|)}
 
 \subsection{Grouped Vector Arrays}
 \label{sec:GroupedVectorArrays}
 
-\index{array~handle!group~vector|(}
-\index{group~vector~array~handle|(}
+\index{array handle!group vector|(}
+\index{group vector array handle|(}
 
 A grouped vector array is a fancy array handle that groups consecutive
 values of an array together to form a \vtkm{Vec}. The source array must be
@@ -537,8 +537,8 @@ The \vtkmheader{vtkm/cont}{ArrayHandleGroupVecVariable.h} header also contains t
   See Sections \ref{sec:VectorTypes} and \ref{sec:VectorTraits} for more information on the difference between \vtkm{Vec} and \Veclike objects.
 \end{commonerrors}
 
-\index{group~vector~array~handle|)}
-\index{array~handle!group~vector|)}
+\index{group vector array handle|)}
+\index{array handle!group vector|)}
 
 
 \section{Implementing Fancy Arrays}
@@ -550,11 +550,11 @@ implement fancy arrays.
 
 \subsection{Implicit Array Handles}
 
-\index{array~handle!implicit|(}
+\index{array handle!implicit|(}
 \index{storage!implicit|(}
-\index{implicit~storage|(}
-\index{implicit~array~handle|(}
-\index{functional~array|(}
+\index{implicit storage|(}
+\index{implicit array handle|(}
+\index{functional array|(}
 
 The generic array handle and storage templating in VTK-m allows for
 any type of operations to retrieve a particular value. Typically this is
@@ -612,7 +612,7 @@ in any of the arguments.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleImplicit}.}{MakeArrayHandleImplicit.cxx}
 
-\index{array~handle!subclassing}
+\index{array handle!subclassing}
 
 If the implicit array you are creating tends to be generally useful and is
 something you use multiple times, it might be worthwhile to make a
@@ -643,17 +643,17 @@ the full template specification. The second parameter of the macro must be
 enclosed in parentheses so that the C pre-processor correctly handles
 commas in the template specification.
 
-\index{functional~array|)}
-\index{implicit~array~handle|)}
-\index{implicit~storage|)}
+\index{functional array|)}
+\index{implicit array handle|)}
+\index{implicit storage|)}
 \index{storage!implicit|)}
-\index{array~handle!implicit|)}
+\index{array handle!implicit|)}
 
 \subsection{Transformed Arrays}
 \label{sec:TransformedArrays}
 
-\index{array~handle!transform|(}
-\index{transformed~array|(}
+\index{array handle!transform|(}
+\index{transformed array|(}
 
 Another type of fancy array handle is the transformed array. A transformed
 array takes another array and applies a function to all of the elements to
@@ -735,16 +735,16 @@ superclass including the full template specification. The second and third
 parameters of the macro must be enclosed in parentheses so that the C
 pre-processor correctly handles commas in the template specification.
 
-\index{transformed~array|)}
-\index{array~handle!transform|)}
+\index{transformed array|)}
+\index{array handle!transform|)}
 
 
 \subsection{Derived Storage}
 \label{sec:DerivedStorage}
 
-\index{array~handle!derived|(}
+\index{array handle!derived|(}
 \index{storage!derived|(}
-\index{derived~storage|(}
+\index{derived storage|(}
 
 A \keyterm{derived storage} is a type of fancy array that takes one or more
 other arrays and changes their behavior in some way. A transformed array
@@ -791,7 +791,7 @@ data wherever possible. It is also sometimes more efficient to copy data
 independently from the arrays being derived than from the derived storage
 itself.
 
-\index{array~transfer|(}
+\index{array transfer|(}
 
 The mechanism that controls how a particular storage gets
 transferred to and from the execution environment is encapsulated in the
@@ -885,9 +885,9 @@ started in Examples \ref{ex:DerivedArrayPortal} and
 
 \vtkmlisting[ex:DerivedArrayTransfer]{\textidentifier{ArrayTransfer} for derived storage of concatenated arrays.}{DerivedArrayTransfer.cxx}
 
-\index{array~transfer|)}
+\index{array transfer|)}
 
-\index{array~handle!subclassing}
+\index{array handle!subclassing}
 
 The final step to make a derived storage is to create a mechanism to
 construct an \textidentifier{ArrayHandle} with a storage derived from the
@@ -927,19 +927,19 @@ handle provided by VTK-m. It references some fixed number of other arrays,
 pulls a specified component out of each, and produces a new component that
 is a tuple of these retrieved components.
 
-\index{derived~storage|)}
+\index{derived storage|)}
 \index{storage!derived|)}
-\index{array~handle!derived|)}
+\index{array handle!derived|)}
 
-\index{array~handle!fancy|)}
-\index{fancy~array~handle|)}
+\index{array handle!fancy|)}
+\index{fancy array handle|)}
 
 
 
 \section{Adapting Data Structures}
 \label{sec:ArrayHandle:Adapting}
 
-\index{array~handle!adapting|(}
+\index{array handle!adapting|(}
 \index{storage!adapting|(}
 
 The intention of the storage parameter for \vtkmcont{ArrayHandle} is to
@@ -1029,7 +1029,7 @@ Example~\ref{ex:ArrayPortalAdapter}.
 
 \vtkmlisting{Storage to adapt a third-party container to VTK-m.}{StorageAdapter.cxx}
 
-\index{array~handle!subclassing}
+\index{array handle!subclassing}
 
 The final step to make a storage adapter is to make a mechanism to
 construct an \textidentifier{ArrayHandle} that points to a particular
@@ -1073,7 +1073,7 @@ data from the execution environment to the control environment. \fix{Should
 
 \vtkmlisting{Using an \textidentifier{ArrayHandle} with custom container.}{UsingArrayHandleAdapter.cxx}
 
-\index{array~handle!storage!default}
+\index{array handle!storage!default}
 \index{storage!default}
 
 Most of the code in VTK-m will create \textidentifier{ArrayHandle}s using
@@ -1107,11 +1107,11 @@ struct StorageTagFooPressure;
 \end{commonerrors}
 
 \index{storage!adapting|)}
-\index{array~handle!adapting|)}
+\index{array handle!adapting|)}
 
 
 
 \index{storage|)}
-\index{array~handle!storage|)}
+\index{array handle!storage|)}
 
-\index{array~handle|)}
+\index{array handle|)}

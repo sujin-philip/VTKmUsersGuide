@@ -86,7 +86,7 @@ the field filters.
 
 \subsection{Cell Average}
 
-\index{cell~average|(}
+\index{cell average|(}
 \index{average|(}
 
 \vtkmfilter{CellAverage} is the cell average filter. It will take a data
@@ -118,11 +118,11 @@ following methods.
 \end{description}
 
 \index{average|}
-\index{cell~average|)}
+\index{cell average|)}
 
 \subsection{Point Average}
 
-\index{point~average|(}
+\index{point average|(}
 \index{average|(}
 
 \vtkmfilter{PointAverage} is the point average filter.
@@ -147,11 +147,11 @@ In addition the standard \textcode{SetOutputFieldName} and \textcode{Execute} me
 \end{description}
 
 \index{average|}
-\index{point~average|)}
+\index{point average|)}
 
 \subsection{Point Elevation}
 
-\index{point~elevation|(}
+\index{point elevation|(}
 \index{elevation|(}
 
 \vtkmfilter{PointElevation} computes the ``elevation'' of a field of point
@@ -189,7 +189,7 @@ following methods.
 \end{description}
 
 \index{elevation|)}
-\index{point~elevation|)}
+\index{point elevation|)}
 
 \index{field filter|)}
 \index{filter!field|)}
@@ -260,7 +260,7 @@ the data set filters.
 \subsection{Clean Grid}
 
 \index{clean grid|(}
-\index{data~set!clean|(}
+\index{data set!clean|(}
 
 \vtkmfilter{CleanGrid} is a filter that converts a cell set to an explicit representation and potentially removes redundant or unused data.
 It does this by iterating over all cells in the data set, and for each one creating the explicit cell representation that is stored in the output.
@@ -286,12 +286,12 @@ In addition to the standard \textcode{Execute},
   Returns the Boolean flag set in the latest call to \textcode{SetCompactPointFields}.
 \end{description}
 
-\index{data~set!clean|)}
+\index{data set!clean|)}
 \index{clean grid|)}
 
 \subsection{External Faces}
 
-\index{external~faces|(}
+\index{external faces|(}
 \index{face!external|(}
 
 \vtkmfilter{ExternalFaces} is a filter that extracts all the external faces
@@ -312,19 +312,19 @@ data set filters (such as \textcode{Execute} and
 its operations.
 
 \index{face!external|)}
-\index{external~faces|)}
+\index{external faces|)}
 
 \subsection{Vertex Clustering}
 
-\index{vertex~clustering|(}
-\index{surface~simplification|(}
+\index{vertex clustering|(}
+\index{surface simplification|(}
 
 \vtkmfilter{VertexClustering} is a filter that simplifies a polygonal mesh.
 It does so by dividing space into a uniform grid of bin and then merges
 together all points located in the same bin. The smaller the dimensions of
 this binning grid, the fewer polygons will be in the output cells and the
 coarser the representation. This surface simplification is an important
-operation to support \index{level~of~detail}\index{LOD}level of detail (LOD)
+operation to support \index{level of detail}\index{LOD}level of detail (LOD)
 rendering in visualization applications. Example~\ref{ex:VertexClustering}
 provides a demonstration of the vertex clustering filter.
 
@@ -342,8 +342,8 @@ In addition to the standard \textcode{Execute},
   used for binning. The dimensions are returned as a \vtkm{Id3}.
 \end{description}
 
-\index{surface~simplification|}
-\index{vertex~clustering|)}
+\index{surface simplification|}
+\index{vertex clustering|)}
 
 \index{data set filter|)}
 \index{filter!data set|)}
@@ -422,10 +422,10 @@ one of the data set and field filters.
 
 \subsection{Marching Cubes}
 
-\index{filter!Marching~Cubes|(}
+\index{filter!Marching Cubes|(}
 \index{filter!contour|(}
 \index{filter!isosurface|(}
-\index{Marching~Cubes|(}
+\index{Marching Cubes|(}
 \index{contour|(}
 \index{isosurface|(}
 
@@ -466,10 +466,10 @@ In addition to the standard \textcode{Execute},
 
 \index{isosurface|)}
 \index{contour|)}
-\index{Marching~Cubes|)}
+\index{Marching Cubes|)}
 \index{filter!isosurface|)}
 \index{filter!contour|)}
-\index{filter!Marching~Cubes|)}
+\index{filter!Marching Cubes|)}
 
 \subsection{Threshold}
 

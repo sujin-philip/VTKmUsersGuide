@@ -3,7 +3,7 @@
 \chapter{Device Adapters}
 \label{chap:DeviceAdapter}
 
-\index{device~adapter|(}
+\index{device adapter|(}
 
 As multiple vendors vie to provide accelerator-type processors, a great
 variance in the computer architecture exists. Likewise, there exist
@@ -38,8 +38,8 @@ for a different device or system.
 \section{Device Adapter Tag}
 \label{sec:DeviceAdapterTag}
 
-\index{device~adapter~tag|(}
-\index{tag!device~adapter|(}
+\index{device adapter tag|(}
+\index{tag!device adapter|(}
 
 A device adapter is identified by a \keyterm{device adapter tag}. This tag,
 which is simply an empty struct type, is used as the template parameter for
@@ -121,8 +121,8 @@ VTK-m. This is done by providing a device adapter tag as a template
 argument to VTK-m templated objects. The following device adapter tags are
 available in VTK-m.
 
-\index{device~adapter~tag!provided|(}
-\index{tag!device~adapter!provided|(}
+\index{device adapter tag!provided|(}
+\index{tag!device adapter!provided|(}
 
 \begin{description}
 \item[\vtkmcont{DeviceAdapterTagSerial}] \index{serial} Performs all
@@ -147,8 +147,8 @@ available in VTK-m.
   \vtkmheader{vtkm/cont/tbb}{DeviceAdapterTBB.h}.
 \end{description}
 
-\index{tag!device~adapter!provided|)}
-\index{device~adapter~tag!provided|)}
+\index{tag!device adapter!provided|)}
+\index{device adapter tag!provided|)}
 
 The following example uses the tag for the Intel Threading Building blocks
 device adapter to prepare an output array for that device. In this case,
@@ -186,14 +186,14 @@ that is templated on the device it uses.
   this macro on line 4.
 \end{commonerrors}
 
-\index{tag!device~adapter|)}
-\index{device~adapter~tag|)}
+\index{tag!device adapter|)}
+\index{device adapter tag|)}
 
 
 \section{Device Adapter Algorithms}
 \label{sec:DeviceAdapterAlgorithms}
 
-\index{device~adapter!algorithm|(}
+\index{device adapter!algorithm|(}
 \index{algorithm|(}
 
 VTK-m comes with the templated class \vtkmcont{DeviceAdapterAlgorithm} that
@@ -219,7 +219,7 @@ are available.
 \begin{description}
 \item[\textcode{Copy}] \index{copy} Copies data from an input array to an
   output array. The copy takes place in the execution environment.
-\item[\textcode{LowerBounds}] \index{lower~bounds} The
+\item[\textcode{LowerBounds}] \index{lower bounds} The
   \textcode{LowerBounds} method takes three arguments. The first argument
   is an \textidentifier{ArrayHandle} of sorted values. The second argument
   is another \textidentifier{ArrayHandle} of items to find in the first
@@ -241,7 +241,7 @@ are available.
   The provided binary function must be associative (but it need not be
   commutative). There is a specialization of \textcode{Reduce} that does
   not take a binary function and computes the sum.
-\item[\textcode{ReduceByKey}] \index{reduce~by~key} The
+\item[\textcode{ReduceByKey}] \index{reduce by key} The
   \textcode{ReduceByKey} method works similarly to the \textcode{Reduce}
   method except that it takes an additional array of keys, which must be
   the same length as the values being reduced. The arrays are partitioned
@@ -288,7 +288,7 @@ are available.
   subclass \vtkmexec{FunctorBase}, which provides the error handling
   facilities for the execution environment. \textidentifier{FunctorBase}
   contains a public method named \index{RaiseError}
-  \index{errors!execution~environment} \textcode{RaiseError} that takes a
+  \index{errors!execution environment} \textcode{RaiseError} that takes a
   message and will cause a \vtkmcont{ErrorExecution} exception to be thrown
   in the control environment.
 \item[\textcode{Sort}] \index{sort} The \textcode{Sort} method provides an
@@ -304,7 +304,7 @@ are available.
   key. Like \textcode{Sort}, \textcode{SortByKey} has a version that sorts
   by the default less-than operator and a version that accepts a custom
   comparison functor.
-\item[\textcode{StreamCompact}] \index{stream~compact} The
+\item[\textcode{StreamCompact}] \index{stream compact} The
   \textcode{StreamCompact} method selectively removes values from an
   array. The first argument is an \textidentifier{ArrayHandle} to be
   compacted and the second argument is an \textidentifier{ArrayHandle} of
@@ -329,7 +329,7 @@ are available.
   There are two versions of \textcode{Unique}. The first uses the equals
   operator to compare entries. The second accepts a binary functor to
   perform the comparisons.
-\item[\textcode{UpperBounds}] \index{upper~bounds} The
+\item[\textcode{UpperBounds}] \index{upper bounds} The
   \textcode{UpperBounds} method takes three arguments. The first argument
   is an \textidentifier{ArrayHandle} of sorted values. The second argument
   is another \textidentifier{ArrayHandle} of items to find in the first
@@ -348,7 +348,7 @@ are available.
 \end{description}
 
 \index{algorithm|)}
-\index{device~adapter!algorithm|)}
+\index{device adapter!algorithm|)}
 
 
-\index{device~adapter|)}
+\index{device adapter|)}

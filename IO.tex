@@ -2,7 +2,7 @@
 \label{chap:FileIO}
 
 \index{I/O|(}
-\index{file~I/O|(}
+\index{file I/O|(}
 
 Before VTK-m can be used to process data, data need to be loaded into the
 system. VTK-m comes with a basic file I/O package to get started developing
@@ -20,8 +20,8 @@ namespace.
 
 \section{Readers}
 
-\index{file~I/O!read|(}
-\index{read~file|(}
+\index{file I/O!read|(}
+\index{read file|(}
 
 All reader classes provided by VTK-m are located in the \vtkmioreader{}
 namespace. The general interface for each reader class is to accept a
@@ -53,13 +53,13 @@ can be used with filters and rendering.
 
 \vtkmlisting{Reading a legacy VTK file.}{VTKDataSetReader.cxx}
 
-\index{read~file|)}
-\index{file~I/O!read|)}
+\index{read file|)}
+\index{file I/O!read|)}
 
 \section{Writers}
 
-\index{file~I/O!write|(}
-\index{write~file|(}
+\index{file I/O!write|(}
+\index{write file|(}
 
 All writer classes provided by VTK-m are located in the \vtkmiowriter{}
 namespace. The general interface for each writer class is to accept a
@@ -70,8 +70,8 @@ to the file.
 
 \subsection{Legacy VTK File Writer}
 
-\index{write~file|)}
-\index{file~I/O!write|)}
+\index{write file|)}
+\index{file I/O!write|)}
 
 Legacy VTK files can be written using the \vtkmiowriter{VTKDataSetWriter}
 class. The constructor for this class takes a string containing the
@@ -80,5 +80,5 @@ object and writes its data to the previously indicated file.
 
 \vtkmlisting{Writing a legacy VTK file.}{VTKDataSetWriter.cxx}
 
-\index{file~I/O|)}
+\index{file I/O|)}
 \index{I/O|)}

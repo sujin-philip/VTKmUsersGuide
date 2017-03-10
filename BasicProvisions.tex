@@ -13,7 +13,7 @@ start with a description of package structure used by VTK-m.
 \label{sec:GeneralApproach}
 
 VTK-m is designed to provide a \keyterm{pervasive parallelism}
-\index{pervasive~parallelism} throughout all its visualization algorithms,
+\index{pervasive parallelism} throughout all its visualization algorithms,
 meaning that the algorithm is designed to operate with independent
 concurrency at the finest possible level throughout. VTK-m provides this
 pervasive parallelism by providing a programming construct called a
@@ -55,14 +55,14 @@ has its own API, and direct interaction between the environments is
 disallowed. The environments are as follows.
 
 \begin{description}
-\item[Execution Environment] \index{execution~environment}
+\item[Execution Environment] \index{execution environment}
   \index{environment!execution} This is the environment in which the
   computational portion of algorithms are executed. The API for this
   environment provides work for one element with convenient access to
   information such as connectivity and neighborhood as needed by typical
   visualization algorithms. Code for the execution environment is designed
   to always execute on a very large number of threads.
-\item[Control Environment] \index{control~environment}
+\item[Control Environment] \index{control environment}
   \index{execution!control} This is the environment that is used to
   interface with applications, interface with I/O devices, and schedule
   parallel execution of the algorithms. The associated API is designed for
@@ -121,8 +121,8 @@ helps prevent name collisions between VTK-m and any other library.
 
 As described in Section~\ref{sec:GeneralApproach}, the VTK-m API is divided
 into two distinct environments: \index{environment} the control environment
-\index{control~environment} \index{environment!control} and the execution
-environment. \index{execution~environment} \index{environment!execution}
+\index{control environment} \index{environment!control} and the execution
+environment. \index{execution environment} \index{environment!execution}
 The API for these two environments are located in the \vtkmcont{} and
 \vtkmexec{} packages, respectively. Items located in the base \vtkm{}
 namespace are available in both environments.
@@ -251,7 +251,7 @@ have \textcode{\_\_device\_\_}\index{\_\_device\_\_} in them.
 There is one additional modifier macro that is not used for functions but
 rather used when declaring a constant data object that is used in the
 execution environment. This macro is named
-\vtkmmacro{VTKM\_EXEC\_CONSTANT}\index{modifier!constant}\index{constant~modifier}
+\vtkmmacro{VTKM\_EXEC\_CONSTANT}\index{modifier!constant}\index{constant modifier}
 and is used to declare a constant lookup table used when executing a
 worklet. Its primary reason for existing is to add a
 \textcode{\_\_constant\_\_} keyword when compiling with CUDA. This modifier
@@ -803,7 +803,7 @@ Chapter~\ref{chap:DynamicArrayHandle}).
 
 \index{errors|(}
 
-\index{errors!control~environment|(}
+\index{errors!control environment|(}
 
 VTK-m uses exceptions to report errors. All exceptions thrown by VTK-m will
 be a subclass of \vtkmcont{Error}. For simple error reporting, it is
@@ -825,7 +825,7 @@ recover from errors.
   an operation on an object that is of an incompatible type.
 \item[\vtkmcont{ErrorBadValue}] Thrown when a VTK-m function or
   method encounters an invalid value that inhibits progress.
-\item[\vtkmcont{ErrorExecution}] \index{errors!execution~environment} Throw
+\item[\vtkmcont{ErrorExecution}] \index{errors!execution environment} Throw
   when an error is signaled in the execution environment for example when a
   worklet is being executed.
 \item[\vtkmcont{ErrorInternal}] Thrown when VTK-m detects an
@@ -836,7 +836,7 @@ recover from errors.
   encountered.
 \end{description}
 
-\index{errors!control~environment|)}
+\index{errors!control environment|)}
 
 \index{assert|(}
 \index{errors!assert|(}

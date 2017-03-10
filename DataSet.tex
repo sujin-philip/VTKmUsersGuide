@@ -4,14 +4,14 @@
 \label{chap:DataSets}
 \label{chap:DataSet}
 
-\index{data~set|(}
+\index{data set|(}
 
 A \keyterm{data set}, implemented with the \vtkmcont{DataSet} class,
 contains and manages the geometric data structures that VTK-m operates on.
 A data set comprises the following 3 data structures.
 
 \begin{description}
-\item[Cell Set] \index{cell~set} A cell set describes topological
+\item[Cell Set] \index{cell set} A cell set describes topological
   connections. A cell set defines some number of points in space and how
   they connect to form cells, filled regions of space. A data set must have
   at least one cell set, but can have more than one cell set defined. This
@@ -27,7 +27,7 @@ A data set comprises the following 3 data structures.
   discrete data values in the field provide an interpolated function
   throughout the volume of space covered by the data set. A cell set can
   have any number of fields.
-\item[Coordinate System] \index{coordinate~system} A coordinate system is a
+\item[Coordinate System] \index{coordinate system} A coordinate system is a
   special field that describes the physical location of the points in a
   data set. Although it is most common for a data set to contain a single
   coordinate system, VTK-m supports data sets with no coordinate system
@@ -42,7 +42,7 @@ A data set comprises the following 3 data structures.
 \section{Building Data Sets}
 \label{sec:DataSets:Building}
 
-\index{data~set!Building|(}
+\index{data set!Building|(}
 
 Before we go into detail on the cell sets, fields, and coordinate systems
 that make up a data set in VTK-m, let us first discuss how to build a data
@@ -56,8 +56,8 @@ on top of \vtkmcont{DataSet} to make it easier to create data sets.
 
 \subsection{Creating Uniform Grids}
 
-\index{uniform~grid}
-\index{regular~grid}
+\index{uniform grid}
+\index{regular grid}
 \index{image}
 
 Uniform grids are meshes that have a regular array structure with points
@@ -90,7 +90,7 @@ same size in each direction, and we want the mesh centered at the origin.
 
 \subsection{Creating Rectilinear Grids}
 
-\index{rectilinear~grid}
+\index{rectilinear grid}
 
 A rectilinear grid is similar to a uniform grid except that a rectilinear
 grid can adjust the spacing between adjacent grid points. This allows the
@@ -117,8 +117,8 @@ spacing along each axis.
 
 \subsection{Creating Explicit Meshes}
 
-\index{explicit~mesh}
-\index{unstructured~grid}
+\index{explicit mesh}
+\index{unstructured grid}
 
 An explicit mesh is an arbitrary collection of cells with arbitrary
 connections. It can have multiple different types of cells. Explicit meshes
@@ -185,13 +185,13 @@ grid that identify which points and cells are on the boundary of the mesh.
 
 \vtkmlisting{Adding fields to a \textidentifier{DataSet}.}{AddFieldData.cxx}
 
-\index{data~set!Building|)}
+\index{data set!Building|)}
 
 \section{Cell Sets}
 \label{sec:DataSets:CellSets}
 
-\index{cell~set|(}
-\index{data~set!cell~set|see{cell~set}}
+\index{cell set|(}
+\index{data set!cell set|see{cell set}}
 
 A cell set determines the topological structure of the data in a data set.
 Fundamentally, any cell set is a collection of cells, which typically (but
@@ -202,7 +202,7 @@ not always) represent some region in space. 3D cells are made up of
 and 1D cells have only points.) Figure~\ref{fig:CellTopology} shows the
 relationship between a cell's shape and these topological elements. The
 arrangement of these points, edges, and faces is defined by the
-\index{shape}\index{cell~set!shape}\index{cell~shape}\keyterm{shape} of the
+\index{shape}\index{cell set!shape}\index{cell shape}\keyterm{shape} of the
 cell, which prescribes a specific ordering of each. The basic cell shapes
 provided by VTK-m are discussed in detail in
 Section~\ref{sec:CellShapeTagsIds} starting on
@@ -224,8 +224,8 @@ structured and explicit, and there are several variations of these types.
 
 \subsection{Structured Cell Sets}
 
-\index{cell~set!structured|(}
-\index{structured~cell~set|(}
+\index{cell set!structured|(}
+\index{structured cell set|(}
 
 A \vtkmcont{CellSetStructured} defines a 1-, 2-, or 3-dimensional grid of
 points with lines, quadrilaterals, or hexahedra, respectively, connecting
@@ -265,14 +265,14 @@ grid. The point coordinates are defined by the data set's coordinate system,
 which is discussed in Section~\ref{sec:DataSets:CoordinateSystems} starting
 on page~\pageref{sec:DataSets:CoordinateSystems}.
 
-\index{structured~cell~set|)}
-\index{cell~set!structured|)}
+\index{structured cell set|)}
+\index{cell set!structured|)}
 
 \subsection{Explicit Cell Sets}
 \label{sec:ExplicitCellSets}
 
-\index{explicit~cell~set|(}
-\index{cell~set!explicit|(}
+\index{explicit cell set|(}
+\index{cell set!explicit|(}
 
 A \vtkmcont{CellSetExplicit} defines an irregular collection of cells. The
 cells can be of different types and connected in arbitrary ways. This is
@@ -307,9 +307,9 @@ all connections must be explicitly defined,
 \textidentifier{ExplicitCellSet} requires a significant amount of memory to
 represent the topology.
 
-\index{cell~set!single~type|(}
-\index{explicit~cell~set!single~type|(}
-\index{single~type~cell~set|(}
+\index{cell set!single type|(}
+\index{explicit cell set!single type|(}
+\index{single type cell set|(}
 
 An important specialization of an explicit cell set is
 \vtkmcont{CellSetSingleType}. \textidentifier{CellSetSingleType} is an
@@ -323,17 +323,17 @@ cell shapes and the array of point counts no longer need to be stored.
 \textidentifier{CellSetSingleType} also allows VTK-m to skip some
 processing and other storage required for general explicit cell sets.
 
-\index{single~type~cell~set|)}
-\index{explicit~cell~set!single~type|)}
-\index{cell~set!single~type|)}
+\index{single type cell set|)}
+\index{explicit cell set!single type|)}
+\index{cell set!single type|)}
 
-\index{cell~set!explicit|)}
-\index{explicit~cell~set|)}
+\index{cell set!explicit|)}
+\index{explicit cell set|)}
 
 \subsection{Cell Set Permutations}
 
-\index{permutation~cell~set|(}
-\index{cell~set!permutation|(}
+\index{permutation cell set|(}
+\index{cell set!permutation|(}
 
 A \vtkmcont{CellSetPermutation} rearranges the cells of one cell set to
 create another cell set. This restructuring of cells is not done by copying
@@ -359,13 +359,13 @@ data set.
 
 \vtkmlisting{Subsampling a data set with \textidentifier{CellSetPermutation}.}{CreateCellSetPermutation.cxx}
 
-\index{cell~set!permutation|)}
-\index{permutation~cell~set|)}
+\index{cell set!permutation|)}
+\index{permutation cell set|)}
 
 \subsection{Dynamic Cell Sets}
 
-\index{dynamic~cell~set|(}
-\index{cell~set!dynamic|(}
+\index{dynamic cell set|(}
+\index{cell set!dynamic|(}
 
 \vtkmcont{DataSet} must hold an arbitrary collection of \vtkmcont{CellSet}
 objects, which it cannot do while knowing their types at compile time. To
@@ -415,8 +415,8 @@ for a particular instance of a dynamic cell set by calling its
 returns a new dynamic array handle of a slightly different type that will
 use this new list of cells for dynamic casting.
 
-\index{cell~set!dynamic|)}
-\index{dynamic~cell~set|}
+\index{cell set!dynamic|)}
+\index{dynamic cell set|}
 
 \subsection{Blocks and Assemblies}
 
@@ -436,13 +436,13 @@ contain any topological structure. For example, a collection of series that
 come from columns in a table could be stored as multiple fields in a data
 set with no cell set.
 
-\index{cell~set|)}
+\index{cell set|)}
 
 \section{Fields}
 \label{sec:DataSets:Fields}
 
 \index{field|(}
-\index{data~set!field|see{field}}
+\index{data set!field|see{field}}
 
 A field on a data set provides a value on every point in space on the mesh.
 Fields are often used to describe physical properties such as pressure,
@@ -469,8 +469,8 @@ array.
 \section{Coordinate Systems}
 \label{sec:DataSets:CoordinateSystems}
 
-\index{coordinate~system|(}
-\index{data~set!coordinate~system|see{coordinate~system}}
+\index{coordinate system|(}
+\index{data set!coordinate system|see{coordinate system}}
 
 A coordinate system determines the location of a mesh's elements in space.
 The spatial location is described by providing a 3D vector at each point
@@ -496,6 +496,6 @@ system. This is useful when the structure is not rooted in physical space.
 For example, if the cell set is representing a graph structure, there might
 not be any physical space that has meaning for the graph.
 
-\index{coordinate~system|)}
+\index{coordinate system|)}
 
-\index{data~set|)}
+\index{data set|)}

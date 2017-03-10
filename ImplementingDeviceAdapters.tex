@@ -3,8 +3,8 @@
 \chapter{Implementing Device Adapters}
 \label{chap:ImplementingDeviceAdapters}
 
-\index{device~adapter|(}
-\index{device~adapter!implementing|(}
+\index{device adapter|(}
+\index{device adapter!implementing|(}
 
 VTK-m comes with several implementations of device adapters so that it may
 be ported to a variety of platforms. It is also possible to provide new
@@ -54,7 +54,7 @@ header files.
 
 \section{Tag}
 
-\index{device~adapter!tag|(}
+\index{device adapter!tag|(}
 
 The device adapter tag, as described in Section~\ref{sec:DeviceAdapterTag}
 is a simple empty type that is used as a template parameter to identify the
@@ -79,13 +79,13 @@ header file.
 
 \vtkmlisting{Implementation of a device adapter tag.}{DeviceAdapterTagCxx11Thread.h}
 
-\index{device~adapter!tag|)}
+\index{device adapter!tag|)}
 
 \section{Array Manager Execution}
 
-\index{device~adapter!array manager|(}
-\index{array~manager~execution|(}
-\index{execution~array~manager|(}
+\index{device adapter!array manager|(}
+\index{array manager execution|(}
+\index{execution array manager|(}
 
 VTK-m defines a template named \vtkmcontinternal{ArrayManagerExecution}
 that is responsible for allocating memory in the execution environment and
@@ -170,13 +170,13 @@ header file.
 
 \vtkmlisting{Specialization of \textidentifier{ArrayManagerExecution}.}{ArrayManagerExecutionCxx11Thread.h}
 
-\index{execution~array~manager|)}
-\index{array~manager~execution|)}
-\index{device~adapter!array manager|)}
+\index{execution array manager|)}
+\index{array manager execution|)}
+\index{device adapter!array manager|)}
 
 \section{Algorithms}
 
-\index{device~adapter!algorithm|(}
+\index{device adapter!algorithm|(}
 \index{algorithm|(}
 
 A device adapter implementation must also provide a specialization of
@@ -202,7 +202,7 @@ specializations for the sort, scan, and reduce algorithms.
 
 It is standard practice to implement a specialization of \textidentifier{DeviceAdapterAlgorithm} by having it inherit from \vtkmcontinternal{DeviceAdapterAlgorithmGeneral} and specializing those methods that are optimized for a particular system.
 \textidentifier{DeviceAdapterAlgorithmGeneral} is a templated class that takes as its single template parameter the type of the subclass.
-For example, a device adapter algorithm structure named \textidentifier{DeviceAdapterAlgorithm}\tparams{DeviceAdapterTagFoo} will subclass \textidentifier{DeviceAdapterAlgorithmGeneral}\tparams{\textidentifier{DeviceAdapterAlgorithm}\tparams{DeviceAdapterTagFoo}~}.
+For example, a device adapter algorithm structure named \textidentifier{DeviceAdapterAlgorithm}\tparams{DeviceAdapterTagFoo} will subclass \textidentifier{DeviceAdapterAlgorithmGeneral}\tparams{\textidentifier{DeviceAdapterAlgorithm}\tparams{DeviceAdapterTagFoo} }.
 
 \begin{didyouknow}
   The convention of having a subclass be templated on the derived class' type is known as the Curiously Recurring Template Pattern (CRTP).
@@ -247,12 +247,12 @@ header file.
 \vtkmlisting{Minimal specialization of \textidentifier{DeviceAdapterAlgorithm}.}{DeviceAdapterAlgorithmCxx11Thread.h}
 
 \index{algorithm|)}
-\index{device~adapter!algorithm|)}
+\index{device adapter!algorithm|)}
 
 \section{Timer Implementation}
 
 \index{timer|(}
-\index{device~adapter!timer|(}
+\index{device adapter!timer|(}
 
 The VTK-m timer, described in Chapter~\ref{chap:Timers}, delegates to an
 internal class named \vtkmcont{DeviceAdapterTimerImplementation}. The
@@ -277,8 +277,8 @@ the same header file as \textidentifier{DeviceAdapterAlgorithm}.
 
 \vtkmlisting{Specialization of \textidentifier{DeviceAdapterTimerImplementation}.}{DeviceAdapterTimerImplementationCxx11Thread.h}
 
-\index{device~adapter!timer|)}
+\index{device adapter!timer|)}
 \index{timer|)}
 
-\index{device~adapter!implementing|)}
-\index{device~adapter|)}
+\index{device adapter!implementing|)}
+\index{device adapter|)}

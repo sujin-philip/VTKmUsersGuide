@@ -3,7 +3,7 @@
 \chapter{Array Handles}
 \label{chap:ArrayHandle}
 
-\index{array~handle|(}
+\index{array handle|(}
 
 An \keyterm{array handle}, implemented with the \vtkmcont{ArrayHandle}
 class, manages an array of data that can be accessed or manipulated by VTK-m
@@ -89,8 +89,8 @@ invalid.
 \section{Array Portals}
 \label{sec:ArrayPortals}
 
-\index{array~portal|(}
-\index{array~handle!portal|(}
+\index{array portal|(}
+\index{array handle!portal|(}
 
 An array handle defines auxiliary structures called \keyterm{array portals}
 that provide direct access into its data. An array portal is a simple
@@ -188,15 +188,15 @@ to be copied back again.
   the control environment.
 \end{didyouknow}
 
-\index{array~handle!portal|)}
-\index{array~portal|)}
+\index{array handle!portal|)}
+\index{array portal|)}
 
 
 \section{Allocating and Populating Array Handles}
 \label{sec:ArrayHandle:Allocate}
 \label{sec:ArrayHandle:Populate}
 
-\index{array~handle!allocate}
+\index{array handle!allocate}
 \index{Allocate}
 
 \vtkmcont{ArrayHandle} is capable of allocating its own memory. The most
@@ -219,7 +219,7 @@ the number of elements to make the array.
   allocation.
 \end{commonerrors}
 
-\index{array~handle!populate}
+\index{array handle!populate}
 \index{GetPortalControl}
 
 Once an \textidentifier{ArrayHandle} is allocated, it can be populated by
@@ -233,7 +233,7 @@ readers in the I/O package (Chapter~\ref{chap:FileIO}).
 \section{Interface to Execution Environment}
 \label{sec:ArrayHandle:InterfaceToExecutionEnvironment}
 
-\index{array~handle!execution~environment|(}
+\index{array handle!execution environment|(}
 
 One of the main functions of the array handle is to allow an array to be
 defined in the control environment and then be used in the execution
@@ -296,6 +296,6 @@ execution environment, this is seldom an issue.
   time the data are accessed in the execution environment.
 \end{commonerrors}
 
-\index{array~handle!execution~environment|)}
+\index{array handle!execution environment|)}
 
-\index{array~handle|)}
+\index{array handle|)}

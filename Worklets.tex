@@ -18,7 +18,7 @@ mechanics of defining and using worklets.
 \section{Worklet Types}
 \label{sec:WorkletTypes}
 
-\index{worklet~types|(}
+\index{worklet types|(}
 
 Different operations in visualization can have different data access
 patterns, perform different execution flow, and require different
@@ -35,7 +35,7 @@ to create new worklet types in VTK-m. This is an advanced topic covered in
 Chapter~\ref{chap:AdvancedWorklets}.
 
 \begin{description}
-\item[Field Map] \index{worklet~types!field~map} \index{field~map~worklet}
+\item[Field Map] \index{worklet types!field map} \index{field map worklet}
   A worklet deriving \vtkmworklet{WorkletMapField} performs a basic mapping
   operation that applies a function (the operator in the worklet) on all
   the field values at a single point or cell and creates a new field value
@@ -44,8 +44,8 @@ Chapter~\ref{chap:AdvancedWorklets}.
   applied to any array. Thus, a field map can be used as a basic
   \index{map}map operation.
 
-\item[Topology Map] \index{worklet~types!topology~map}
-  \index{topology~map~worklet} A worklet deriving
+\item[Topology Map] \index{worklet types!topology map}
+  \index{topology map worklet} A worklet deriving
   \vtkmworklet{WorkletMapTopology} or one of its sibling classes performs a
   mapping operation that applies a function (the operator in the worklet)
   on all elements of a particular type (such as points or cells) and
@@ -54,18 +54,18 @@ Chapter~\ref{chap:AdvancedWorklets}.
   worklet operation also has access to incident fields.
 
   There are multiple convenience classes available for the most common
-  types of topology mapping. \index{worklet~types!point~to~cell}
-  \index{point~to~cell~worklet} \vtkmworklet{WorkletMapPointToCell} calls
+  types of topology mapping. \index{worklet types!point to cell}
+  \index{point to cell worklet} \vtkmworklet{WorkletMapPointToCell} calls
   the worklet operation for each cell and makes every incident point
   available. This type of map also has access to cell structures and can
   interpolate point fields.
-  %% \index{worklet~types!cell~to~point}
-  %% \index{cell~to~point~worklet} \vtkmworklet{WorkletMapCellToPoint} calls
+  %% \index{worklet types!cell to point}
+  %% \index{cell to point worklet} \vtkmworklet{WorkletMapCellToPoint} calls
   %% the worklet operation for each point and makes every incident cell
   %% available.
 \end{description}
 
-\index{worklet~types|)}
+\index{worklet types|)}
 
 
 \section{Dispatchers}
@@ -240,9 +240,9 @@ components of a worklet.
 \subsection{Control Signature}
 \label{sec:ControlSignature}
 
-\index{control~signature|(}
+\index{control signature|(}
 \index{signature!control|(}
-\index{worklet!control~signature|(}
+\index{worklet!control signature|(}
 
 The control signature of a worklet is the \textcode{typedef} of a function
 prototype named \controlsignature. The function prototype matches the
@@ -269,8 +269,8 @@ they are obvious or ambiguous.
 \subsubsection{Type List Tags}
 \label{sec:TypeListTags}
 
-\index{type~list~tags|(}
-\index{control~signature!type~list~tags|(}
+\index{type list tags|(}
+\index{control signature!type list tags|(}
 
 Some tags are templated to have modifiers. For example,
 \textsignature{Field} tags have a template argument that is set to a type
@@ -327,19 +327,19 @@ with \textsignature{Field} tags are defined for all worklet types.
   64-bit floats. The same as \vtkm{TypeListTagVecCommon}.
 \end{description}
 
-\index{control~signature!type~list~tags|)}
-\index{type~list~tags|)}
+\index{control signature!type list tags|)}
+\index{type list tags|)}
 
-\index{worklet!control~signature|)}
+\index{worklet!control signature|)}
 \index{signature!control|)}
-\index{control~signature|)}
+\index{control signature|)}
 
 \subsection{Execution Signature}
 \label{sec:ExecutionSignature}
 
-\index{execution~signature|(}
+\index{execution signature|(}
 \index{signature!execution|(}
-\index{worklet!execution~signature|(}
+\index{worklet!execution signature|(}
 
 Like the control signature, the execution signature of a worklet is the
 \textcode{typedef} of a function prototype named \executionsignature. The
@@ -371,15 +371,15 @@ identifies the instance of the worklet invocation. Each call to the worklet
 function will have a unique \sigtag{WorkIndex}. Other such tags exist and
 are described in the following section on worklet types where appropriate.
 
-\index{worklet!execution~signature|)}
+\index{worklet!execution signature|)}
 \index{signature!execution|)}
-\index{execution~signature|)}
+\index{execution signature|)}
 
 \subsection{Input Domain}
 \label{sec:InputDomain}
 
 \index{input domain|(}
-\index{worklet!input~domain|(}
+\index{worklet!input domain|(}
 
 All worklets represent data parallel operations that are executed over
 independent elements in some domain. The type of domain is inherent from
@@ -406,7 +406,7 @@ domain is taken from the cell set.
 Specifying the \inputdomain is optional. If it is not specified, the first
 argument is assumed to be the input domain.
 
-\index{worklet!input~domain|)}
+\index{worklet!input domain|)}
 \index{input domain|)}
 
 \subsection{Worklet Operator}
@@ -428,7 +428,7 @@ environment, it must be declared with the \vtkmexecmodifier (or
 \section{Worklet Type Reference}
 \label{sec:WorkletTypeReference}
 
-\index{worklet~types|(}
+\index{worklet types|(}
 
 There are multiple worklet types provided by VTK-m, each designed to
 support a particular type of operation. Section~\ref{sec:WorkletTypes} gave
@@ -512,9 +512,9 @@ use.
 
 \subsection{Field Map}
 
-\index{worklet~types!field~map|(}
-\index{field~map~worklet|(}
-\index{map~field|(}
+\index{worklet types!field map|(}
+\index{field map worklet|(}
+\index{map field|(}
 
 A worklet deriving \vtkmworklet{WorkletMapField} performs a basic mapping
 operation that applies a function (the operator in the worklet) on all the
@@ -604,9 +604,9 @@ in reverse order.
 
 \vtkmlisting[ex:WholeArray]{Leveraging field maps and field maps for general processing.}{RandomArrayAccess.cxx}
 
-\index{map~field|)}
-\index{field~map~worklet|)}
-\index{worklet~types!field~map|)}
+\index{map field|)}
+\index{field map worklet|)}
+\index{worklet types!field map|)}
 
 \subsection{Topology Map}
 \label{sec:TopologyMaps}
@@ -627,9 +627,9 @@ maps. Regardless of their names, they are all defined in
 \subsubsection{Point to Cell Map}
 \label{sec:WorkletMapPointToCell}
 
-\index{worklet~types!point~to~cell~map|(}
-\index{point~to~cell~map~worklet|(}
-\index{map~point~to~cell|(}
+\index{worklet types!point to cell map|(}
+\index{point to cell map worklet|(}
+\index{map point to cell|(}
 
 A worklet deriving \vtkmworklet{WorkletMapPointToCell} performs a mapping
 operation that applies a function (the operator in the worklet) on all the
@@ -751,16 +751,16 @@ The following example provides a simple demonstration that finds the geometric c
 
 \vtkmlisting[ex:UseWorkletMapPointToCell]{Implementation and use of a map point to cell worklet.}{UseWorkletMapPointToCell.cxx}
 
-\index{map~point~to~cell|)}
-\index{point~to~cell~map~worklet|)}
-\index{worklet~types!point~to~cell~map|)}
+\index{map point to cell|)}
+\index{point to cell map worklet|)}
+\index{worklet types!point to cell map|)}
 
 \subsubsection{Cell To Point Map}
 \label{sec:WorkletMapCellToPoint}
 
-\index{worklet~types!cell~to~point~map|(}
-\index{cell~to~point~map~worklet|(}
-\index{map~cell~to~point|(}
+\index{worklet types!cell to point map|(}
+\index{cell to point map worklet|(}
+\index{map cell to point|(}
 
 A worklet deriving \vtkmworklet{WorkletMapCellToPoint} performs a mapping
 operation that applies a function (the operator in the worklet) on all the
@@ -874,16 +874,16 @@ strategies such as a volume weighted average.
 
 \vtkmlisting{Implementation and use of a map cell to point worklet.}{UseWorkletMapCellToPoint.cxx}
 
-\index{map~cell~to~point|)}
-\index{cell~to~point~map~worklet|)}
-\index{worklet~types!cell~to~point~map|)}
+\index{map cell to point|)}
+\index{cell to point map worklet|)}
+\index{worklet types!cell to point map|)}
 
 \subsubsection{General Topology Maps}
 \label{sec:WorkletMapTopology}
 
-\index{worklet~types!topology~map|(}
-\index{topology~map~worklet|(}
-\index{map~topology|(}
+\index{worklet types!topology map|(}
+\index{topology map worklet|(}
+\index{map topology|(}
 
 A worklet deriving \vtkmworklet{WorkletMapTopology} performs a mapping
 operation that applies a function (the operator in the worklet) on all the
@@ -899,8 +899,8 @@ topology element. The worklet is scheduled such that each instance is
 associated with a particular ``to'' topology element and has access to
 incident ``from'' topology elements.
 
-\index{topology~element~tag|(}
-\index{tag!topology~element|(}
+\index{topology element tag|(}
+\index{tag!topology element|(}
 
 These from and to topology elements are specified with topology element
 tags, which are defined in the \vtkmheader{vtkm}{TopologyElementTag.h}
@@ -909,8 +909,8 @@ header file. The available topology element tags are
 \vtkm{TopologyElementTagEdge}, and \vtkm{TopologyElementTagFace}, which
 represent the cell, point, edge, and face elements, respectively.
 
-\index{topology~element~tag|)}
-\index{tag!topology~element|)}
+\index{topology element tag|)}
+\index{tag!topology element|)}
 
 \textidentifier{WorkletMapTopology} is a generic form of a topology map,
 and it can perform identically to the aforementioned forms of topology map
@@ -1029,15 +1029,15 @@ parameters of its \executionsignature.
   \commonexecutionsignaturetags
 \end{description}
 
-\index{map~topology|)}
-\index{topology~map~worklet|)}
-\index{worklet~types!topology~map|)}
+\index{map topology|)}
+\index{topology map worklet|)}
+\index{worklet types!topology map|)}
 
 
 %% \subsubsection{Generate Topology}
 
-%% \index{worklet~types!generate~topology|(}
-%% \index{generate~topology~worklet|(}
+%% \index{worklet types!generate topology|(}
+%% \index{generate topology worklet|(}
 
 %% A worklet deriving from \daxexec{WorkletGenerateTopology} generates a cell
 %% connectivity. When invoked, the dispatcher is given an array containing the
@@ -1231,13 +1231,13 @@ parameters of its \executionsignature.
 %% }
 %% \end{daxexample}
 
-%% \index{generate~topology~worklet|)}
-%% \index{worklet~types!generate~topology|)}
+%% \index{generate topology worklet|)}
+%% \index{worklet types!generate topology|)}
 
 %% \subsubsection{Interpolated Cell}
 
-%% \index{worklet~types!interpolated~cell|(}
-%% \index{interpolated~cell~worklet|(}
+%% \index{worklet types!interpolated cell|(}
+%% \index{interpolated cell worklet|(}
 
 %% A worklet deriving from \daxexec{WorkletInterpolatedCell} generates a new
 %% geometry comprising both new points at new coordinates and cell connections
@@ -1425,13 +1425,13 @@ parameters of its \executionsignature.
 %% }
 %% \end{daxexample}
 
-%% \index{interpolated~cell~worklet|)}
-%% \index{worklet~types!interpolated~cell|)}
+%% \index{interpolated cell worklet|)}
+%% \index{worklet types!interpolated cell|)}
 
 %% \subsubsection{Generate Keys and Values}
 
-%% \index{worklet~types!generate~keys~and~values|(}
-%% \index{generate~keys~and~values~worklet|(}
+%% \index{worklet types!generate keys and values|(}
+%% \index{generate keys and values worklet|(}
 
 %% A worklet deriving from \daxexec{WorkletGenerateKeysValues}, which is
 %% designed to be used in conjunction with the reduce keys and values worklet,
@@ -1531,13 +1531,13 @@ parameters of its \executionsignature.
 %% given in the next section in conjunction with a reduce keys and values
 %% worklet.
 
-%% \index{generate~keys~and~values~worklet|)}
-%% \index{worklet~types!generate~keys~and~values|)}
+%% \index{generate keys and values worklet|)}
+%% \index{worklet types!generate keys and values|)}
 
 %% \subsubsection{Reduce Keys and Values}
 
-%% \index{worklet~types!reduce~keys~and~values|(}
-%% \index{reduce~keys~and~values~worklet|(}
+%% \index{worklet types!reduce keys and values|(}
+%% \index{reduce keys and values worklet|(}
 
 %% A worklet deriving from \daxexec{WorkletReduceKeysValues} is an
 %% experimental type of worklet that can be applied to a variety of
@@ -1665,19 +1665,19 @@ parameters of its \executionsignature.
 %% }
 %% \end{daxexample}
 
-%% \index{reduce~keys~and~values~worklet|)}
-%% \index{worklet~types!reduce~keys~and~values|)}
+%% \index{reduce keys and values worklet|)}
+%% \index{worklet types!reduce keys and values|)}
 
 
-\index{worklet~types|)}
+\index{worklet types|)}
 
 
 \section{Whole Arrays}
 \label{sec:WholeArrays}
 
-\index{whole~array|(}
-\index{worklet!whole~array|(}
-\index{control~signature!whole~array|(}
+\index{whole array|(}
+\index{worklet!whole array|(}
+\index{control signature!whole array|(}
 
 As documented in Section~\ref{sec:WorkletTypeReference}, each worklet type
 has a set of parameter types that can be used to pass data to and from the
@@ -1726,16 +1726,16 @@ accessible.
 \vtkmlisting[ex:TriQualityWholeArray]{Using \protect\sigtag{WholeArrayIn} to access a lookup table in a worklet.}{TriangleQualityWholeArray.cxx}
 
 
-\index{control~signature!whole~array|)}
-\index{worklet!whole~array|)}
-\index{whole~array|)}
+\index{control signature!whole array|)}
+\index{worklet!whole array|)}
+\index{whole array|)}
 
 \section{Atomic Arrays}
 \label{sec:AtomicArrays}
 
 \index{atomic array|(}
 \index{worklet!atomic array|(}
-\index{control~signature!atomic array|(}
+\index{control signature!atomic array|(}
 
 One of the problems with writing to whole arrays is that it is difficult to coordinate the access to an array from multiple threads.
 If multiple threads are going to write to a common index of an array, then you will probably need to use an \keyterm{atomic array}.
@@ -1776,7 +1776,7 @@ In fact, \VTKm comes with a histogram worklet that is faster.
 
 \vtkmlisting{Using \protect\sigtag{AtomicArrayInOut} to count histogram bins in a worklet.}{SimpleHistogram.cxx}
 
-\index{control~signature!atomic array|)}
+\index{control signature!atomic array|)}
 \index{worklet!atomic array|)}
 \index{atomic array|)}
 
@@ -1784,9 +1784,9 @@ In fact, \VTKm comes with a histogram worklet that is faster.
 \label{sec:WholeCellSets}
 
 \index{whole cell set|(}
-\index{cell~set!whole|(}
+\index{cell set!whole|(}
 \index{worklet!whole cell set|(}
-\index{control~signature!whole cell set|(}
+\index{control signature!whole cell set|(}
 
 Section~\ref{sec:TopologyMaps} describes how to make a topology map filter that performs an operation on cell sets.
 The worklet has access to a single cell element (such as point or cell) and its immediate connections.
@@ -1850,7 +1850,7 @@ So, for example, in the mesh fragment shown here one of the angles attached to t
 
 ~\hfill
 \includegraphics{images/PointIncidentAngles}
-\hfill~
+\hfill 
 
 \noindent
 We want a worklet to compute $\sum_{j} \theta$ for all such attached angles.
@@ -1863,17 +1863,17 @@ The worklet then uses a whole cell set to inspect each incident cell to measure 
 
 \vtkmlisting{Using \protect\sigtag{WholeCellSetIn} to sum the angles around each point.}{SumOfAngles.cxx}
 
-\index{control~signature!whole cell set|)}
+\index{control signature!whole cell set|)}
 \index{worklet!whole cell set|)}
-\index{cell~set!whole|)}
+\index{cell set!whole|)}
 \index{whole cell set|)}
 
 \section{Execution Objects}
 \label{sec:ExecutionObjects}
 
-\index{execution~object|(}
-\index{worklet!execution~object|(}
-\index{control~signature!execution~object|(}
+\index{execution object|(}
+\index{worklet!execution object|(}
+\index{control signature!execution object|(}
 
 Although passing whole arrays and cell sets into a worklet is a convenient way to provide data to a worklet that is not divided by the input or output domain, they is sometimes not the best structures to represent data.
 Thus, all worklets support a another type of argument called an \keyterm{execution object}, or exec object for short, that passes the given object directly to each invocation of the worklet.
@@ -1909,9 +1909,9 @@ such an object.
 
 \vtkmlisting[ex:TriQualityExecObject]{Using \protect\sigtag{ExecObject} to access a lookup table in a worklet.}{TriangleQualityExecObject.cxx}
 
-\index{control~signature!execution~object|)}
-\index{worklet!execution~object|)}
-\index{execution~object|)}
+\index{control signature!execution object|)}
+\index{worklet!execution object|)}
+\index{execution object|)}
 
 \section{Scatter}
 \label{sec:WorkletScatter}
@@ -1959,7 +1959,7 @@ method named \textcode{GetScatter} that returns an object of type
 
 When using a scatter that produces multiple outputs for a single input, the worklet is invoked multiple times with the same input values.
 In such an event the worklet operator needs to distinguish these calls to produce the correct associated output.
-This is done by declaring one of the \executionsignature arguments as \index{visit~index} \sigtag{VisitIndex}.
+This is done by declaring one of the \executionsignature arguments as \index{visit index} \sigtag{VisitIndex}.
 This tag will pass a \vtkm{IdComponent} to the worklet that identifies which invocation is being called.
 
 It is also the case that the when a scatter can produce multiple outputs for some input that the index of the input element is not the same as the \sigtag{WorkIndex}.
@@ -1995,9 +1995,9 @@ scatter to build the count array.
 
 \index{errors|(}
 
-\index{errors!execution~environment|(}
+\index{errors!execution environment|(}
 \index{errors!worklet|(}
-\index{worklet!error~handling|(}
+\index{worklet!error handling|(}
 
 It is sometimes the case during the execution of an algorithm that an error
 condition can occur that causes the computation to become invalid. At such
@@ -2024,9 +2024,9 @@ perspective of the control environment code that invoked it.
 
 \vtkmlisting{Raising an error in the execution environment.}{ExecutionErrors.cxx}
 
-\index{worklet!error~handling|)}
+\index{worklet!error handling|)}
 \index{errors!worklet|)}
-\index{errors!execution~environment|)}
+\index{errors!execution environment|)}
 
 \index{errors!assert|(}
 \index{assert|(}

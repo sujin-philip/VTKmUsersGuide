@@ -25,8 +25,8 @@ what information it needs, and only that information will be loaded.
 \label{sec:CellShapeTagsIds}
 
 \index{shape|(}
-\index{cell~shape|(}
-\index{tag!cell~shape|(}
+\index{cell shape|(}
+\index{tag!cell shape|(}
 \index{tag!shape|(}
 
 Cell shapes can be specified with either a tag (defined with a struct with
@@ -41,7 +41,7 @@ tag names.
 \begin{figure}
   \centering
   \small
-  \begin{tabular}{@{}c@{~}c@{~}c@{}}
+  \begin{tabular}{@{}c@{ }c@{ }c@{}}
     \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsVertex}} &
     \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsLine}} &
     \raisebox{-0.5\height}{\includegraphics{images/CellConnectionsTriangle}} \\
@@ -123,11 +123,11 @@ types. A demonstration of \vtkmmacro{vtkmGenericCellShapeMacro} is given in
 Example~\ref{ex:GenericCellNormal}.
 
 \index{tag!shape|)}
-\index{tag!cell~shape|)}
+\index{tag!cell shape|)}
 
 \subsection{Cell Traits}
 
-\index{cell~traits|(}
+\index{cell traits|(}
 
 The \vtkmheader{vtkm}{CellTraits.h} header file contains a traits class
 named \vtkm{CellTraits} that provides information about a cell. Each
@@ -157,17 +157,17 @@ members.
 
 \vtkmlisting[ex:GenericCellNormal]{Using \textidentifier{CellTraits} to implement a polygon normal estimator.}{GenericCellNormal.cxx}
 
-\index{cell~traits|)}
+\index{cell traits|)}
 
-\index{cell~shape|)}
+\index{cell shape|)}
 \index{shape|)}
 
 \section{Parametric and World Coordinates}
 
-\index{parametric~coordinates|(}
-\index{world~coordinates|(}
-\index{cell!parametric~coordinates|(}
-\index{cell!world~coordinates|(}
+\index{parametric coordinates|(}
+\index{world coordinates|(}
+\index{cell!parametric coordinates|(}
+\index{cell!world coordinates|(}
 
 Each cell type supports a one-to-one mapping between a set of parametric
 coordinates in the unit cube (or some subset of it) and the points in 3D
@@ -209,10 +209,10 @@ following functions for working with parametric coordinates.
   interpolation (which is anything that is not a simplex).
 \end{description}
 
-\index{cell!world~coordinates|)}
-\index{cell!parametric~coordinates|)}
-\index{world~coordinates|)}
-\index{parametric~coordinates|)}
+\index{cell!world coordinates|)}
+\index{cell!parametric coordinates|)}
+\index{world coordinates|)}
+\index{parametric coordinates|)}
 
 \section{Interpolation}
 

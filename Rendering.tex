@@ -204,9 +204,9 @@ following sections.
 
 \subsection{Creating an Off Screen Rendering Canvas}
 
-\index{rendering!off~screen|(}
-\index{canvas!off~screen|(}
-\index{off~screen|(}
+\index{rendering!off screen|(}
+\index{canvas!off screen|(}
+\index{off screen|(}
 
 Another use case for rendering in VTK-m is rendering to an off screen
 buffer. This is the preferred method when doing automated visualization
@@ -231,23 +231,23 @@ buffer.
   rendering buffer using the OSMesa library. For this to be available,
   VTK-m must have been configured to use the OSMesa library. Also, be aware
   that OSMesa contexts do not use GPU hardware.
-\item[\vtkmrendering{CanvasRayTracer}] \index{rendering!ray~tracing}
-  \index{canvas!ray~tracing} \index{ray~tracing!canvas} Creates the frame
+\item[\vtkmrendering{CanvasRayTracer}] \index{rendering!ray tracing}
+  \index{canvas!ray tracing} \index{ray tracing!canvas} Creates the frame
   buffers required for ray tracing. When invoking this canvas, you must use
   other ray tracing component where applicable. OpenGL rendering does not
   work with the \textidentifier{CanvasRayTracer}.
 \end{description}
 
-\index{canvas!off~screen!saving}
-\index{off~screen!saving}
+\index{canvas!off screen!saving}
+\index{off screen!saving}
 
 By their nature, when writing to an off screen canvas, you cannot directly
 see the result. Typically, programs using off screen rendering save
 rendered images as files to be viewed later. For convenience,
 \textidentifier{Canvas} has a method named \textcode{SaveAs} that will
 write the contents of the last saved image to a file. The files are written
-in \index{portable~pixel~map}\index{PPM} portable pixel map (PPM) format,
-which are also valid \index{portable~anymap~format}\index{PNM} portable
+in \index{portable pixel map}\index{PPM} portable pixel map (PPM) format,
+which are also valid \index{portable anymap format}\index{PNM} portable
 anymap format (PNM) files. This is a very simple format that is easy to
 read and write. PPM files are supported by the
 ImageMagick\footnote{\url{http://imagemagick.org}} software suite as well
@@ -261,9 +261,9 @@ method and then calling \textcode{GetColorBuffer}. This retrieves the raw
 image data as a \vtkmcont{ArrayHandle}. \textidentifier{ArrayHandle}s are
 documented later in Chapter~\ref{chap:ArrayHandle}.
 
-\index{off~screen|)}
-\index{canvas!off~screen|)}
-\index{rendering!off~screen|)}
+\index{off screen|)}
+\index{canvas!off screen|)}
+\index{rendering!off screen|)}
 
 \index{canvas|)}
 \index{rendering!canvas|)}
@@ -424,8 +424,8 @@ The 2D camera is restricted to looking at some region of the x-y plane.
 
 \subsubsection{View Range}
 
-\index{rendering!camera!view~range|(}
-\index{camera!view~range|(}
+\index{rendering!camera!view range|(}
+\index{camera!view range|(}
 
 The vantage point of a 2D camera can be specified by simply giving the
 region in the x-y plane to look at. This region is specified by calling
@@ -450,8 +450,8 @@ completely specifies the spatial range. (The range in z is ignored.) The
 \textidentifier{Range} and \textidentifier{Bounds} objects are documented
 later in Sections \ref{sec:Range} and \ref{sec:Bounds}, respectively.
 
-\index{camera!view~range|)}
-\index{rendering!camera!view~range|)}
+\index{camera!view range|)}
+\index{rendering!camera!view range|)}
 
 \subsubsection{Pan}
 
@@ -507,7 +507,7 @@ height of the screen as demonstrated in the following example.
 
 The 3D camera is a free-form camera that can be placed anywhere in 3D space
 and can look in any direction. The projection of the 3D camera is based on
-the \index{pinhole~camera}\index{camera!pinhole} pinhole camera model in
+the \index{pinhole camera}\index{camera!pinhole} pinhole camera model in
 which all viewing rays intersect a single point. This single point is the
 camera's position.
 
@@ -515,12 +515,12 @@ camera's position.
 
 \index{rendering!camera!position}
 \index{camera!position}
-\index{rendering!camera!look~at}
-\index{camera!look~at}
-\index{look~at}
-\index{rendering!camera!focal~point}
-\index{camera!focal~point}
-\index{focal~point}
+\index{rendering!camera!look at}
+\index{camera!look at}
+\index{look at}
+\index{rendering!camera!focal point}
+\index{camera!focal point}
+\index{focal point}
 
 The position of the camera, which is the point where the observer is
 viewing the scene, can be set with the \textcode{SetPosition} method of
@@ -538,11 +538,11 @@ the relationship between the position and look at points.
   \label{fig:CameraPositionOrientation3D}
 \end{figure}
 
-\index{rendering!camera!view~up}
+\index{rendering!camera!view up}
 \index{rendering!camera!up}
-\index{camera!view~up}
+\index{camera!view up}
 \index{camera!up}
-\index{view~up}
+\index{view up}
 
 In addition to specifying the direction to point the camera, the camera
 must also know which direction is considered ``up.'' This is specified with
@@ -552,9 +552,9 @@ the view up vector using the \textcode{SetViewUp} method in
 relation to the camera position and orientation is shown in
 Figure~\ref{fig:CameraPositionOrientation3D}.
 
-\index{rendering!camera!field~of~view}
-\index{camera!field~of~view}
-\index{field~of~view}
+\index{rendering!camera!field of view}
+\index{camera!field of view}
+\index{field of view}
 
 Another important parameter for the camera is its field of view. The field
 of view specifies how wide of a region the camera can see. It is specified
@@ -564,15 +564,15 @@ the pinhole of the camera to the \textcode{SetFieldOfView} method in the
 orientation is shown in Figure~\ref{fig:CameraPositionOrientation3D}. A
 field of view angle of $60^{\circ}$ usually works well.
 
-\index{rendering!camera!clipping~range}
-\index{camera!clipping~range}
-\index{clipping~range}
-\index{rendering!camera!near~clip~plane}
-\index{camera!near~clip~plane}
-\index{near~clip~plane}
-\index{rendering!camera!far~clip~plane}
-\index{camera!far~clip~plane}
-\index{far~clip~plane}
+\index{rendering!camera!clipping range}
+\index{camera!clipping range}
+\index{clipping range}
+\index{rendering!camera!near clip plane}
+\index{camera!near clip plane}
+\index{near clip plane}
+\index{rendering!camera!far clip plane}
+\index{camera!far clip plane}
+\index{far clip plane}
 
 Finally, the camera must specify a clipping region that defines the valid
 range of depths for the object. This is a pair of planes parallel to the
@@ -648,7 +648,7 @@ Figure~\ref{fig:CameraMovement}.
 
 \index{rendering!camera!mouse|(}
 \index{camera!mouse|(}
-\index{mouse~rotation|(}
+\index{mouse rotation|(}
 
 A common and important mode of interaction with 3D views is to allow the
 user to rotate the object under inspection by dragging the mouse. To
@@ -669,7 +669,7 @@ operations used to establish rotations when dragging the mouse.
 
 \vtkmlisting{Interactive rotations through mouse dragging with \textidentifier{Camera}\textcode{::TrackballRotate}.}{MouseRotate.cxx}
 
-\index{mouse~rotation|)}
+\index{mouse rotation|)}
 \index{camera!mouse|)}
 \index{rendering!camera!mouse|)}
 
@@ -774,8 +774,8 @@ and then calling \textcode{ResetToBounds} to adjust the position.
 \section{Color Tables}
 \label{sec:ColorTables}
 
-\index{rendering!color~tables|(}
-\index{color~tables|(}
+\index{rendering!color tables|(}
+\index{color tables|(}
 
 \index{pseudocolor}
 An important feature of VTK-m's rendering units is the ability to
@@ -807,8 +807,8 @@ of all available predefined color tables is provided below.
   work well on shaded 3D surfaces, and to generally perform well across
   many uses. This is also the default color map and will be used if no
   \textidentifier{ColorTable} is given to an \textidentifier{Actor} or if
-  ``default'' is specified. % \index{rendering!color~tables!default}
-  \index{color~tables!default} \\
+  ``default'' is specified. % \index{rendering!color tables!default}
+  \index{color tables!default} \\
   \ctcolumns{blue} A monochromatic blue color map. \\
   \ctcolumns{orange} A monochromatic orange color map. \\
   \ctcolumns{temperature} A very saturated diverging color map. \\
@@ -883,5 +883,5 @@ of all available predefined color tables is provided below.
   now because (1) I don't think many people will use it and (2) it is
   pretty clear from the Doxygen.}
 
-\index{color~tables|)}
-\index{rendering!color~tables|)}
+\index{color tables|)}
+\index{rendering!color tables|)}

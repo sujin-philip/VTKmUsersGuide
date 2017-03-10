@@ -48,7 +48,7 @@ their tags) are provided in VTK-m.
 
 \begin{description}
 \item[\vtkmcontarg{TypeCheckTagExecObject}]
-  \index{type check!execution~object} True if the type is an execution
+  \index{type check!execution object} True if the type is an execution
   object. All execution objects must derive from
   \vtkmexec{ExecutionObjectBase} and must be copyable through
   \textcode{memcpy} or similar mechanism.
@@ -116,13 +116,13 @@ their tags) are provided in VTK-m.
 
 \begin{description}
 \item[\vtkmcontarg{TransportTagExecObject}]
-  \index{transport!execution~object} Simply returns the given execution
+  \index{transport!execution object} Simply returns the given execution
   object, which should be ready to load onto the device.
-\item[\vtkmcontarg{TransportTagArrayIn}] \index{transport!input~array}
+\item[\vtkmcontarg{TransportTagArrayIn}] \index{transport!input array}
   Loads data from a \vtkmcont{ArrayHandle} onto the specified device using
   the array handle's \textcode{PrepareForInput} method. The returned
   execution object is an array portal.
-\item[\vtkmcontarg{TransportTagArrayOut}] \index{transport!output~array}
+\item[\vtkmcontarg{TransportTagArrayOut}] \index{transport!output array}
   Allocates data onto the specified device for a \vtkmcont{ArrayHandle}
   using the array handle's \textcode{PrepareForOutput} method. The returned
   execution object is an array portal.
@@ -329,7 +329,7 @@ This example creates a specialization of a \textidentifier{Fetch} to retrieve th
 \section{Creating New \protect\controlsignature Tags}
 \label{sec:NewControlSignatureTags}
 
-\index{control~signature!tags|(}
+\index{control signature!tags|(}
 \index{signature!control!tags|(}
 
 The type checks, transports, and fetches defined in the previous sections of this chapter conspire to interpret the arguments given to a dispatcher's \textcode{Invoke} method and provide data to an instance of a worklet.
@@ -356,13 +356,13 @@ Once defined, this tag can be used like any other \controlsignature tag.
 \vtkmlisting{Using a custom \protect\controlsignature tag.}{UseCustomControlSignatureTag.cxx}
 
 \index{signature!control!tags|)}
-\index{control~signature!tags|)}
+\index{control signature!tags|)}
 
 
 \section{Creating New \protect\executionsignature Tags}
 \label{sec:NewExecutionSignatureTags}
 
-\index{execution~signature!tags|(}
+\index{execution signature!tags|(}
 \index{signature!execution!tags|(}
 
 An \executionsignature tag is defined by a \textcode{struct} (or equivocally a \textcode{class}).
@@ -400,4 +400,4 @@ Once defined, this tag can be used like any other \executionsignature tag.
 \vtkmlisting{Using a custom \protect\executionsignature tag.}{UseCustomExecutionSignatureTag.cxx}
 
 \index{signature!execution!tags|)}
-\index{execution~signature!tags|)}
+\index{execution signature!tags|)}

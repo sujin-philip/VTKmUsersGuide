@@ -3,8 +3,8 @@
 \chapter{Dynamic Array Handles}
 \label{chap:DynamicArrayHandle}
 
-\index{dynamic~array~handle|(}
-\index{array~handle!dynamic|(}
+\index{dynamic array handle|(}
+\index{array handle!dynamic|(}
 
 The \textidentifier{ArrayHandle} class uses templating to make very
 efficient and type-safe access to data. However, it is sometimes
@@ -17,7 +17,7 @@ to manage arrays of data with unspecified types.
 \emph{not} templated. Instead, it uses C++ run-type type information to
 store the array without type and cast it when appropriate.
 
-\index{dynamic~array~handle!construct}
+\index{dynamic array handle!construct}
 A \textidentifier{DynamicArrayHandle} can be established by constructing it
 with or assigning it to an \textidentifier{ArrayHandle}. The following
 example demonstrates how a \textidentifier{DynamicArrayHandle} might be
@@ -28,7 +28,7 @@ used to load an array whose type is not known until run-time.
 \section{Querying and Casting}
 \label{sec:DynamicArrayHandleQueryingAndCasting}
 
-\index{dynamic~array~handle!query}
+\index{dynamic array handle!query}
 Data pointed to by a \textidentifier{DynamicArrayHandle} is not directly
 accessible. However, there are a few generic queries you can make without
 directly knowing the data type. The \textcode{GetNumberOfValues} method
@@ -39,7 +39,7 @@ the number of components in a vector-like type (or 1 for scalars).
 
 \vtkmlisting{Non type-specific queries on \textidentifier{DynamicArrayHandle}.}{NonTypeQueriesDynamicArrayHandle.cxx}
 
-\index{dynamic~array~handle!new~instance}
+\index{dynamic array handle!new instance}
 It is also often desirable to create a new array based on the underlying
 type of a \textidentifier{DynamicArrayHandle}. For example, when a filter
 creates a field, it is common to make this output field the same type as
@@ -55,7 +55,7 @@ internally within VTK-m when a worklet \fix{or filter?} is invoked.
 However, it is also possible to query the types and cast to a concrete
 \textidentifier{ArrayHandle}.
 
-\index{dynamic~array~handle!query}
+\index{dynamic array handle!query}
 You can query the component type and storage type using the
 \textcode{IsType}, \textcode{IsSameType}, and
 \textcode{IsTypeAndStorage} methods. \textcode{IsType} takes an
@@ -69,7 +69,7 @@ the underlying array matches both types.
 
 \vtkmlisting{Querying the component and storage types of a \textidentifier{DynamicArrayHandle}.}{QueryDynamicArrayHandle.cxx}
 
-\index{dynamic~array~handle!cast}
+\index{dynamic array handle!cast}
 Once the type of the \textidentifier{DynamicArrayHandle} is known, it can
 be cast to a concrete \textidentifier{ArrayHandle}, which has access to the
 data as described in Chapter~\ref{chap:ArrayHandle}. The easiest way to do
@@ -92,7 +92,7 @@ a \vtkmcont{ErrorControlBadValue} exception.
 
 \section{Casting to Unknown Types}
 
-\index{dynamic~array~handle!cast|(}
+\index{dynamic array handle!cast|(}
 
 Using \textcode{CopyTo} is fine as long as the correct types are
 known, but often times they are not. For this use case
@@ -236,7 +236,7 @@ dynamic array handle types.
 \vtkmlisting{Using \textidentifier{DynamicArrayHandleBase} to accept generic dynamic array handles.}{DynamicArrayHandleBase.cxx}
 
 
-\index{dynamic~array~handle!cast|)}
+\index{dynamic array handle!cast|)}
 
-\index{array~handle!dynamic|)}
-\index{dynamic~array~handle|)}
+\index{array handle!dynamic|)}
+\index{dynamic array handle|)}

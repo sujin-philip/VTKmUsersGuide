@@ -66,7 +66,8 @@ static void WriteSVG(const std::string &filename,
          << "in\" x2=\"" << p2[0]
          << "in\" y2=\"" << p2[1]
          << "in\" stroke=\"" << color
-         << "\" stroke-width=\"" << width << "\" />\n";
+         << "\" stroke-width=\"" << width
+         << "\" stroke-linecap=\"round\" />\n";
   }
 
   file << "</svg>\n";

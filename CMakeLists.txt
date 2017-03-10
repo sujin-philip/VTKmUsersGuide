@@ -27,6 +27,11 @@ set(images
   images/CellConnectionsWedge.pdf
   images/CellConstituents.pdf
   images/ExplicitCellConnections.pdf
+  images/Koch1.pdf
+  images/Koch2.pdf
+  images/Koch5.pdf
+  images/KochApply.pdf
+  images/KochParametric.pdf
   images/MCCompareCuda.png
   images/MCComparePiston.png
   images/MCCompareVTKm.png

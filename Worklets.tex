@@ -1846,11 +1846,14 @@ Most of these methods are documented in Chapter~\ref{chap:WorkingWithCells}.
 Let us use the whole cell set feature to help us determine the ``flatness'' of a polygonal mesh.
 We will do this by summing up all the angles incident on each on each point.
 That is, for each point, we will find each incident polygon, then find the part of that polygon using the given point, then computing the angle at that point, and then summing for all such angles.
-So, for example, in the mesh fragment shown here one of the angles attached to the middle point is labeled $\theta_{j}$.
+So, for example, in the mesh fragment shown in Figure~\ref{fig:PointIncidentAngles} one of the angles attached to the middle point is labeled $\theta_{j}$.
 
-~\hfill
-\includegraphics{images/PointIncidentAngles}
-\hfill 
+\begin{figure}[htb]
+  \centering
+  \includegraphics{images/PointIncidentAngles}
+  \caption{The angles incident around a point in a mesh.}
+  \label{fig:PointIncidentAngles}
+\end{figure}
 
 \noindent
 We want a worklet to compute $\sum_{j} \theta$ for all such attached angles.

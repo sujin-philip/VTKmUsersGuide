@@ -57,8 +57,7 @@ struct SimpleHistogram
     // TODO: Should check that input type has only one component.
 
     vtkm::Range range =
-        vtkm::cont::ArrayRangeCompute(input,Device()).
-        GetPortalConstControl().Get(0);
+        vtkm::cont::ArrayRangeCompute(input).GetPortalConstControl().Get(0);
 
     // Initialize histogram to 0
     vtkm::cont::ArrayHandle<vtkm::Int32> histogram;

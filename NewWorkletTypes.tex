@@ -1,0 +1,54 @@
+% -*- latex -*-
+
+\chapter{New Worklet Types}
+\label{chap:NewWorkletTypes}
+
+\index{worklet~types!creating|(}
+
+The basic building block for an algorithm in \VTKm is the worklet.
+Chapter~\ref{chap:Worklets} describes the different types of worklet types provided by \VTKm and how to use them to create algorithms.
+However, it is entirely possible that this set of worklet types does not directly cover what is needed to implement a particular algorithm.
+One way around this problem is to use some of the numerous back doors provided by \VTKm to provide less restricted access in the execution environment such as using whole arrays for random access.
+
+However, it make come to pass that you encounter a particular pattern of execution that you find useful for implementing several algorithms.
+If such is the case, it can be worthwhile to create a new worklet type that directly supports such a pattern.
+Creating a new worklet type can provide two key advantages.
+First, it makes implementing algorithms of this nature easier, which saves developer time.
+Second, it can make the implementation of such algorithms safer.
+By encapsulating the management of structures and regulating the data access, users of the worklet type can be more assured of correct behavior.
+
+This chapter documents the process for creating new worklet types.
+The operation of a worklet requires the coordination of several different object types such as dispatchers, argument handlers, and thread indices.
+This chapter will provide examples of all these required components.
+To tie all these features together, we start this chapter with a motivating example for an implementation of a custom worklet type.
+The chapter then discusses the individual components of the worklet, which in the end come together for the worklet type that is then demonstrated.
+
+\section{Motivating Example}
+\label{sec:NewWorkletTypes:MotivatingExample}
+
+\fix{Discuss line fractal.}
+
+\fix{End stating we will build a \textcode{WorkletLineFractal} class in the \vtkmworklet{} namespace.}
+\fix{Describe the \textcode{LineFractalTransform} class, which we put in the \vtkmexec{} namespace.}
+\fix{This involves defining thread indices and signature tags.}
+\fix{Also requires a matching dispatcher class.}
+
+\section{Thread Indices}
+\label{sec:ThreadIndices}
+
+\index{thread indices|(}
+
+\fix{\vtkmexecarg{ThreadIndices}}
+
+\index{thread indices|)}
+
+\section{Signature Tags}
+\label{sec:NewWorkletTypes:SignatureTags}
+
+\section{Defining the Worklet Superclass}
+
+\section{Dispatcher}
+\label{sec:NewWorkletTypes:Dispatcher}
+
+
+\index{worklet~types!creating|)}

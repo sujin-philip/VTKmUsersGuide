@@ -24,8 +24,7 @@ void CreateUniformGrid()
   //// END-EXAMPLE CreateUniformGrid.cxx
   ////
 
-  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
-        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds();
   std::cout << bounds << std::endl;
 
   VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0,100,0,100,0,25)),
@@ -51,8 +50,7 @@ void CreateUniformGridCustomOriginSpacing()
   //// END-EXAMPLE CreateUniformGridCustomOriginSpacing.cxx
   ////
 
-  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
-        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds();
   std::cout << bounds << std::endl;
 
   VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(-50,50,-50,50,-50,50)),
@@ -100,8 +98,7 @@ void CreateRectilinearGrid()
   std::cout << "Num points: " << numPoints << std::endl;
   VTKM_TEST_ASSERT(numPoints == 4080501, "Got wrong number of points.");
 
-  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
-        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds();
   std::cout << bounds << std::endl;
 
   VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(-4,4,0,2,-1,1)),
@@ -181,8 +178,7 @@ void CreateExplicitGrid()
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
                    "Data set has wrong number of cells.");
 
-  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
-        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds();
   std::cout << bounds << std::endl;
 
   VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0.2,1.8,0.0,1.2,0.0,0.0)),
@@ -277,8 +273,7 @@ void CreateExplicitGridIterative()
   VTKM_TEST_ASSERT(test_equal(cellSet.GetNumberOfCells(), 5),
                    "Data set has wrong number of cells.");
 
-  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds(
-        VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  vtkm::Bounds bounds = dataSet.GetCoordinateSystem().GetBounds();
   std::cout << bounds << std::endl;
 
   VTKM_TEST_ASSERT(test_equal(bounds, vtkm::Bounds(0.2,1.8,0.0,1.2,0.0,0.0)),

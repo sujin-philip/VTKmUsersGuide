@@ -38,7 +38,7 @@ static void WriteSVG(const std::string &filename,
   static const float PADDING = 0.05;
 
   vtkm::cont::ArrayHandle<vtkm::Range> ranges =
-      vtkm::cont::ArrayRangeCompute(data, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+      vtkm::cont::ArrayRangeCompute(data);
   vtkm::Range xRange = ranges.GetPortalConstControl().Get(0);
   vtkm::Range yRange = ranges.GetPortalConstControl().Get(1);
 

@@ -63,6 +63,7 @@ set(input_docs
   ImplementingDeviceAdapters.tex
   FunctionInterface.tex
   WorkletArguments.tex
+  NewWorkletTypes.tex
   AdvancedWorklets.tex
   CodingConventions.tex
   )

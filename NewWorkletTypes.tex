@@ -152,7 +152,50 @@ An implementation of a thread indices object usually derives from \vtkmexecarg{T
 \section{Signature Tags}
 \label{sec:NewWorkletTypes:SignatureTags}
 
-\section{Defining the Worklet Superclass}
+It is common that when defining a new worklet type, the new worklet type is associated with new types of data.
+Thus, it is common that implementing new worklet types involves defining custom tags for \controlsignature{}s and \executionsignature{}s.
+This in turn typically requires creating custom \textidentifier{TypeCheck}, \textidentifier{Transport}, and \textidentifier{Fetch} classes.
+
+Chapter~\ref{chap:WorkletArguments} describes in detail the process of defining new worklet types and the associated code to manage data from an argument to the dispatcher's \textcode{Invoke} to the data that are passed to the worklet operator.
+Rather than repeat the discussion, readers should review Chapter~\ref{chap:WorkletArguments} for details on how custom arguments are defined for a new worklet type.
+In particular, we use the code from Examples \ref{ex:TypeCheckTag2DCoordinates} (page \pageref{ex:TypeCheckTag2DCoordinates}), \ref{ex:TransportImpl} (page \pageref{ex:TransportImpl}), and \ref{ex:FetchImplBasic} (page \pageref{ex:FetchImplBasic}) to implement an argument representing 2D line segments (which is our input domain).
+All these examples culminate in the definition of a \controlsignature tag in our worklet superclass.
+
+\vtkmlisting{Custom \protect\controlsignature tag for the input domain of our example worklet type.}{WorkletLineFractalInputDomainTag.cxx}
+
+As you have worked with different existing worklet types, you have likely noticed that different worklet types have special \executionsignature tags to point to information in the input domain.
+For example, a point to cell topology map has special \executionsignature tags for getting the input cell shape and the indices to all points incident on the current input cell.
+We described in the beginning of the chapter that we wanted our worklet type to provide worklet implementations an object named \textcode{LineFractalTransform} (Example~\ref{ex:LineFractalTransform}), so it makes sense to define our own custom \executionsignature tag to provide this object.
+
+Chapter~\ref{chap:WorkletArguments} gives an example of a custom \executionsignature tag that modifies what information is fetched from an argument (Examples \ref{ex:AspectImpl} and \ref{ex:CustomExecutionSignatureTag}).
+However, \executionsignature tags that only pull data from input domain behave a little differently because they only get information from the thread indices object and ignore the associated data object.
+This is done by providing a partial specialization of \vtkmexecarg{Fetch} that specializes on the aspect tag but not on the fetch tag.
+
+\vtkmlisting[ex:InputDomainFetch]{A \textidentifier{Fetch} for an aspect that does not depend on any control argument.}{InputDomainFetch.h}
+
+The definition of an associated \executionsignature tag simply has to use the define aspect as its \textcode{AspectTag}.
+The tag also has to define a \textcode{INDEX} member (which is required of all \executionsignature tags).
+This is problematic as this execution argument does not depend on any particular control argument.
+Thus, it is customary to simply set the \textcode{INDEX} to 1.
+There is guaranteed to be at least one \controlsignature argument for any worklet implementation.
+Thus, the first argument is sure to exist and can then be ignored.
+
+\vtkmlisting{Custom \protect\executionsignature tag that only relies on input domain information in the thread indices.}{WorkletLineFractalTransformTag.cxx}
+
+One final implementation detail for our motivating example is that we need a \controlsignature tag to represent the output line segments to the worklet.
+The use case has each worklet outputting a fixed number (greater than 1) of line segments for each input line segment.
+To manage this, we will define another \controlsignature tag that outputs these line segments (as two \textidentifier{Vec}-2 coordinates).
+This is defined as a \textidentifier{Vec} of \textidentifier{Vec}-2's.
+The tag takes the number of line segments as a template argument.
+
+\vtkmlisting[ex:WorkletLineFractalOutputTag]{Output \protect\controlsignature tag for our motivating example.}{WorkletLineFractalOutputTag.cxx}
+
+You can see that the tag in Example~\ref{ex:WorkletLineFractalOutputTag} relies on a custom transport named \textcode{TransportTag2DLineSegmentsOut}.
+There is nothing particularly special about this transport, but we provide the implementation here for completeness.
+
+\vtkmlisting{Implementation of \textidentifier{Transport} for the output in our motivating example.}{TransportImpl2.h}
+
+\section{Worklet Superclass}
 \label{sec:NewWorkletTypes:WorkletSuperclass}
 \label{sec:WorkletSuperclass}
 

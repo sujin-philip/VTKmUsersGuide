@@ -550,17 +550,26 @@ public:
   /// Control signature tag for line segments in the plane. Used as the input
   /// domain.
   ///
+  ////
+  //// BEGIN-EXAMPLE WorkletLineFractalInputDomainTag.cxx
+  ////
   struct SegmentsIn : vtkm::cont::arg::ControlSignatureTagBase
   {
     using TypeCheckTag = vtkm::cont::arg::TypeCheckTag2DCoordinates;
     using TransportTag = vtkm::cont::arg::TransportTag2DLineSegmentsIn;
     using FetchTag = vtkm::exec::arg::FetchTag2DLineSegmentsIn;
   };
+  ////
+  //// END-EXAMPLE WorkletLineFractalInputDomainTag.cxx
+  ////
 
   /// Control signature tag for a group of output line segments. The template
   /// argument specifies how many line segments are outputted for each input.
   /// The type is a Vec-like (of size NumSegments) of Vec-2's.
   ///
+  ////
+  //// BEGIN-EXAMPLE WorkletLineFractalOutputTag.cxx
+  ////
   template<vtkm::IdComponent NumSegments>
   struct SegmentsOut : vtkm::cont::arg::ControlSignatureTagBase
   {
@@ -569,14 +578,23 @@ public:
         vtkm::cont::arg::TransportTag2DLineSegmentsOut<NumSegments>;
     using FetchTag = vtkm::exec::arg::FetchTagArrayDirectOut;
   };
+  ////
+  //// END-EXAMPLE WorkletLineFractalOutputTag.cxx
+  ////
 
   /// Execution signature tag for a LineFractalTransform from the input.
   ///
+  ////
+  //// BEGIN-EXAMPLE WorkletLineFractalTransformTag.cxx
+  ////
   struct Transform : vtkm::exec::arg::ExecutionSignatureTagBase
   {
     static const vtkm::IdComponent INDEX = 1;
     using AspectTag = vtkm::exec::arg::AspectTagLineFractalTransform;
   };
+  ////
+  //// END-EXAMPLE WorkletLineFractalTransformTag.cxx
+  ////
 
   ////
   //// BEGIN-EXAMPLE GetThreadIndices.cxx

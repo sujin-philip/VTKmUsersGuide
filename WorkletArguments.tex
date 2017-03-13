@@ -210,11 +210,20 @@ data out and putting computed data in to the execution objects.
 The \textidentifier{Fetch} \textcode{struct} is templated with four
 parameters. The first parameter is a tag that identifies which type of
 fetch to perform. The second parameter is a different tag that identifies
-the aspect of the data to fetch. The third parameter is an
-\textidentifier{Invocation} type that provides details about how the
-worklet is being dispatched including a list of execution object parameters
-passed to the invocation. The fourth parameter is a \vtkm{IdComponent} that
-points to the invocation parameter that the data should be fetched from.
+the aspect of the data to fetch.
+
+\index{thread indices|(}
+
+The third template parameter to a \textidentifier{Fetch} \textcode{struct} is a type of thread indices object, which manages the indices and other metadata associated with the thread for which the \textidentifier{Fetch} operator gets called.
+The specific type of the thread indices object depends on the type of worklet begin invoked, but all thread indices classes implement methods named \textcode{GetInputIndex}, \textcode{GetOutputIndex}, and \textcode{GetVisitIndex} to get those respective indices.
+The thread indices object may also contain other methods to get information pertinent to the associated worklet's execution.
+For example a thread indices object associated with a topology map has methods to get the shape identifier and incident from indices of the current input object.
+Thread indices objects are discussed in more detail in Section~\ref{sec:ThreadIndices}.
+
+\index{thread indices|)}
+
+The fourth template parameter to a \textidentifier{Fetch} \textcode{struct} is the type of the execution object that is created by the \textidentifier{Transport} (as described in Section~\ref{sec:Transport}).
+This is generally where the data are fetched from.
 
 A \textidentifier{Fetch} contains a \textcode{typedef} named
 \textcode{ValueType} that is the type of data that is passed to and from

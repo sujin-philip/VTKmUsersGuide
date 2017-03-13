@@ -508,6 +508,8 @@ use.
   This tag produces a \vtkm{Id} that identifies the index of the input element, which can differ from the \sigtag{WorkIndex} in a worklet with a scatter (as described in Section~\ref{sec:WorkletScatter}).
 \item[\sigtag{OutputIndex}]
   This tag produces a \vtkm{Id} that identifies the index of the output element. (This is generally the same as \sigtag{WorkIndex}.)
+\item[\sigtag{ThreadIndices}]
+  This tag produces an internal object that manages indices and other metadata of the current thread. Thread indices objects are described in Section~\ref{sec:ThreadIndices}, but most users can get the information they need through other signature tags.
 }
 
 \subsection{Field Map}

@@ -578,14 +578,16 @@ public:
     using AspectTag = vtkm::exec::arg::AspectTagLineFractalTransform;
   };
 
+  ////
+  //// BEGIN-EXAMPLE GetThreadIndices.cxx
+  ////
   VTKM_SUPPRESS_EXEC_WARNINGS
-  template<typename T,
-           typename OutToInPortalType,
+  template<typename OutToInPortalType,
            typename VisitPortalType,
            typename InputDomainType>
   VTKM_EXEC
   vtkm::exec::arg::ThreadIndicesLineFractal
-  GetThreadIndices(const T &threadIndex,
+  GetThreadIndices(vtkm::Id threadIndex,
                    const OutToInPortalType &outToIn,
                    const VisitPortalType &visit,
                    const InputDomainType &inputPoints,
@@ -598,6 +600,9 @@ public:
           inputPoints,
           globalThreadIndexOffset);
   }
+  ////
+  //// END-EXAMPLE GetThreadIndices.cxx
+  ////
 };
 
 }

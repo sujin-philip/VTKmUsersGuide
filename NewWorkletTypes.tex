@@ -199,6 +199,22 @@ There is nothing particularly special about this transport, but we provide the i
 \label{sec:NewWorkletTypes:WorkletSuperclass}
 \label{sec:WorkletSuperclass}
 
+The penultimate step in defining a new worklet type is to define a class that will serve as the superclass of all implementations of worklets of this type.
+This class itself must inherit from \writeindexidentifierthree{vtkm}{worklet}{internal}{WorkletBase}.
+By convention the worklet superclass is placed in the \vtkmworklet{} namespace and its name starts with \textidentifier{Worklet}.
+
+Within the worklet superclass we define the signature tags (as discussed in Section~\ref{sec:NewWorkletTypes:SignatureTags}) and the \textcode{GetThreadIndices} method (as discussed in Section~\ref{sec:ThreadIndices}.
+The worklet superclass can also override other default behavior of the \textidentifier{WorkletBase} (such as special scatter).
+And the worklet superclass can provide other items that might be particularly useful to its subclasses (such as commonly used tags).
+
+\vtkmlisting[ex:WorkletSuperclass]{Superclass for a new type of worklet.}{WorkletLineFractal.h}
+
+\begin{commonerrors}
+  Be wary of creating worklet superclasses that are templated.
+  The C++ compiler rules for superclass templates that are only partially specialized are non-intuitive.
+  If a subclass does not fully resolve the template, features of the superclass such as signature tags will have to be qualified with \textcode{typename} keywords, which reduces the usability of the class.
+\end{commonerrors}
+
 \section{Dispatcher}
 \label{sec:NewWorkletTypes:Dispatcher}
 

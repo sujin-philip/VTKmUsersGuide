@@ -320,7 +320,7 @@ Putting this all together, the following example demonstrates the full implement
 \label{sec:NewWorkletTypes:Using}
 
 Now that we have our full implementation of a worklet type that generates line fractals, let us have some fun with it.
-The beginning of this chapter shows an implementation of the Koch snowflake.
+The beginning of this chapter shows an implementation of the Koch Snowflake.
 The remainder of this chapter demonstrates other fractals that are easily implemented with our worklet type.
 
 \subsection{\fix{Alternate to Koch}}
@@ -335,7 +335,9 @@ Iterative replacing using this ``Y'' shape produces a bushy tree shape.
 \begin{figure}[htb]
   \centering
   \includegraphics[scale=1]{images/Tree01}
+  \hfill
   \includegraphics[scale=1]{images/Tree02}
+  \hfill
   \includegraphics[scale=1]{images/Tree08}
   \caption[The tree fractal.]{
     The tree fractal replaces each line with the ``Y'' shape shown at left.
@@ -358,12 +360,58 @@ Each iteration then creates the count array for the next iteration by writing a 
 
 \vtkmlisting{A worklet to generate a tree fractal.}{TreeFractal.cxx}
 
-\subsection{\fix{Dragon Fractal}}
+\subsection{Dragon Fractal}
+
+\index{dragon fractal|(}
+
+The next fractal we will implement is known as the dragon fractal.
+\fix{Random facts about the dragon fractal.}
+
+The basic building block is simple.
+Each line segment is replaced by two line segments bent at 90 degrees and attached to the original segments endpoints as shown in Figure~\ref{fig:DragonFirst4}.
+As you can see by the fourth iteration a more complicated pattern starts to emerge.
+Figure~\ref{fig:Dragon12} shows the twelfth iteration a demonstrates a repeating spiral.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=1.25]{images/Dragon01}
+  \hfill
+  \includegraphics[scale=1.25]{images/Dragon02}
+  \hfill
+  \includegraphics[scale=1.25]{images/Dragon03}
+  \hfill
+  \includegraphics[scale=1.25]{images/Dragon04}
+  \caption[The first four iterations of the dragon fractal.]{
+    The first four iterations of the dragon fractal.
+    The cyan lines give the previous iteration for reference.
+  }
+  \label{fig:DragonFirst4}
+\end{figure}
+
+What makes the dragon fractal different than the Koch Snowflake \fix{and the other one} implementation-wise is that the direction shape flips from one side to another.
+Note in the second image of Figure~\ref{fig:DragonFirst4} the first bend is under the its associated line segment whereas the second is above its line segment.
+The easiest way for us to control the bend is to alternate the direction of the line segments.
+In Figure~\ref{fig:DragonFirst4} each line segment has an arrowhead indicating the orientation of the first and second point with the arrowhead at the second point.
+Note that the shape is defined such that the first point of both line segments meet at the right angle.
+With the shape defined this way, each iteration is applied to put the bend to the left of the segment with respect to an observer at the first point looking at the second point.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{images/Dragon12}
+  \caption{The dragon fractal after 12 iterations.}
+  \label{fig:Dragon12}
+\end{figure}
+
+Other than reversing the direction of half the line segments, the implementation of the dragon fractal is nearly identical to the Koch Snowflake.
+
+\vtkmlisting{A worklet to generate the dragon fractal.}{DragonFractal.cxx}
+
+\index{dragon fractal|)}
 
 \subsection{\fix{Hilbert Curve}}
 
-\index{Hilbert Curve|(}
-\index{Hilbert Curve|)}
+\index{Hilbert curve|(}
+\index{Hilbert curve|)}
 
 
 \index{worklet types!creating new|)}

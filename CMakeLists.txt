@@ -26,6 +26,11 @@ set(images
   images/CellConnectionsVertex.pdf
   images/CellConnectionsWedge.pdf
   images/CellConstituents.pdf
+  images/Dragon01.pdf
+  images/Dragon02.pdf
+  images/Dragon03.pdf
+  images/Dragon04.pdf
+  images/Dragon12.pdf
   images/ExplicitCellConnections.pdf
   images/Koch1.pdf
   images/Koch2.pdf

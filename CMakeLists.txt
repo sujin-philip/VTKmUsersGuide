@@ -38,6 +38,9 @@ set(images
   images/PackageHierarchy.pdf
   images/PointIncidentAngles.pdf
   images/StructuredCellSet.pdf
+  images/Tree01.pdf
+  images/Tree02.pdf
+  images/Tree08.pdf
   images/VTKmEnvironments.pdf
   images/WorkletExampleAnnotated.pdf
   )

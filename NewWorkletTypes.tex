@@ -49,7 +49,7 @@ The curve is confined to a limited area regardless of how many iterations are pe
   \centering
   \includegraphics[scale=2]{images/Koch2.pdf}
   \includegraphics[scale=2]{images/Koch5.pdf}
-  \caption{
+  \caption[The Koch Snowflake after multiple iterations.]{
     The Koch Snowflake after the second iteration (left image) and after several more iterations (right image).
   }
   \label{fig:KochIterations}
@@ -272,7 +272,7 @@ The \textcode{Invocation} could contain several data items, so it is best to pas
 For brevity only the ones most likely to be used in a \textcode{DoInvoke} method are documented here.
 We discuss these briefly before getting back to the implementation of \textcode{DoInvoke}.
 
-\vtkminternal{Invocation} contains a data member named \textcode{Parameters} that contains the data passed to the \textcode{Invoke} method of the dispatcher (with some posible transformations applied).
+\vtkminternal{Invocation} contains a data member named \textcode{Parameters} that contains the data passed to the \textcode{Invoke} method of the dispatcher (with some possible transformations applied).
 \textcode{Parameters} is stored in a \vtkminternal{FunctionInterface} template object.
 (\textidentifier{FunctionInterface} is described in Chapter~\ref{chap:FunctionInterfaceObjects}.)
 The specific type of \textcode{Parameters} is defined as type \textcode{ParameterInterface} in the \textidentifier{Invoke} object.
@@ -319,13 +319,51 @@ Putting this all together, the following example demonstrates the full implement
 \section{Using the Worklet}
 \label{sec:NewWorkletTypes:Using}
 
-\fix{Alternate to Koch}
+Now that we have our full implementation of a worklet type that generates line fractals, let us have some fun with it.
+The beginning of this chapter shows an implementation of the Koch snowflake.
+The remainder of this chapter demonstrates other fractals that are easily implemented with our worklet type.
 
-\fix{Tree}
+\subsection{\fix{Alternate to Koch}}
 
-\fix{Dragon}
+\subsection{Tree Fractal}
 
-\fix{Hilbert}
+Another type of fractal we can make is a tree fractal.
+\fix{Similar to fractal with squares. Look up the name of that.}
+Our fractal will start with a vertical line that will be replaced with the off-center ``Y'' shape shown in Figure~\ref{fig:TreeFractal}.
+Iterative replacing using this ``Y'' shape produces a bushy tree shape.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=1]{images/Tree01}
+  \includegraphics[scale=1]{images/Tree02}
+  \includegraphics[scale=1]{images/Tree08}
+  \caption[The tree fractal.]{
+    The tree fractal replaces each line with the ``Y'' shape shown at left.
+    An iteration grows branches at the end (middle).
+    After several iterations the tree branches out to the bushy shape at right.
+  }
+  \label{fig:TreeFractal}
+\end{figure}
+
+One complication of implementing this tree fractal is that we really only want to apply the ``Y'' shape to the ``leaves'' of the tree.
+For example, once we apply the ``Y'' to the trunk, we do not want to apply it to the trunk again.
+If we were to apply it to the trunk again, we would create duplicates of the first layer of branches.
+
+We can implement this feature in our worklet by using a count scatter.
+(Worklet scatters are described in Section~\ref{sec:WorkletScatter}.)
+Instead of directing the fractal worklet to generate 3 output line segments for every input line segment, we tell the fractal worklet to generate just 1 output line segment.
+We then use a scatter counting to generate 3 line segments for the leaves and 1 line segment for all other line segments.
+The count array for the initial iteration is initialized to a single 3.
+Each iteration then creates the count array for the next iteration by writing a 1 for the base line segment and a 3 from the other two line segments.
+
+\vtkmlisting{A worklet to generate a tree fractal.}{TreeFractal.cxx}
+
+\subsection{\fix{Dragon Fractal}}
+
+\subsection{\fix{Hilbert Curve}}
+
+\index{Hilbert Curve|(}
+\index{Hilbert Curve|)}
 
 
 \index{worklet types!creating new|)}

@@ -12,6 +12,7 @@
 #include <vtkm/exec/arg/ThreadIndicesBasic.h>
 
 #include <vtkm/worklet/DispatcherMapField.h>
+#include <vtkm/worklet/ScatterCounting.h>
 #include <vtkm/worklet/WorkletMapField.h>
 
 #include <vtkm/cont/testing/Testing.h>
@@ -122,11 +123,8 @@ struct Transport<
   VTKM_CONT
   ExecObjectType operator()(const ContObjectType &object,
                             const InputDomainType &,
-                            vtkm::Id size) const
+                            vtkm::Id) const
   {
-    VTKM_ASSERT(object.GetNumberOfValues() == size*2);
-    (void)size;  // Shut up, compiler.
-
     GroupedArrayType groupedArray(object);
     return groupedArray.PrepareForInput(Device());
   }
@@ -582,6 +580,28 @@ public:
   //// END-EXAMPLE WorkletLineFractalOutputTag.cxx
   ////
 
+  /// Control signature tag for input fields. There is one entry per input line
+  /// segment. This tag takes a template argument that is a type list tag that
+  /// limits the possible value types in the array.
+  ///
+  template<typename TypeList = AllTypes>
+  struct FieldIn : vtkm::cont::arg::ControlSignatureTagBase {
+    using TypeCheckTag = vtkm::cont::arg::TypeCheckTagArray<TypeList>;
+    using TransportTag = vtkm::cont::arg::TransportTagArrayIn;
+    using FetchTag = vtkm::exec::arg::FetchTagArrayDirectIn;
+  };
+
+  /// Control signature tag for input fields. There is one entry per input line
+  /// segment. This tag takes a template argument that is a type list tag that
+  /// limits the possible value types in the array.
+  ///
+  template<typename TypeList = AllTypes>
+  struct FieldOut : vtkm::cont::arg::ControlSignatureTagBase {
+    using TypeCheckTag = vtkm::cont::arg::TypeCheckTagArray<TypeList>;
+    using TransportTag = vtkm::cont::arg::TransportTagArrayOut;
+    using FetchTag = vtkm::exec::arg::FetchTagArrayDirectOut;
+  };
+
   /// Execution signature tag for a LineFractalTransform from the input.
   ///
   ////
@@ -763,9 +783,10 @@ struct KochSnowflake
     }
   };
 
+  template<typename Device>
   VTKM_CONT
   static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
-  Run(vtkm::IdComponent numIterations)
+  Run(vtkm::IdComponent numIterations, Device)
   {
     using VecType = vtkm::Vec<vtkm::Float32,2>;
 
@@ -776,7 +797,7 @@ struct KochSnowflake
     points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
     points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
 
-    vtkm::worklet::DispatcherLineFractal<KochSnowflake::FractalWorklet>
+    vtkm::worklet::DispatcherLineFractal<KochSnowflake::FractalWorklet, Device>
         dispatcher;
 
     for (vtkm::IdComponent i = 0; i < numIterations; ++i)
@@ -799,7 +820,7 @@ static void TryKoch()
   using VecType = vtkm::Vec<vtkm::Float32,2>;
   vtkm::cont::ArrayHandle<VecType> points;
 
-  points = KochSnowflake::Run(1);
+  points = KochSnowflake::Run(1, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   WriteSVG("Koch1.svg", points);
 
   for (vtkm::Id index = 0; index < points.GetNumberOfValues()/2; ++index)
@@ -809,7 +830,7 @@ static void TryKoch()
               << points.GetPortalConstControl().Get(index*2+1) << std::endl;
   }
 
-  points = KochSnowflake::Run(2);
+  points = KochSnowflake::Run(2, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   WriteSVG("Koch2.svg", points);
 
   for (vtkm::Id index = 0; index < points.GetNumberOfValues()/2; ++index)
@@ -819,7 +840,7 @@ static void TryKoch()
               << points.GetPortalConstControl().Get(index*2+1) << std::endl;
   }
 
-  points = KochSnowflake::Run(5);
+  points = KochSnowflake::Run(5, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
   WriteSVG("Koch5.svg", points, 0.1);
 }
 
@@ -846,9 +867,10 @@ struct DragonFractal
     }
   };
 
+  template<typename Device>
   VTKM_CONT
   static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
-  Run(vtkm::IdComponent numIterations)
+  Run(vtkm::IdComponent numIterations, Device)
   {
     using VecType = vtkm::Vec<vtkm::Float32,2>;
 
@@ -859,7 +881,7 @@ struct DragonFractal
     points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
     points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
 
-    vtkm::worklet::DispatcherLineFractal<DragonFractal::FractalWorklet>
+    vtkm::worklet::DispatcherLineFractal<DragonFractal::FractalWorklet, Device>
         dispatcher;
 
     for (vtkm::IdComponent i = 0; i < numIterations; ++i)
@@ -886,7 +908,8 @@ static void TryDragon()
        numIterations <= 13;
        ++numIterations)
   {
-    points = DragonFractal::Run(numIterations);
+    points = DragonFractal::Run(numIterations,
+                                VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Dragon%02d.svg", numIterations);
     WriteSVG(filename, points, 2.0/numIterations);
@@ -922,9 +945,10 @@ struct HilbertCurve
     }
   };
 
+  template<typename Device>
   VTKM_CONT
   static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
-  Run(vtkm::IdComponent numIterations)
+  Run(vtkm::IdComponent numIterations, Device)
   {
     using VecType = vtkm::Vec<vtkm::Float32,2>;
 
@@ -935,7 +959,7 @@ struct HilbertCurve
     points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
     points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
 
-    vtkm::worklet::DispatcherLineFractal<HilbertCurve::FractalWorklet>
+    vtkm::worklet::DispatcherLineFractal<HilbertCurve::FractalWorklet, Device>
         dispatcher;
 
     for (vtkm::IdComponent i = 0; i < numIterations; ++i)
@@ -962,7 +986,8 @@ static void TryHilbert()
        numIterations <= 6;
        ++numIterations)
   {
-    points = HilbertCurve::Run(numIterations);
+    points = HilbertCurve::Run(numIterations,
+                               VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Hilbert%02d.svg", numIterations);
     WriteSVG(filename, points, 2.0/numIterations);
@@ -976,28 +1001,60 @@ struct TreeFractal
 {
   struct FractalWorklet : vtkm::worklet::WorkletLineFractal
   {
-    typedef void ControlSignature(SegmentsIn, SegmentsOut<3>);
-    typedef void ExecutionSignature(Transform, _2);
+    typedef void ControlSignature(SegmentsIn,
+                                  SegmentsOut<1>,
+                                  FieldOut<> countNextIteration);
+    typedef void ExecutionSignature(Transform, VisitIndex, _2, _3);
     using InputDomain = _1;
+
+    using ScatterType = vtkm::worklet::ScatterCounting;
+    VTKM_CONT
+    ScatterType GetScatter() const { return this->Scatter; }
+
+    template<typename Storage, typename Device>
+    VTKM_CONT
+    FractalWorklet(
+        const vtkm::cont::ArrayHandle<vtkm::IdComponent,Storage> &count,
+        Device)
+      : Scatter(count, Device())
+    {  }
 
     template<typename SegmentsOutVecType>
     void operator()(const vtkm::exec::LineFractalTransform &transform,
-                    SegmentsOutVecType &segmentsOutVec) const
+                    vtkm::IdComponent visitIndex,
+                    SegmentsOutVecType &segmentsOutVec,
+                    vtkm::IdComponent &countNextIteration) const
     {
-      segmentsOutVec[0][0] = transform(0.0f, 0.0f);
-      segmentsOutVec[0][1] = transform(1.0f, 0.0f);
-
-      segmentsOutVec[1][0] = transform(1.0f, 0.0f);
-      segmentsOutVec[1][1] = transform(1.5f, -0.25f);
-
-      segmentsOutVec[2][0] = transform(1.0f, 0.0f);
-      segmentsOutVec[2][1] = transform(1.5f, 0.35f);
+      switch (visitIndex)
+      {
+        case 0:
+          segmentsOutVec[0][0] = transform(0.0f, 0.0f);
+          segmentsOutVec[0][1] = transform(1.0f, 0.0f);
+          countNextIteration = 1;
+          break;
+        case 1:
+          segmentsOutVec[0][0] = transform(1.0f, 0.0f);
+          segmentsOutVec[0][1] = transform(1.5f, -0.25f);
+          countNextIteration = 3;
+          break;
+        case 2:
+          segmentsOutVec[0][0] = transform(1.0f, 0.0f);
+          segmentsOutVec[0][1] = transform(1.5f, 0.35f);
+          countNextIteration = 3;
+          break;
+        default:
+          this->RaiseError("Unexpected visit index.");
+      }
     }
+
+  private:
+    ScatterType Scatter;
   };
 
+  template<typename Device>
   VTKM_CONT
   static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
-  Run(vtkm::IdComponent numIterations)
+  Run(vtkm::IdComponent numIterations, Device)
   {
     using VecType = vtkm::Vec<vtkm::Float32,2>;
 
@@ -1008,13 +1065,19 @@ struct TreeFractal
     points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
     points.GetPortalControl().Set(1, VecType(0.0f, 1.0f));
 
-    vtkm::worklet::DispatcherLineFractal<TreeFractal::FractalWorklet>
-        dispatcher;
+    vtkm::cont::ArrayHandle<vtkm::IdComponent> count;
+
+    // Initialize count array with 3 (meaning iterate)
+    count.Allocate(1);
+    count.GetPortalControl().Set(0, 3);
 
     for (vtkm::IdComponent i = 0; i < numIterations; ++i)
     {
+      vtkm::worklet::DispatcherLineFractal<TreeFractal::FractalWorklet, Device>
+          dispatcher(FractalWorklet(count, Device()));
+
       vtkm::cont::ArrayHandle<VecType> outPoints;
-      dispatcher.Invoke(points, outPoints);
+      dispatcher.Invoke(points, outPoints, count);
       points = outPoints;
     }
 
@@ -1035,7 +1098,7 @@ static void TryTree()
        numIterations <= 8;
        ++numIterations)
   {
-    points = TreeFractal::Run(numIterations);
+    points = TreeFractal::Run(numIterations, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Tree%02d.svg", numIterations);
     WriteSVG(filename, points, 2.0/numIterations);

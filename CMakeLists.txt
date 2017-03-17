@@ -72,7 +72,6 @@ set(input_docs
   FunctionInterface.tex
   WorkletArguments.tex
   NewWorkletTypes.tex
-  AdvancedWorklets.tex
   CodingConventions.tex
   )
 

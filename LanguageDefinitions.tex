@@ -432,6 +432,10 @@
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{worklet}\indexnamespacetwo{vtkm}{worklet}}%
              {\writeindexidentifiertwo{vtkm}{worklet}{#1}}}
+\newcommand*{\vtkmworkletinternal}[1]{%
+  \ifthenelse{\equal{#1}{}}%
+             {\writenamespacethree{vtkm}{worklet}{internal}\indexnamespacetwo{vtkm}{worklet}{internal}}%
+             {\writeindexidentifierthree{vtkm}{worklet}{internal}{#1}}}
 \newcommand*{\vtkmio}[1]{%
   \ifthenelse{\equal{#1}{}}%
              {\writenamespacetwo{vtkm}{io}\indexnamespacetwo{vtkm}{io}}%

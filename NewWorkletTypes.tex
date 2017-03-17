@@ -200,7 +200,7 @@ There is nothing particularly special about this transport, but we provide the i
 \label{sec:WorkletSuperclass}
 
 The penultimate step in defining a new worklet type is to define a class that will serve as the superclass of all implementations of worklets of this type.
-This class itself must inherit from \writeindexidentifierthree{vtkm}{worklet}{internal}{WorkletBase}.
+This class itself must inherit from \vtkmworkletinternal{WorkletBase}.
 By convention the worklet superclass is placed in the \vtkmworklet{} namespace and its name starts with \textidentifier{Worklet}.
 
 Within the worklet superclass we define the signature tags (as discussed in Section~\ref{sec:NewWorkletTypes:SignatureTags}) and the \textcode{GetThreadIndices} method (as discussed in Section~\ref{sec:ThreadIndices}.
@@ -219,6 +219,100 @@ And the worklet superclass can provide other items that might be particularly us
 \label{sec:NewWorkletTypes:Dispatcher}
 
 \index{dispatcher!creating new|(}
+
+The final element required for a new worklet type is an associated dispatcher class for invoking the worklet.
+As documented in Chapter~\ref{chap:Worklets}, each worklet type has its own associated dispatcher object.
+By convention, the dispatcher is placed in the \vtkmworklet{} and has the same name as the worklet superclass with the \textidentifier{Worklet} replaced with \textidentifier{Dispatcher}.
+So since the worklet superclass for our motivating example is named \textcode{WorkletLineFractal}, we name the associated dispatcher \textcode{DispatcherLineFractal}.
+
+Also by convention, a dispatcher is a templated class.
+The first template argument should be the type of the worklet (which should be a subclass of the associated worklet superclass).
+The last template argument should be a device adapter tag with a default value set to \vtkmmacro{VTKM\_DEFAULT\_DEVICE\_ADAPTER\_TAG}.
+Other template arguments that the dispatcher might need should be placed in between these two.
+
+\vtkmlisting{Standard template arguments for a dispatcher class.}{DispatcherTemplate.cxx}
+
+A dispatcher implementation inherits from \vtkmworkletinternal{DispatcherBase}.
+\textidentifier{DispatcherBase} is itself a templated class with the following three templated arguments.
+\begin{enumerate}
+\item
+  The dispatcher class that is subclassing \textidentifier{DispatcherBase}.
+  All template arguments must be given.
+\item
+  The type of the worklet being dispatched (which by convention is the first argument of the dispatcher's template).
+\item
+  The expected superclass of the worklet, which is associated with the dispatcher implementation.
+  \textidentifier{DispatcherBase} will check that the worklet has the appropriate superclass and provide a compile error if there is a mismatch.
+\end{enumerate}
+
+\begin{didyouknow}
+  The convention of having a subclass be templated on the derived class' type is known as the Curiously Recurring Template Pattern (CRTP).
+  In the case of \textidentifier{DispatcherBase}, \VTKm uses this CRTP behavior to allow the general implementation of \textcode{Invoke} to run \textcode{DoInvoke} in the subclass, which as we see in a moment is itself templated.
+\end{didyouknow}
+
+\vtkmlisting{Subclassing \textidentifier{DispatcherBase}.}{DispatcherSuperclass.cxx}
+
+The constructor for the dispatcher should take as an argument an instance of the worklet to be invoked.
+For convenience, this worklet argument should default to a new instance of the worklet.
+
+\vtkmlisting{Typical constructor for a dispatcher.}{DispatcherConstructor.cxx}
+
+Finally, the dispatcher must implement a const method named \textcode{DoInvoke}.
+The \textcode{DoInvoke} method should take a single argument.
+The argument will be an object of type \vtkminternal{Invocation} although it is usually more convenient to just express the argument type as a single template parameter.
+The \textcode{Invocation} could contain several data items, so it is best to pass this argument as a constant reference.
+
+\vtkmlisting{Declaration of \textcode{DoInvoke} of a dispatcher.}{DispatcherDoInvokePrototype.cxx}
+
+\index{invocation object|(}
+\index{dispatcher!invocation object|(}
+
+\textidentifier{Invocation} is an object that encapsulates the state and data relevant to the invoke.
+\textidentifier{Invocation} contains multiple types and data items.
+For brevity only the ones most likely to be used in a \textcode{DoInvoke} method are documented here.
+We discuss these briefly before getting back to the implementation of \textcode{DoInvoke}.
+
+\vtkminternal{Invocation} contains a data member named \textcode{Parameters} that contains the data passed to the \textcode{Invoke} method of the dispatcher (with some posible transformations applied).
+\textcode{Parameters} is stored in a \vtkminternal{FunctionInterface} template object.
+(\textidentifier{FunctionInterface} is described in Chapter~\ref{chap:FunctionInterfaceObjects}.)
+The specific type of \textcode{Parameters} is defined as type \textcode{ParameterInterface} in the \textidentifier{Invoke} object.
+
+The \textidentifier{Invoke} object also contains the types \textcode{ControlInterface} and \textcode{ExecutionInterface} that are \textidentifier{FunctionInterface} classes built from the \controlsignature and \executionsignature of the worklet.
+These \textidentifier{FunctionInterface} classes provide a simple mechanism for introspecting the arguments of the worklet's signatures.
+
+All worklets must also define an input domain index, which points to one of the \controlsignature/\textidentifier{Invoke} arguments.
+This number is also captured in the \vtkminternal{Invocation} object in a field named \textcode{InputDomainIndex}.
+For convenience, \textidentifier{Invocation} also has the type \textcode{InputDomainTag} set to be the same as the \controlsignature argument corresponding to the input domain.
+Likewise, \textidentifier{Invocation} has the type \textcode{InputDomainType} set to be the same type as the (transformed) input domain argument to \textcode{Invoke}.
+\textidentifier{Invocation} also has a method name \textcode{GetInputDomain} that returns the invocation object passed to \textcode{Invoke}.
+
+\index{dispatcher!invocation object|)}
+\index{invocation object|)}
+
+Getting back to the implementation of a dispatcher, the \textcode{DoInvoke} should first verify that the \controlsignature argument associated with the input domain is of the expected type.
+This can be done by comparing the \textidentifier{Invocation}\textcode{::InputDomainTag} with the expected signature tag using a tool like \textcode{std::is\_same}.
+This step is not strictly necessary, but is invaluable to users diagnosing issues with using the dispatcher.
+It does not hurt to also check that the \textcode{Invoke} argument for the input domain is also the same as expected (by checking \textidentifier{Invocation}\textcode{::InputDomainType}).
+It is additionally helpful to have a descriptive comment near these checks.
+
+\vtkmlisting{Checking the input domain tag and type.}{CheckInputDomainType.cxx}
+
+Next, \textcode{DoInvoke} must determine the size in number of elements of the input domain.
+When the default identity scatter is used, the input domain size corresponds to the number of instances the worklet is executed.
+(Other scatters will transform the input domain size to an output domain size, and that output domain size will determine the number of instances.)
+The input domain size is generally determined by using \textidentifier{Invocation}::\textcode{::GetInputDomain} and querying the input domain argument.
+In our motivating example, the input domain is an \textidentifier{ArrayHandle} and the input domain size is half the size of the array (since array entries are paired up into line segments).
+
+The final thing \textcode{DoInvoke} does is call \textcode{BasicInvoke} on its \textidentifier{DispatcherBase} superclass.
+\textcode{BasicInvoke} does the complicated work of transferring arguments, scheduling the parallel job, and calling the worklet's operator.
+\textcode{BasicInvoke} takes three arguments: the \textidentifier{Invocation} object, the size of the input domain, and the device adapter tag to run on.
+
+\vtkmlisting{Calling \textcode{BasicInvoke} from a dispatcher's \textcode{DoInvoke}.}{CallBasicInvoke.cxx}
+
+Putting this all together, the following example demonstrates the full implementation of the dispatcher for our motivating example.
+
+\vtkmlisting[ex:DispatcherImplementation]{Implementation of a dispatcher for a new type of worklet.}{DispatcherLineFractal.h}
+
 \index{dispatcher!creating new|)}
 
 

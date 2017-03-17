@@ -635,14 +635,26 @@ public:
 namespace vtkm {
 namespace worklet {
 
+////
+//// BEGIN-EXAMPLE DispatcherSuperclass.cxx
+////
+////
+//// BEGIN-EXAMPLE DispatcherTemplate.cxx
+////
 template<typename WorkletType,
          typename Device = VTKM_DEFAULT_DEVICE_ADAPTER_TAG>
-class DispatcherLineFractal :
-    public vtkm::worklet::internal::DispatcherBase<
-      DispatcherLineFractal<WorkletType, Device>,
-      WorkletType,
-      vtkm::worklet::WorkletLineFractal
-      >
+class DispatcherLineFractal
+////
+//// END-EXAMPLE DispatcherTemplate.cxx
+////
+    : public vtkm::worklet::internal::DispatcherBase<
+        DispatcherLineFractal<WorkletType, Device>,
+        WorkletType,
+        vtkm::worklet::WorkletLineFractal
+        >
+////
+//// END-EXAMPLE DispatcherSuperclass.cxx
+////
 {
   using Superclass =
       vtkm::worklet::internal::DispatcherBase<
@@ -652,23 +664,30 @@ class DispatcherLineFractal :
         >;
 
 public:
+  ////
+  //// BEGIN-EXAMPLE DispatcherConstructor.cxx
+  ////
   VTKM_CONT
   DispatcherLineFractal(const WorkletType &worklet = WorkletType())
     : Superclass(worklet)
   {  }
+  ////
+  //// END-EXAMPLE DispatcherConstructor.cxx
+  ////
 
+  ////
+  //// BEGIN-EXAMPLE DispatcherDoInvokePrototype.cxx
+  ////
   template<typename Invocation>
   VTKM_CONT
   void DoInvoke(const Invocation &invocation) const
+  ////
+  //// END-EXAMPLE DispatcherDoInvokePrototype.cxx
+  ////
   {
-    // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
-
-    // If you get a compile error on this line, then you have tried to use
-    // something that is not a vtkm::cont::ArrayHandle as the input domain to a
-    // topology operation (that operates on a cell set connection domain).
-    VTKM_IS_ARRAY_HANDLE(InputDomainType);
-
+    ////
+    //// BEGIN-EXAMPLE CheckInputDomainType.cxx
+    ////
     // Get the control signature tag for the input domain.
     using InputDomainTag = typename Invocation::InputDomainTag;
 
@@ -680,15 +699,32 @@ public:
                           vtkm::worklet::WorkletLineFractal::SegmentsIn
                           >::value));
 
+    // This is the type for the input domain
+    using InputDomainType = typename Invocation::InputDomainType;
+
+    // If you get a compile error on this line, then you have tried to use
+    // something that is not a vtkm::cont::ArrayHandle as the input domain to a
+    // topology operation (that operates on a cell set connection domain).
+    VTKM_IS_ARRAY_HANDLE(InputDomainType);
+    ////
+    //// END-EXAMPLE CheckInputDomainType.cxx
+    ////
+
+    ////
+    //// BEGIN-EXAMPLE CallBasicInvoke.cxx
+    ////
     // We can pull the input domain parameter (the data specifying the input
     // domain) from the invocation object.
     const InputDomainType &inputDomain = invocation.GetInputDomain();
 
     // Now that we have the input domain, we can extract the range of the
-    // scheduling and call BadicInvoke.
+    // scheduling and call BasicInvoke.
     this->BasicInvoke(invocation,
                       inputDomain.GetNumberOfValues()/2,
                       Device());
+    ////
+    //// END-EXAMPLE CallBasicInvoke.cxx
+    ////
   }
 };
 

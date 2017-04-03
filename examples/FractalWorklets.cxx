@@ -123,8 +123,15 @@ struct Transport<
   VTKM_CONT
   ExecObjectType operator()(const ContObjectType &object,
                             const InputDomainType &,
+                            vtkm::Id inputRange,
                             vtkm::Id) const
   {
+    if (object.GetNumberOfValues() != inputRange*2)
+    {
+      throw vtkm::cont::ErrorBadValue(
+            "2D line segment array size does not agree with input size.");
+    }
+
     GroupedArrayType groupedArray(object);
     return groupedArray.PrepareForInput(Device());
   }
@@ -372,11 +379,12 @@ struct Transport<
   VTKM_CONT
   ExecObjectType operator()(const ContObjectType &object,
                             const InputDomainType &,
-                            vtkm::Id size) const
+                            vtkm::Id,
+                            vtkm::Id outputRange) const
   {
     GroupedArrayType groupedArray(
           vtkm::cont::make_ArrayHandleGroupVec<2>(object));
-    return groupedArray.PrepareForOutput(size, Device());
+    return groupedArray.PrepareForOutput(outputRange, Device());
   }
 };
 

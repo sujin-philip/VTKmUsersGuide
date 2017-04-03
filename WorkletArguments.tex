@@ -104,9 +104,9 @@ perform. The second parameter is the type of the control parameter (after any
 dynamic casts). The third parameter is a device adapter tag for the device
 on which the data will be loaded.
 
-A \textidentifier{Transport} contains a \textcode{typedef} named \textcode{ExecObjectType} that is the type used after data is moved to the execution environment.
-A \textidentifier{Transport} also has a \textcode{const} parenthesis operator that takes the control-side object that is to be transported to the execution environment, the control-side object that represents the input domain, and the size of the output domain and returns an execution-side object.
-This operator is called in the control environment, and the returned object must be ready to be passed to the execution environment.
+A \textidentifier{Transport} contains a type named \textcode{ExecObjectType} that is the type used after data is moved to the execution environment.
+A \textidentifier{Transport} also has a \textcode{const} parenthesis operator that takes 4 arguments: the control-side object that is to be transported to the execution environment, the control-side object that represents the input domain, the size of the input domain, and the size of the output domain and returns an execution-side object.
+This operator is called in the control environment, and the operator returns an object that is ready to be used in the execution environment.
 
 Transports are implemented with a defined transport tag (which, by
 convention, is defined in the \vtkmcontarg{} namespace and starts with
@@ -119,15 +119,16 @@ their tags) are provided in VTK-m.
   \index{transport!execution object} Simply returns the given execution
   object, which should be ready to load onto the device.
 \item[\vtkmcontarg{TransportTagArrayIn}] \index{transport!input array}
-  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using
-  the array handle's \textcode{PrepareForInput} method. The returned
-  execution object is an array portal.
+  Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInput} method.
+  The size of the array must be the same as the input domain.
+  The returned execution object is an array portal.
 \item[\vtkmcontarg{TransportTagArrayOut}] \index{transport!output array}
-  Allocates data onto the specified device for a \vtkmcont{ArrayHandle}
-  using the array handle's \textcode{PrepareForOutput} method. The returned
-  execution object is an array portal.
+  Allocates data onto the specified device for a \vtkmcont{ArrayHandle} using the array handle's \textcode{PrepareForOutput} method.
+  The array is allocated to the size of the output domain.
+  The returned execution object is an array portal.
 \item[\vtkmcontarg{TransportTagArrayInOut}] \index{transport!input/output array}
   Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInPlace} method.
+  The size of the array must be the same size as the output domain (which is not necessarily the same size as the input domain).
   The returned execution object is an array portal.
 \item[\vtkmcontarg{TransportTagWholeArrayIn}] \index{transport!whole array input}
   Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInput} method.
@@ -168,9 +169,6 @@ their tags) are provided in VTK-m.
   Loads data from a \vtkmcont{ArrayHandle} onto the specified device using the array handle's \textcode{PrepareForInPlace} method.
   This transport uses the input domain object, which is expected to be a \vtkmworklet{Keys} object, and groups the entries in the array by unique keys.
   The returned execution object is an array portal of grouped values.
-\item[\vtkmcontarg{TransportTagReducedValuesIn}] \index{transport!topology mapped field}
-  Similar to \textidentifier{TransportTagArrayIn} except that the size is checked against the number of reduced values (i.e. the number of reduced keys) for the input domain.
-  The input domain is assumed to be a \vtkmworklet{Keys} object.
 \end{description}
 
 Here are some trivial examples of using

@@ -93,17 +93,17 @@ void DoTransport(const MyExecObject &inExecObject,
   typedef Transport<TransportTagExecObject,MyExecObject,Device>
       ExecObjectTransport;
   MyExecObject passedExecObject =
-      ExecObjectTransport()(inExecObject, inArray, 10);
+      ExecObjectTransport()(inExecObject, inArray, 10, 10);
 
   // The array in transport returns a read-only array portal.
   typedef Transport<TransportTagArrayIn,ArrayType,Device> ArrayInTransport;
   ArrayInTransport::ExecObjectType inPortal =
-      ArrayInTransport()(inArray, inArray, 10);
+      ArrayInTransport()(inArray, inArray, 10, 10);
 
   // The array out transport returns an allocated array portal.
   typedef Transport<TransportTagArrayOut,ArrayType,Device> ArrayOutTransport;
   ArrayOutTransport::ExecObjectType outPortal =
-      ArrayOutTransport()(outArray, inArray, 10);
+      ArrayOutTransport()(outArray, inArray, 10, 10);
   ////
   //// PAUSE-EXAMPLE
   ////

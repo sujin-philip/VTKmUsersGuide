@@ -931,25 +931,34 @@ struct HilbertCurve
 {
   struct FractalWorklet : vtkm::worklet::WorkletLineFractal
   {
-    typedef void ControlSignature(SegmentsIn, SegmentsOut<4>);
-    typedef void ExecutionSignature(Transform, _2);
+    typedef void ControlSignature(SegmentsIn,
+                                  FieldIn<> directionIn,
+                                  SegmentsOut<4>,
+                                  FieldOut<> directionOut);
+    typedef void ExecutionSignature(Transform, _2, _3, _4);
     using InputDomain = _1;
 
     template<typename SegmentsOutVecType>
     void operator()(const vtkm::exec::LineFractalTransform &transform,
-                    SegmentsOutVecType &segmentsOutVec) const
+                    vtkm::Int8 directionIn,
+                    SegmentsOutVecType &segmentsOutVec,
+                    vtkm::Vec<vtkm::Int8,4> &directionOut) const
     {
-      segmentsOutVec[0][0] = transform(0.0f, 0.5f);
-      segmentsOutVec[0][1] = transform(0.0f, 0.0f);
+      segmentsOutVec[0][0] = transform(0.0f, directionIn*0.0f);
+      segmentsOutVec[0][1] = transform(0.0f, directionIn*0.5f);
+      directionOut[0] = -directionIn;
 
-      segmentsOutVec[1][0] = transform(0.0f, 0.5f);
-      segmentsOutVec[1][1] = transform(0.5f, 0.5f);
+      segmentsOutVec[1][0] = transform(0.0f, directionIn*0.5f);
+      segmentsOutVec[1][1] = transform(0.5f, directionIn*0.5f);
+      directionOut[1] = directionIn;
 
-      segmentsOutVec[2][0] = transform(0.5f, 0.5f);
-      segmentsOutVec[2][1] = transform(1.0f, 0.5f);
+      segmentsOutVec[2][0] = transform(0.5f, directionIn*0.5f);
+      segmentsOutVec[2][1] = transform(1.0f, directionIn*0.5f);
+      directionOut[2] = directionIn;
 
-      segmentsOutVec[3][0] = transform(1.0f, 0.0f);
-      segmentsOutVec[3][1] = transform(1.0f, 0.5f);
+      segmentsOutVec[3][0] = transform(1.0f, directionIn*0.5f);
+      segmentsOutVec[3][1] = transform(1.0f, directionIn*0.0f);
+      directionOut[3] = -directionIn;
     }
   };
 
@@ -967,14 +976,25 @@ struct HilbertCurve
     points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
     points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
 
+    vtkm::cont::ArrayHandle<vtkm::Int8> directions;
+
+    // Initialize direction with positive.
+    directions.Allocate(1);
+    directions.GetPortalControl().Set(0, 1);
+
     vtkm::worklet::DispatcherLineFractal<HilbertCurve::FractalWorklet, Device>
         dispatcher;
 
     for (vtkm::IdComponent i = 0; i < numIterations; ++i)
     {
       vtkm::cont::ArrayHandle<VecType> outPoints;
-      dispatcher.Invoke(points, outPoints);
+      vtkm::cont::ArrayHandle<vtkm::Int8> outDirections;
+      dispatcher.Invoke(points,
+                        directions,
+                        outPoints,
+                        vtkm::cont::make_ArrayHandleGroupVec<4>(outDirections));
       points = outPoints;
+      directions = outDirections;
     }
 
     return points;

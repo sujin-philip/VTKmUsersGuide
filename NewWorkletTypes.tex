@@ -323,7 +323,31 @@ Now that we have our full implementation of a worklet type that generates line f
 The beginning of this chapter shows an implementation of the Koch Snowflake.
 The remainder of this chapter demonstrates other fractals that are easily implemented with our worklet type.
 
-\subsection{\fix{Alternate to Koch}}
+\subsection{Quadratic Type 2 Curve}
+
+There are multiple variants of the Koch Snowflake.
+One simple but interesting version is the quadratic type 1 curve.
+This fractal has a shape similar to what we used for Koch but has right angles and goes both up and down as shown in Figure~\ref{fig:QuadraticType2}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[scale=2]{images/QuadraticType2_1}
+  \hfill
+  \includegraphics[scale=2]{images/QuadraticType2_2}
+  \hfill
+  \includegraphics[scale=2]{images/QuadraticType2_4}
+  \caption[The quadratic type 2 curve fractal.]{
+    The quadratic type 2 curve fractal.
+    The left image gives the first iteration.
+    The middle image gives the second iteration.
+    The right image gives the result after a few iterations.
+  }
+  \label{fig:QuadraticType2}
+\end{figure}
+
+The quadratic type 2 curve is implemented exactly like the Koch Snowflake except we output 8 lines to every input instead of 4, and, of course, the positions of the lines we generate are different.
+
+\vtkmlisting{A worklet to generate a quadratic type 2 curve fractal.}{QuadraticType2.cxx}
 
 \subsection{Tree Fractal}
 

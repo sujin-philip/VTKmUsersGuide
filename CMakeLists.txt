@@ -42,6 +42,9 @@ set(images
   images/MCCompareVTKm.png
   images/PackageHierarchy.pdf
   images/PointIncidentAngles.pdf
+  images/QuadraticType2_1.pdf
+  images/QuadraticType2_2.pdf
+  images/QuadraticType2_4.pdf
   images/StructuredCellSet.pdf
   images/Tree01.pdf
   images/Tree02.pdf

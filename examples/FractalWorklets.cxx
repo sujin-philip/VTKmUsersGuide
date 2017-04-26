@@ -853,6 +853,108 @@ static void TryKoch()
 }
 
 ////
+//// BEGIN-EXAMPLE QuadraticType2.cxx
+////
+struct QuadraticType2
+{
+  struct FractalWorklet : vtkm::worklet::WorkletLineFractal
+  {
+    typedef void ControlSignature(SegmentsIn, SegmentsOut<8>);
+    typedef void ExecutionSignature(Transform, _2);
+    using InputDomain = _1;
+
+    template<typename SegmentsOutVecType>
+    void operator()(const vtkm::exec::LineFractalTransform &transform,
+                    SegmentsOutVecType &segmentsOutVec) const
+    {
+      segmentsOutVec[0][0] = transform(0.00f,  0.00f);
+      segmentsOutVec[0][1] = transform(0.25f,  0.00f);
+
+      segmentsOutVec[1][0] = transform(0.25f,  0.00f);
+      segmentsOutVec[1][1] = transform(0.25f,  0.25f);
+
+      segmentsOutVec[2][0] = transform(0.25f,  0.25f);
+      segmentsOutVec[2][1] = transform(0.50f,  0.25f);
+
+      segmentsOutVec[3][0] = transform(0.50f,  0.25f);
+      segmentsOutVec[3][1] = transform(0.50f,  0.00f);
+
+      segmentsOutVec[4][0] = transform(0.50f,  0.00f);
+      segmentsOutVec[4][1] = transform(0.50f, -0.25f);
+
+      segmentsOutVec[5][0] = transform(0.50f, -0.25f);
+      segmentsOutVec[5][1] = transform(0.75f, -0.25f);
+
+      segmentsOutVec[6][0] = transform(0.75f, -0.25f);
+      segmentsOutVec[6][1] = transform(0.75f,  0.00f);
+
+      segmentsOutVec[7][0] = transform(0.75f,  0.00f);
+      segmentsOutVec[7][1] = transform(1.00f,  0.00f);
+    }
+  };
+
+  template<typename Device>
+  VTKM_CONT
+  static vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::FloatDefault,2> >
+  Run(vtkm::IdComponent numIterations, Device)
+  {
+    using VecType = vtkm::Vec<vtkm::Float32,2>;
+
+    vtkm::cont::ArrayHandle<VecType> points;
+
+    // Initialize points array with a single line
+    points.Allocate(2);
+    points.GetPortalControl().Set(0, VecType(0.0f, 0.0f));
+    points.GetPortalControl().Set(1, VecType(1.0f, 0.0f));
+
+    vtkm::worklet::DispatcherLineFractal<QuadraticType2::FractalWorklet, Device>
+        dispatcher;
+
+    for (vtkm::IdComponent i = 0; i < numIterations; ++i)
+    {
+      vtkm::cont::ArrayHandle<VecType> outPoints;
+      dispatcher.Invoke(points, outPoints);
+      points = outPoints;
+    }
+
+    return points;
+  }
+};
+////
+//// END-EXAMPLE QuadraticType2.cxx
+////
+
+static void TryQuadraticType2()
+{
+  // Demonstrate a single line.
+  using VecType = vtkm::Vec<vtkm::Float32,2>;
+  vtkm::cont::ArrayHandle<VecType> points;
+
+  points = QuadraticType2::Run(1, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  WriteSVG("QuadraticType2_1.svg", points);
+
+  for (vtkm::Id index = 0; index < points.GetNumberOfValues()/2; ++index)
+  {
+    std::cout << index << ": "
+              << points.GetPortalConstControl().Get(index*2+0) << " "
+              << points.GetPortalConstControl().Get(index*2+1) << std::endl;
+  }
+
+  points = QuadraticType2::Run(2, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  WriteSVG("QuadraticType2_2.svg", points);
+
+  for (vtkm::Id index = 0; index < points.GetNumberOfValues()/2; ++index)
+  {
+    std::cout << index << ": "
+              << points.GetPortalConstControl().Get(index*2+0) << " "
+              << points.GetPortalConstControl().Get(index*2+1) << std::endl;
+  }
+
+  points = QuadraticType2::Run(4, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
+  WriteSVG("QuadraticType2_4.svg", points, 0.1f);
+}
+
+////
 //// BEGIN-EXAMPLE DragonFractal.cxx
 ////
 struct DragonFractal
@@ -1137,6 +1239,7 @@ static void RunTests()
 {
   TryVecLineSegments();
   TryKoch();
+  TryQuadraticType2();
   TryDragon();
   TryHilbert();
   TryTree();

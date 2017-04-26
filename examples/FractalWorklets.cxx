@@ -26,8 +26,8 @@ static vtkm::Vec<T,2> TransformSVGPoint(const vtkm::Vec<T,2> &point,
                                         const vtkm::Range yRange,
                                         float padding)
 {
-  return vtkm::Vec<T,2>(point[0] - xRange.Min + padding,
-                        yRange.Max - point[1] + padding);
+  return vtkm::Vec<T,2>(static_cast<T>(point[0] - xRange.Min + padding),
+                        static_cast<T>(yRange.Max - point[1] + padding));
 }
 
 template<typename T>
@@ -36,7 +36,7 @@ static void WriteSVG(const std::string &filename,
                      float width = 2.0,
                      const std::string &color = "black")
 {
-  static const float PADDING = 0.05;
+  static const float PADDING = 0.05f;
 
   vtkm::cont::ArrayHandle<vtkm::Range> ranges =
       vtkm::cont::ArrayRangeCompute(data);
@@ -849,7 +849,7 @@ static void TryKoch()
   }
 
   points = KochSnowflake::Run(5, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
-  WriteSVG("Koch5.svg", points, 0.1);
+  WriteSVG("Koch5.svg", points, 0.1f);
 }
 
 ////
@@ -920,7 +920,7 @@ static void TryDragon()
                                 VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Dragon%02d.svg", numIterations);
-    WriteSVG(filename, points, 2.0/numIterations);
+    WriteSVG(filename, points, 2.0f/numIterations);
   }
 }
 
@@ -1018,7 +1018,7 @@ static void TryHilbert()
                                VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Hilbert%02d.svg", numIterations);
-    WriteSVG(filename, points, 2.0/numIterations);
+    WriteSVG(filename, points, 2.0f/numIterations);
   }
 }
 
@@ -1129,7 +1129,7 @@ static void TryTree()
     points = TreeFractal::Run(numIterations, VTKM_DEFAULT_DEVICE_ADAPTER_TAG());
     char filename[FILENAME_MAX];
     sprintf(filename, "Tree%02d.svg", numIterations);
-    WriteSVG(filename, points, 2.0/numIterations);
+    WriteSVG(filename, points, 2.0f/numIterations);
   }
 }
 

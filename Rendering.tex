@@ -360,14 +360,9 @@ perform rendering. It contains everything needed to take a
 \textidentifier{Canvas} (Section~\ref{sec:Canvas}). The view also annotates
 the image with spatial and scalar properties.
 
-The base class for all views is \vtkmrendering{View}. \textidentifier{View}
-is an abstract class, and you must choose one of the two provided
-subclasses, \vtkmrendering{View3D} and \vtkmrendering{View2D}, depending on
-the type of data being presented. (All three classes are defined in the
-\vtkmheader{vtkm/rendering}{View.h} header file.) Both
-\textidentifier{View3D} and \textidentifier{View2D} take a
-\textidentifier{Scene}, a \textidentifier{Mapper}, and a
-\textidentifier{Canvas} as arguments to their constructor.
+The base class for all views is \vtkmrendering{View}.
+\textidentifier{View} is an abstract class, and you must choose one of the three provided subclasses, \vtkmrendering{View3D}, \vtkmrendering{View2D}, and \vtkmrendering{View3D}, depending on the type of data being presented.
+All three view classes take a \textidentifier{Scene}, a \textidentifier{Mapper}, and a \textidentifier{Canvas} as arguments to their constructor.
 
 \vtkmlisting[ex:ConstructView]{Constructing a \textidentifier{View}.}{ConstructView.cxx}
 

@@ -461,8 +461,12 @@ which the field is valid.
 The data array can be retrieved as a \textidentifier{DynamicArrayHandle}
 using the \textcode{GetData} method of \textidentifier{Field}.
 \textidentifier{Field} also has a convenience method named
-\textcode{GetBounds} that finds the range of values stored in the field
+\textcode{GetRange} that finds the range of values stored in the field
 array.
+The returned value of \textcode{GetRange} is an \textidentifier{ArrayHandle} containing \vtkm{Range} values.
+The \textidentifier{ArrayHandle} will have as many values as components in the field.
+So, for example, calling \textcode{GetRange} on a scalar field will return an \textidentifier{ArrayHandle} with exactly 1 entry in it.
+Calling \textcode{GetRange} on a field of 3D vectors will return an \textidentifier{ArrayHandle} with exactly 3 entries corresponding to each of the components in the range.
 
 \index{field|}
 
@@ -483,6 +487,8 @@ so the \textidentifier{CoordinateSystem} class inherits from the
 \textidentifier{Field} class. \textidentifier{CoordinateSystem} constrains
 the field to be associated with points and typically has 3D floating point
 vectors for values.
+
+In addition to all the methods provided by the \textidentifier{Field} superclass, the \textidentifier{CoordinateSystem} also provides a \textcode{GetBounds} convenience method that returns a \vtkm{Bounds} object giving the spatial bounds of the coordinate system.
 
 It is typical for a \textidentifier{DataSet} to have one coordinate system
 defined, but it is possible to define multiple coordinate systems. This is

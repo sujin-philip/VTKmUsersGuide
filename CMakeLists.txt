@@ -32,6 +32,10 @@ set(images
   images/Dragon04.pdf
   images/Dragon12.pdf
   images/ExplicitCellConnections.pdf
+  images/Hilbert01.pdf
+  images/Hilbert02.pdf
+  images/Hilbert03.pdf
+  images/Hilbert06.pdf
   images/Koch1.pdf
   images/Koch2.pdf
   images/Koch5.pdf

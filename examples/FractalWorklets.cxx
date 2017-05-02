@@ -592,12 +592,18 @@ public:
   /// segment. This tag takes a template argument that is a type list tag that
   /// limits the possible value types in the array.
   ///
+  ////
+  //// BEGIN-EXAMPLE WorkletLineFractalFieldInTag.cxx
+  ////
   template<typename TypeList = AllTypes>
   struct FieldIn : vtkm::cont::arg::ControlSignatureTagBase {
     using TypeCheckTag = vtkm::cont::arg::TypeCheckTagArray<TypeList>;
     using TransportTag = vtkm::cont::arg::TransportTagArrayIn;
     using FetchTag = vtkm::exec::arg::FetchTagArrayDirectIn;
   };
+  ////
+  //// END-EXAMPLE WorkletLineFractalFieldInTag.cxx
+  ////
 
   /// Control signature tag for input fields. There is one entry per input line
   /// segment. This tag takes a template argument that is a type list tag that

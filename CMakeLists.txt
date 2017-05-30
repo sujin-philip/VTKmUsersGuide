@@ -80,7 +80,9 @@ set(input_docs
   CreatingFilters.tex
   Math.tex
   WorkingWithCells.tex
+  VirtualObjects.tex
   ImplementingDeviceAdapters.tex
+  OpenGLInteroperability.tex
   FunctionInterface.tex
   WorkletArguments.tex
   NewWorkletTypes.tex

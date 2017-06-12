@@ -191,6 +191,44 @@ following methods.
 \index{elevation|)}
 \index{point elevation|)}
 
+\subsection{Surface Normals}
+
+\index{surface normals|(}
+\index{normals|(}
+
+\vtkmfilter{SurfaceNormals} computes the surface normals of a polygonal data
+set at its points and/or cells. The filter takes a data set as input and by
+default, uses the active coordinate system to compute the normals. Optionally,
+a coordinate system or a point field of 3d vectors can be explicitly provided
+to the \textcode{Execute} method.
+The cell normals are computed based on each cell's winding order using vector
+cross-product. For non-polygonal cells, a zeroed vector is assigned.
+The point normals are computed by averaging the cell normals of the
+incident cells of each point.
+
+The default name for the output fields is ``Normals'', but that can be
+overriden using the \textcode{SetCellNormalsName} and
+\textcode{SetPointNormalsName} methods.
+
+In addition to the standard field filters methods,
+\textidentifier{SurfaceNormals} provides the following methods.
+
+\begin{description}
+\item[\textcode{SetGenerateCellNormals}/\textcode{GetGenerateCellNormals}]
+  These methods can be used to set/get the flag to specify if the cell normals
+  should be generated.
+\item[\textcode{SetGeneratePointNormals}/\textcode{GetGeneratePointNormals}]
+  These methods can be used to set/get the flag to specify if the point normals
+  should be generated.
+\item[\textcode{SetCellNormalsName}/\textcode{GetCellNormalsName}]
+  These methods can be used to set/get the output cell normals field name.
+\item[\textcode{SetPointNormalsName}/\textcode{GetPointNormalsName}]
+  These methods can be used to set/get the output point normals field name.
+\end{description}
+
+\index{normals|)}
+\index{surface normals|)}
+
 \index{field filter|)}
 \index{filter!field|)}
 

@@ -31,7 +31,6 @@ struct ScaleBiasFunctor
 template<typename ArrayHandleType>
 class ArrayHandleScaleBias
     : public vtkm::cont::ArrayHandleTransform<
-          typename ArrayHandleType::ValueType,
           ArrayHandleType,
           ScaleBiasFunctor<typename ArrayHandleType::ValueType> >
 {
@@ -40,7 +39,6 @@ public:
       ArrayHandleScaleBias,
       (ArrayHandleScaleBias<ArrayHandleType>),
       (vtkm::cont::ArrayHandleTransform<
-         typename ArrayHandleType::ValueType,
          ArrayHandleType,
          ScaleBiasFunctor<typename ArrayHandleType::ValueType> >)
       );
@@ -99,7 +97,7 @@ void Test()
   ////
   //// BEGIN-EXAMPLE MakeArrayHandleTransform.cxx
   ////
-  vtkm::cont::make_ArrayHandleTransform<vtkm::Float32>(
+  vtkm::cont::make_ArrayHandleTransform(
           array, ScaleBiasFunctor<vtkm::Float32>(2,3))
   ////
   //// END-EXAMPLE MakeArrayHandleTransform.cxx

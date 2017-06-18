@@ -596,19 +596,14 @@ it is not allowed to change the class' state.
 
 \vtkmlisting{Functor that doubles an index.}{ImplicitArrayFunctor.cxx}
 
-Once the functor is defined, an implicit array can be declared using the
-templated \vtkmcont{ArrayHandleImplicit} class. The first template argument
-is the type of the array's values (which should match the return value for
-the functor), and the second template argument is the functor type.
+Once the functor is defined, an implicit array can be declared using the templated \vtkmcont{ArrayHandleImplicit} class.
+The single template argument is the functor's type.
 
 \vtkmlisting{Declaring a \textidentifier{ArrayHandleImplicit}.}{DeclareImplicitArray.cxx}
 
 For convenience, \vtkmheader{vtkm/cont}{ArrayHandleImplicit.h} also
 declares the \vtkmcont{make\_ArrayHandleImplicit} function. This function
 takes a functor and the size of the array and returns the implicit array.
-When using this function, you also have to declare the first template
-argument, which is the array's value type, since this type does not appear
-in any of the arguments.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleImplicit}.}{MakeArrayHandleImplicit.cxx}
 
@@ -686,19 +681,15 @@ class' state.
 
 \vtkmlisting{Functor to scale and bias a value.}{TransformArrayFunctor.cxx}
 
-Once the functor is defined, a transformed array can be declared using the
-templated \vtkmcont{ArrayHandleTransform} class. The first template
-argument is the type of the array's values (which should match the return
-value for the functor). The second template argument is the type of array
-being transformed. The third and final template argument is the type of
-functor used for the transformation.
+Once the functor is defined, a transformed array can be declared using the templated \vtkmcont{ArrayHandleTransform} class.
+The first template argument is the type of array being transformed.
+The second template argument is the type of functor used for the transformation.
+The third template argument, which is optional, is the type for an inverse functor that provides the inverse operation of the functor in the second argument.
+This inverse functor is used for writing values into the array.
+For arrays that will only be read from, there is no need to supply this inverse functor.
 
-That said, it is generally easier to use the
-\vtkmcont{make\_ArrayHandleTransform} convenience function. This function
-takes an array and a functor and returns a transformed array. When using
-this function, you also have to declare the first template argument, which
-is the transformed array's value type, since this type does not appear in
-any of the arguments.
+That said, it is generally easier to use the \vtkmcont{make\_ArrayHandleTransform} convenience function.
+This function takes an array and a functor (and optionally an inverse functor) and returns a transformed array.
 
 \vtkmlisting{Using \textidentifier{make\_ArrayHandleTransform}.}{MakeArrayHandleTransform.cxx}
 

@@ -81,12 +81,12 @@ struct DoubleIndexFunctor
 #include <vtkm/cont/ArrayHandleImplicit.h>
 
 class ArrayHandleDoubleIndex
-    : public vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
+    : public vtkm::cont::ArrayHandleImplicit<DoubleIndexFunctor>
 {
 public:
   VTKM_ARRAY_HANDLE_SUBCLASS_NT(
       ArrayHandleDoubleIndex,
-      (vtkm::cont::ArrayHandleImplicit<vtkm::Id,DoubleIndexFunctor>));
+      (vtkm::cont::ArrayHandleImplicit<DoubleIndexFunctor>));
 
   VTKM_CONT
   ArrayHandleDoubleIndex(vtkm::Id numberOfValues)
@@ -107,7 +107,7 @@ void Test()
   ////
   //// BEGIN-EXAMPLE DeclareImplicitArray.cxx
   ////
-  vtkm::cont::ArrayHandleImplicit<vtkm::Id, DoubleIndexFunctor>
+  vtkm::cont::ArrayHandleImplicit<DoubleIndexFunctor>
       implicitArray(DoubleIndexFunctor(), 50);
   ////
   //// END-EXAMPLE DeclareImplicitArray.cxx
@@ -144,7 +144,7 @@ void Test()
   ////
   //// BEGIN-EXAMPLE MakeArrayHandleImplicit.cxx
   ////
-  vtkm::cont::make_ArrayHandleImplicit<vtkm::Id>(DoubleIndexFunctor(), 50);
+  vtkm::cont::make_ArrayHandleImplicit(DoubleIndexFunctor(), 50);
   ////
   //// END-EXAMPLE MakeArrayHandleImplicit.cxx
   ////

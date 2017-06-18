@@ -75,6 +75,57 @@ public:
 ////
 
 ////
+//// BEGIN-EXAMPLE VirtualObjectTransferPrototype.cxx
+////
+namespace vtkm {
+namespace cont {
+namespace internal {
+
+template<typename VirtualObject, typename TargetClass, typename DeviceAdapter>
+class VirtualObjectTransfer;
+
+}
+}
+} // namespace vtkm::cont::internal
+////
+//// END-EXAMPLE VirtualObjectTransferPrototype.cxx
+////
+
+////
+//// BEGIN-EXAMPLE VirtualObjectTransferCxx11Thread.h
+////
+//// PAUSE-EXAMPLE
+// We did not really put the device adapter components in separate header
+// files, but for the purposes of an example we are pretending we are.
+#if 0
+//// RESUME-EXAMPLE
+#include <vtkm/cont/cxx11/internal/DeviceAdapterTagCxx11Thread.h>
+//// PAUSE-EXAMPLE
+#endif
+//// RESUME-EXAMPLE
+
+#include <vtkm/cont/internal/VirtualObjectTransfer.h>
+#include <vtkm/cont/internal/VirtualObjectTransferShareWithControl.h>
+
+namespace vtkm {
+namespace cont {
+namespace internal {
+
+template<typename VirtualObject, typename TargetClass>
+class VirtualObjectTransfer<
+        VirtualObject, TargetClass, vtkm::cont::DeviceAdapterTagCxx11Thread>
+  : public VirtualObjectTransferShareWithControl<VirtualObject, TargetClass>
+{
+};
+
+}
+}
+} // namespace vtkm::cont::internal
+////
+//// END-EXAMPLE VirtualObjectTransferCxx11Thread.h
+////
+
+////
 //// BEGIN-EXAMPLE DeviceAdapterAlgorithmCxx11Thread.h
 ////
 //// PAUSE-EXAMPLE

@@ -28,21 +28,15 @@ example of implementing a device adapter using the \textcode{std::thread}
 class provided by C++11. We will call our device \textcode{Cxx11Thread} and
 place it in the directory \textfilename{vtkm/cont/cxx11}.
 
-By convention the implementation of device adapters within VTK-m are
-divided into 3 header files with the names
-\textfilename{DeviceAdapterTag\textasteriskcentered.h},
-\textfilename{ArrayManagerExecution\textasteriskcentered.h} and
-\textfilename{DeviceAdapterAlgorithm\textasteriskcentered.h}, which are
-hidden in internal directories. The
-\textfilename{DeviceAdapter\textasteriskcentered.h} that most code includes
-is a trivial header that simply includes these other three files. For our
-example \textcode{std::thread} device, we will create the base header at
-\textfilename{vtkm/cont/cxx11/DeviceAdapterCxx11Thread.h}. The contents are
-the following (with minutia like include guards removed).
+By convention the implementation of device adapters within VTK-m are divided into 4 header files with the names \textfilename{DeviceAdapterTag\textasteriskcentered.h}, \textfilename{ArrayManagerExecution\textasteriskcentered.h}, \textfilename{VirtualObjectTransfer\textasteriskcentered.h}, and \textfilename{DeviceAdapterAlgorithm\textasteriskcentered.h}, which are hidden in internal directories.
+The \textfilename{DeviceAdapter\textasteriskcentered.h} that most code includes is a trivial header that simply includes these other three files.
+For our example \textcode{std::thread} device, we will create the base header at \textfilename{vtkm/cont/cxx11/DeviceAdapterCxx11Thread.h}.
+The contents are the following (with minutia like include guards removed).
 
 \begin{vtkmexample}{Contents of the base header for a device adapter.}
 #include <vtkm/cont/cxx11/internal/DeviceAdapterTagCxx11Thread.h>
 #include <vtkm/cont/cxx11/internal/ArrayManagerExecutionCxx11Thread.h>
+#include <vtkm/cont/cxx11/internal/VirtualObjectTransferCxx11Thread.h>
 #include <vtkm/cont/cxx11/internal/DeviceAdapterAlgorithmCxx11Thread.h>
 \end{vtkmexample}
 
@@ -173,6 +167,49 @@ header file.
 \index{execution array manager|)}
 \index{array manager execution|)}
 \index{device adapter!array manager|)}
+
+\section{Virtual Object Transfer}
+
+\index{device adapter!virtual object transfer|(}
+\index{virtual object transfer|(}
+
+VTK-m defines a template named \vtkmcontinternal{VirtualObjectTransfer} that is responsible for instantiating virtual objects in the execution environment.
+Chapter~\ref{chap:VirtualObjects} discusses how to design and implement virtual objects.
+The \textidentifier{VirtualObjectTransfer} class is the internal mechanism that  allocates space for the object and sets up the method tables for them.
+This class has three template parameters: the class of the virtual object used in the execution environment, the class of the concrete implementation, and the device adapter on which to put the object.
+
+\vtkmlisting{Prototype for \protect\vtkmcontinternal{VirtualObjectTransfer}.}{VirtualObjectTransferPrototype.cxx}
+
+A device adapter must provide a partial specialization of \textidentifier{VirtualObjectTransfer} for its device adapter tag.
+This partial specialization is typically defined in an internal header file with a prefix of \textfilename{VirtualObjectTransfer}.
+The implementation for \textidentifier{VirtualObjectTransfer} can establish a virtual object in the execution environment based on an object in the control environment, update the state of said object, and release all the resources for the object.
+\textidentifier{VirtualObjectTransfer} must provide the following methods.
+
+\begin{description}
+\item[\textcode{Create}]
+  A static method that takes a reference to the virtual object to create and a pointer to the concrete object to bind to.
+  The method returns a \textcode{void*} pointer to an internal data structure that is passed to the other 2 methods.
+\item[\textcode{Update}]
+  A static method that takes the \textcode{void*} pointer returned from \textcode{Create} and the pointer to the concrete object passed to \textcode{Create}.
+  The state of the object in the execution environment (the first argument) is updated to reflected to update the state of the control object (the second argument).
+\item[\textcode{Cleanup}]
+  A static method that takes the \textcode{void*} pointer returned from \textcode{Create} and deletes all the state and resources used in the execution environment.
+  After calling this method the virtual object becomes invalid.
+\end{description}
+
+Specializations of this template typically take on one of two forms.
+If the control and execution environments have separate memory spaces, then this class behaves by copying the concrete control object to the execution environment, allocating space for the virtual object in the execution environment, and calling \textcode{Bind} on the virtual object.
+A pointer to the allocated space is what is returned from \textcode{Create}.
+
+However, if the control and execution environments share the same memory space, the virtual object transfer can, and should, just bind directly with the target concrete object.
+VTK-m comes with a class called \vtkmcontinternal{VirtualObjectTransferShareWithControl} that provides the implementation for a virtual object transfer that shares a memory space with the control environment.
+In this case, making the \textidentifier{VirtualObjectTransfer} specialization be a trivial subclass is sufficient.
+Continuing our example of a device adapter based on C++11's \textcode{std::thread} class, here is the implementation of \textidentifier{VirtualObjectTransfer}, which by convention would be placed in the \textfilename{vtkm/cont/cxx11/internal/VirtualObjectTransferCxx11Thread.h} header file.
+
+\vtkmlisting{Specialization of \textidentifier{VirtualObjectTransfer}.}{VirtualObjectTransferCxx11Thread.h}
+
+\index{virtual object transfer|)}
+\index{device adapter!virtual object transfer|)}
 
 \section{Algorithms}
 

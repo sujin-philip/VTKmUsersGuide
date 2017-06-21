@@ -459,9 +459,22 @@ In addition to the standard \textcode{Execute},
 \item[\textcode{SetGenerateNormals}] Sets a Boolean flag to determine
   whether to generate normal vectors for the surface. Normals are used in
   shading calculations during rendering and can make the surface appear
-  more smooth. Generated normals are based on the gradient of the field
-  being contoured.
+  more smooth. By default, the generated normals are based on the gradient
+  of the field being contoured and can be quite expensive to compute. A faster
+  method is available that computes the normals based on the faces of the
+  isosurface mesh, but the normals do not look as good as the gradient based
+  normals. Fast normals can be enabled using the flags described bellow.
 \item[\textcode{GetGenerateNormals}] Returns the generate normals flag.
+\item[\textcode{SetComputeFastNormalsForStructured}] Sets a Boolean flag to
+  use the fast method of normals computation for Structured datasets. This
+  is only valid if the generate normals flag is set.
+\item[\textcode{GetComputeFastNormalsForStructured}] Returns the value of
+  the \textcode{ComputeFastNormalsForStructured} flag.
+\item[\textcode{SetComputeFastNormalsForUnstructured}] Sets a Boolean flag to
+  use the fast method of normals computation for unstructured datasets. This
+  is only valid if the generate normals flag is set.
+\item[\textcode{GetComputeFastNormalsForUnstructured}] Returns the value of
+  the \textcode{ComputeFastNormalsForUnstructured} flag.
 \end{description}
 
 \index{isosurface|)}
